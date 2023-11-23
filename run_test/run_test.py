@@ -515,10 +515,7 @@ def _search_up_multiple_dirs_for_file(
 
 def _find_cfg() -> pathlib.Path:
     """Searches up from the cwd for a jobs.yml config file."""
-    start_dirs = (
-        pathlib.Path(".").absolute(),
-        pathlib.Path(__file__).parent.absolute(),
-    )
+    start_dirs = (pathlib.Path(".").absolute(),)
     cfg_cand: typing.Optional[pathlib.Path] = _search_up_multiple_dirs_for_file(
         start_dirs, CFG_FILE_YMAL
     )
@@ -580,7 +577,7 @@ def _run_job(
     file_lists: FilePathListLookup,
     options: Options,
 ) -> typing.Tuple[str, timedelta]:
-    root_path: pathlib.Path = pathlib.Path(__file__).parent.parent.absolute()
+    root_path: pathlib.Path = cfg_filepath.parent
     function: typing.Callable
     job_tags: JobTags = set(job_config["when"]["tags"])
     label = job_config["label"]
@@ -921,6 +918,9 @@ def _main(  # noqa: C901 # pylint: disable=too-many-branches,too-many-statements
         tags_to_avoid,
         options,
     ) = _parse_args(config_metadata, argv)
+
+    if args.verbose:
+        print(f"loaded config from {cfg_filepath}")
 
     file_lists: FilePathListLookup = _find_files(config_metadata)
     assert file_lists
