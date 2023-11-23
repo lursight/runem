@@ -1,5 +1,4 @@
-"""
-run_test base module.
+"""run_test base module.
 
 This is the principal module of the run_test project.
 here you put your main classes and objects.

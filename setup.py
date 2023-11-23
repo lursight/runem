@@ -1,11 +1,13 @@
-"""Python setup.py for run_test package"""
+"""Python setup.py for run_test package."""
 import io
 import os
+
 from setuptools import find_packages, setup
 
 
 def read(*paths, **kwargs):
     """Read the contents of a text file safely.
+
     >>> read("run_test", "VERSION")
     '0.1.0'
     >>> read("README.md")
@@ -39,8 +41,6 @@ setup(
     author="lursight",
     packages=find_packages(exclude=["tests", ".github"]),
     install_requires=read_requirements("requirements.txt"),
-    entry_points={
-        "console_scripts": ["run_test = run_test.__main__:main"]
-    },
+    entry_points={"console_scripts": ["run_test = run_test.__main__:main"]},
     extras_require={"test": read_requirements("requirements-test.txt")},
 )
