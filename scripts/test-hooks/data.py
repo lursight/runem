@@ -1,6 +1,6 @@
 import typing
 
-from scripts.runners.test_runner.run_command import run_command
+from run_test.test_runner.run_command import run_command
 
 FilePathSerialise = str
 FilePathList = typing.List[FilePathSerialise]
