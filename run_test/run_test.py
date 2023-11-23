@@ -575,16 +575,17 @@ def _bucket_file_by_tag(  # noqa: C901 # pylint: disable=too-many-branches
 
 def _run_job(
     job_config: JobConfig,
+    cfg_filepath: pathlib.Path,
     args: argparse.Namespace,
     file_lists: FilePathListLookup,
     options: Options,
 ) -> typing.Tuple[str, timedelta]:
-    root_path: pathlib.Path = pathlib.Path(__file__).parent.parent.parent.absolute()
+    root_path: pathlib.Path = pathlib.Path(__file__).parent.parent.absolute()
     function: typing.Callable
     job_tags: JobTags = set(job_config["when"]["tags"])
     label = job_config["label"]
     os.chdir(root_path)
-    function = get_test_function(job_config)
+    function = get_test_function(job_config, cfg_filepath)
 
     # get the files for all files found for this job's tags
     file_list: FilePathList = []
@@ -645,17 +646,14 @@ def _get_test_function(
     return function
 
 
-def _find_job_module(
-    cfg_filepath: typing.Optional[pathlib.Path], module_file_path: str
-) -> pathlib.Path:
+def _find_job_module(cfg_filepath: pathlib.Path, module_file_path: str) -> pathlib.Path:
     """Attempts to find the true location of the job-function module."""
     module_path: pathlib.Path = pathlib.Path(module_file_path)
 
     module_path_cands = [
-        module_path,
+        module_path.absolute(),
+        (cfg_filepath.parent / module_file_path).absolute(),
     ]
-    if cfg_filepath is not None:
-        module_path_cands.append((cfg_filepath.parent / module_file_path).absolute())
     for module_path in module_path_cands:
         if module_path.exists():
             break
@@ -670,9 +668,7 @@ def _find_job_module(
     return module_path.relative_to(pathlib.Path(".").absolute())
 
 
-def get_test_function(
-    job_config: JobConfig, cfg_filepath: typing.Optional[pathlib.Path] = None
-) -> JobFunction:
+def get_test_function(job_config: JobConfig, cfg_filepath: pathlib.Path) -> JobFunction:
     """Given a job-description dynamically loads the test-function so we can call it.
 
     Also re-address the job-config.
@@ -965,7 +961,13 @@ def _main(  # noqa: C901 # pylint: disable=too-many-branches,too-many-statements
 
             job_times[phase] = pool.starmap(
                 _run_job,
-                zip(jobs, repeat(args), repeat(file_lists), repeat(options)),
+                zip(
+                    jobs,
+                    repeat(cfg_filepath),
+                    repeat(args),
+                    repeat(file_lists),
+                    repeat(options),
+                ),
             )
 
     # print the performance information
