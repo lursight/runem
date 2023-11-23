@@ -30,10 +30,6 @@ import yaml
 CFG_FILE_YMAL = pathlib.Path("jobs.yml")
 
 
-PHASE_EDIT: typing.LiteralString = "edit"
-PHASE_ANALYSIS: typing.LiteralString = "anal"
-
-
 class FunctionNotFound(ValueError):
     """Thrown when the test-function cannot be found."""
 
