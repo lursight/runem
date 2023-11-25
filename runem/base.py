@@ -1,4 +1,4 @@
-"""runem base module.
+"""Runem base module.
 
 This is the principal module of the runem project.
 here you put your main classes and objects.

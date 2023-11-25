@@ -2,7 +2,7 @@ import pathlib
 import shutil
 import typing
 
-from runem.test_runner.run_command import run_command
+from runem.run_command import run_command
 
 FilePathSerialise = str
 FilePathList = typing.List[FilePathSerialise]
