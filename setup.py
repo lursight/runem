@@ -9,7 +9,7 @@ def read(*paths, **kwargs):
     """Read the contents of a text file safely.
 
     >>> read("run_test", "VERSION")
-    '0.1.0'
+    '0.0.0'
     >>> read("README.md")
     ...
     """
