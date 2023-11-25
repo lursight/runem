@@ -18,7 +18,7 @@ echo "Renaming project..."
 
 original_author="lursight"
 original_name="runem"
-original_urlname="run-test"
+original_urlname="runem"
 original_description="Awesome runem created by lursight"
 # for filename in $(find . -name "*.*") 
 for filename in $(git ls-files) 

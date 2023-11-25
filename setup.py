@@ -35,7 +35,7 @@ setup(
     name="runem",
     version=read("runem", "VERSION"),
     description="Awesome runem created by lursight",
-    url="https://github.com/lursight/run-test/",
+    url="https://github.com/lursight/runem/",
     long_description=read("README.md"),
     long_description_content_type="text/markdown",
     author="lursight",

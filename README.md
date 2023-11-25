@@ -53,8 +53,8 @@ See also
 ---
 # runem
 
-[![codecov](https://codecov.io/gh/lursight/run-test/branch/main/graph/badge.svg?token=run-test_token_here)](https://codecov.io/gh/lursight/run-test)
-[![CI](https://github.com/lursight/run-test/actions/workflows/main.yml/badge.svg)](https://github.com/lursight/run-test/actions/workflows/main.yml)
+[![codecov](https://codecov.io/gh/lursight/runem/branch/main/graph/badge.svg?token=run-test_token_here)](https://codecov.io/gh/lursight/runem)
+[![CI](https://github.com/lursight/runem/actions/workflows/main.yml/badge.svg)](https://github.com/lursight/runem/actions/workflows/main.yml)
 
 Awesome runem created by lursight
 
