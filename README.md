@@ -40,7 +40,7 @@ See also
 - ✅ Code linting using [flake8](https://flake8.pycqa.org/en/latest/)
 - 📊 Code coverage reports using [codecov](https://about.codecov.io/sign-up/)
 - 🛳️ Automatic release to [PyPI](https://pypi.org) using [twine](https://twine.readthedocs.io/en/latest/) and github actions.
-- 🎯 Entry points to execute your program using `python -m <run_test>` or `$ run_test` with basic CLI argument parsing.
+- 🎯 Entry points to execute your program using `python -m <runem>` or `$ runem` with basic CLI argument parsing.
 - 🔄 Continuous integration using [Github Actions](.github/workflows/) with jobs to lint, test and release your project on Linux, Mac and Windows environments.
 
 > Curious about architectural decisions on this template? read [ABOUT_THIS_TEMPLATE.md](ABOUT_THIS_TEMPLATE.md)  
@@ -51,33 +51,33 @@ See also
 <!--  DELETE THE LINES ABOVE THIS AND WRITE YOUR PROJECT README BELOW -->
 
 ---
-# run_test
+# runem
 
 [![codecov](https://codecov.io/gh/lursight/run-test/branch/main/graph/badge.svg?token=run-test_token_here)](https://codecov.io/gh/lursight/run-test)
 [![CI](https://github.com/lursight/run-test/actions/workflows/main.yml/badge.svg)](https://github.com/lursight/run-test/actions/workflows/main.yml)
 
-Awesome run_test created by lursight
+Awesome runem created by lursight
 
 ## Install it from PyPI
 
 ```bash
-pip install run_test
+pip install runem
 ```
 
 ## Usage
 
 ```py
-from run_test import BaseClass
-from run_test import base_function
+from runem import BaseClass
+from runem import base_function
 
 BaseClass().base_method()
 base_function()
 ```
 
 ```bash
-$ python -m run_test
+$ python -m runem
 #or
-$ run_test
+$ runem
 ```
 
 ## Development

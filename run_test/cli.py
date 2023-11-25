@@ -1,4 +1,4 @@
-"""CLI interface for run_test project.
+"""CLI interface for runem project.
 
 Be creative! do whatever you want!
 
@@ -12,7 +12,7 @@ Be creative! do whatever you want!
 def main():  # pragma: no cover
     """
     The main function executes on commands:
-    `python -m run_test` and `$ run_test `.
+    `python -m runem` and `$ runem `.
 
     This is your program's entry point.
 

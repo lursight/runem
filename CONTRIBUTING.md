@@ -1,6 +1,6 @@
 # How to develop on this project
 
-run_test welcomes contributions from the community.
+runem welcomes contributions from the community.
 
 **You need PYTHON3!**
 
