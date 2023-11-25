@@ -976,7 +976,7 @@ def _main(  # noqa: C901 # pylint: disable=too-many-branches,too-many-statements
         pprint(job_times[phase])
 
 
-def _timed_main(argv: typing.List[str]) -> None:
+def timed_main(argv: typing.List[str]) -> None:
     start = timer()
     _main(argv)
     end = timer()
@@ -984,4 +984,4 @@ def _timed_main(argv: typing.List[str]) -> None:
 
 
 if __name__ == "__main__":
-    _timed_main(sys.argv)
+    timed_main(sys.argv)
