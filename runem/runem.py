@@ -22,8 +22,12 @@ import typing
 from collections import defaultdict
 from datetime import timedelta
 from itertools import repeat
-from pprint import pprint
 from timeit import default_timer as timer
+
+try:
+    import termplotlib
+except ImportError:
+    termplotlib = None
 
 import yaml
 
@@ -39,6 +43,8 @@ class FunctionNotFound(ValueError):
 JobName = str
 JobTag = str
 PhaseName = str
+
+TimingDataPhase = typing.Dict[PhaseName, typing.List[typing.Tuple[str, timedelta]]]
 
 
 class OptionConfig(typing.TypedDict):
@@ -900,9 +906,46 @@ def _parse_config(config: Config, cfg_filepath: pathlib.Path) -> ConfigMetadata:
     )
 
 
+def _plot_times(
+    overall_run_time: timedelta,
+    phase_run_oder: OrderedPhases,
+    timing_data: TimingDataPhase,
+):
+    """Prints a report to terminal on how well we performed."""
+    labels: typing.List[str] = []
+    times: typing.List[float] = []
+    for phase in phase_run_oder:
+        # print(f"Phase '{phase}' jobs took:")
+        phase_total_time: float = 0.0
+        phase_start_idx = len(labels)
+        for label, job_time in timing_data[phase]:
+            if job_time.total_seconds() == 0:
+                continue
+            labels.append(f"│├{phase}.{label}")
+            times.append(job_time.total_seconds())
+            phase_total_time += job_time.total_seconds()
+        labels.insert(phase_start_idx, f"├{phase} (total)")
+        times.insert(phase_start_idx, phase_total_time)
+
+    labels.append("_run_test")
+    times.append(overall_run_time.total_seconds())
+    for label, job_time in timing_data["_app"]:
+        labels.append(f"_run_test.{label}")
+        times.append(job_time.total_seconds())
+    if termplotlib:
+        fig = termplotlib.figure()
+        fig.barh(times, labels, force_ascii=False)
+        fig.show()
+    else:
+        for label, time in zip(labels, times):
+            print(f"{label}: {time}s")
+
+
 def _main(  # noqa: C901 # pylint: disable=too-many-branches,too-many-statements
     argv: typing.List[str],
-) -> None:
+) -> typing.Tuple[OrderedPhases, TimingDataPhase]:
+    job_times: TimingDataPhase = defaultdict(list)
+    start = timer()
     config: Config
     cfg_filepath: pathlib.Path
     config, cfg_filepath = _load_config()
@@ -939,9 +982,12 @@ def _main(  # noqa: C901 # pylint: disable=too-many-branches,too-many-statements
         jobs=config_metadata.jobs,
         verbose=args.verbose,
     )
-    job_times: typing.Dict[
-        PhaseName, typing.List[typing.Tuple[str, timedelta]]
-    ] = defaultdict(list)
+    end = timer()
+
+    job_times["_app"].append(("pre-build", timedelta(seconds=end - start)))
+
+    start = timer()
+
     for phase in config_metadata.phases:
         if phase not in phases_to_run:
             if args.verbose:
@@ -975,18 +1021,25 @@ def _main(  # noqa: C901 # pylint: disable=too-many-branches,too-many-statements
                     repeat(options),
                 ),
             )
+    end = timer()
 
-    # print the performance information
-    for phase in phases_to_run:
-        print(f"Phase '{phase}' jobs took:")
-        pprint(job_times[phase])
+    job_times["_app"].append(("run-phases", timedelta(seconds=end - start)))
+    return config_metadata.phases, job_times
 
 
 def timed_main(argv: typing.List[str]) -> None:
     start = timer()
-    _main(argv)
+    phase_run_oder: OrderedPhases
+    job_times: TimingDataPhase
+    phase_run_oder, job_times = _main(argv)
     end = timer()
-    print(f"DONE: ran in: {timedelta(seconds=end-start)}")
+    time_taken: timedelta = timedelta(seconds=end - start)
+    _plot_times(
+        overall_run_time=time_taken,
+        phase_run_oder=phase_run_oder,
+        timing_data=job_times,
+    )
+    print(f"DONE: ran in: {time_taken.total_seconds()}s")
 
 
 if __name__ == "__main__":
