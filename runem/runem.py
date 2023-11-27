@@ -942,7 +942,13 @@ def _main(  # noqa: C901 # pylint: disable=too-many-branches,too-many-statements
     job_times: typing.Dict[
         PhaseName, typing.List[typing.Tuple[str, timedelta]]
     ] = defaultdict(list)
-    for phase in phases_to_run:
+    for phase in config_metadata.phases:
+        if phase not in phases_to_run:
+            if args.verbose:
+                print(f"Skipping Phase {phase}")
+            continue
+        if args.verbose:
+            print(f"Running Phase {phase}")
         jobs = filtered_jobs_by_phase[phase]
         num_concurrent_procs = (
             args.procs if args.procs != -1 else multiprocessing.cpu_count()
