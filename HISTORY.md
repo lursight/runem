@@ -4,6 +4,12 @@ Changelog
 
 (unreleased)
 ------------
+- Chore(typing): moves py.typed into package src dir. [Frank Harrison]
+
+
+0.0.3 (2023-11-27)
+------------------
+- Release: version 0.0.3 🚀 [Frank Harrison]
 - Chore(typing): adds the py.typed to the manifest. [Frank Harrison]
 
 
