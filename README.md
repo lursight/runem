@@ -1,6 +1,6 @@
 # Run 'em: Run your developer-local tasks faster
 
-## Overview
+## 1. Overview
 
 `runem` (run 'em) is a utility designed to optimise the process of running developer jobs concurrently.
 
@@ -9,21 +9,26 @@ Job definitions are declarative and simple and the reports show how long each jo
 The name "runem" is derived from the fusion of "run" and "them," encapsulating the essence of executing tasks seamlessly.
 
 - [Run 'em: Run your developer-local tasks faster](#run-em-run-your-developer-local-tasks-faster)
-  - [Overview](#overview)
-  - [Features](#features)
-  - [Installation](#installation)
-  - [Usage](#usage)
-    - [1. Basic Usage](#1-basic-usage)
-    - [2. Using Help to get an Overview of Your Jobs](#2-using-help-to-get-an-overview-of-your-jobs)
-    - [3. Configuration](#3-configuration)
-      - [3.1. `config` - Run 'em global config](#31-config---run-em-global-config)
-      - [3.2. `job` - Job config](#32-job---job-config)
+  - [1. Overview](#1-overview)
+  - [2. Features](#2-features)
+  - [3. Installation](#3-installation)
+  - [4. Basic Usage](#4-basic-usage)
+    - [4.1. Tag filters](#41-tag-filters)
+      - [4.1.1. Run jobs only with the 'lint' tag:](#411-run-jobs-only-with-the-lint-tag)
+      - [4.1.2. If you want to lint all code _except_ nodejs code (and you have the apprpriate tags):](#412-if-you-want-to-lint-all-code-except-nodejs-code-and-you-have-the-apprpriate-tags)
+    - [4.2. phase filters](#42-phase-filters)
+      - [4.2.1 Focus on a phase](#421-focus-on-a-phase)
+      - [4.2.2 Exclude slow phases temporarily](#422-exclude-slow-phases-temporarily)
+  - [5. Using Help to get an Overview of Your Jobs](#5-using-help-to-get-an-overview-of-your-jobs)
+  - [6. Configuration](#6-configuration)
+    - [6.1. `config` - Run 'em global config](#61-config---run-em-global-config)
+    - [6.2. `job` - Job config](#62-job---job-config)
 - [Contributing to and supporting runem](#contributing-to-and-supporting-runem)
   - [Development](#development)
   - [Sponsor](#sponsor)
 
 
-## Features
+## 2. Features
 
 - **Tagged Jobs:** Use tagging to define which type of jobs you want to run, be it `pre-commit`, `lint`, `test` or in multi-project codebases to split between running `python`, `node.js` or `c++` jobs, depending on the context you are working in!
 
@@ -31,22 +36,69 @@ The name "runem" is derived from the fusion of "run" and "them," encapsulating t
   
 - **Data-Driven Test Management:** Drive your tests with data, making it easy to adapt and scale your testing suite to various scenarios, allowing you to execute, track, and analyze your dev-ops suite with ease.
 
-## Installation
+## 3. Installation
 
 ```bash
 pip install runem
 ```
-## Usage
 
-### 1. Basic Usage
+## 4. Basic Usage
 
 ```bash
-$ python -m runem
+$ runem [--tags tag1,tag2,tag3] [--not-tags tag1,tag2,tag3] \
+        [--phases phaseX, phaseY] \
+        [--MY-OPTION] [--not-MY-OPTION] 
 #or
-$ runem
+$ python -m runem [--tags tag1,tag2,tag3] [--not-tags tag1,tag2,tag3] \
+                  [--phases phaseX, phaseY] \
+                  [--MY-OPTION] [--not-MY-OPTION] 
 ```
 
-### 2. Using Help to get an Overview of Your Jobs
+### 4.1. Tag filters
+You can control which types of jobs to run via tag. Just tag the job in the config and then from the command-line you can add `--tags` or `--not-tags` to refine exactly which jobs will be run. 
+
+To run only run jobs that have the `python` tag (for example, you define the tags) you would do the following:
+
+```bash
+runem --tags python
+```
+
+#### 4.1.1. Run jobs only with the 'lint' tag:
+
+```bash
+runem --tags lint
+```
+
+#### 4.1.2. If you want to lint all code _except_ nodejs code (and you have the apprpriate tags):
+
+```bash
+runem --tags lint --not-tags deprecated
+```
+
+### 4.2. phase filters
+
+Sometimes you know you just want to run a specific phase to iterate quickly within that phase-context. 
+
+#### 4.2.1 Focus on a phase
+
+For example you might want to run the 'reformat' phase as you're preparing a commit and are just made cosmetic changes e.g. updating the docs.
+
+```bash
+runem --phase reformat
+```
+
+#### 4.2.2 Exclude slow phases temporarily
+
+Or you are tightly iterating on the 'test' phase coverage and do not care about formating as long as you can see your coverage results ASAP, but everything that comes after that stage. So if you have 4 stages `bootstrap`, `pre-run`, `reformat`, `test` and `verify` you can exlude the slower reformat-stage with the following and everything else will run
+
+```bash
+runem --not-phase pre-run reformat
+```
+
+**Note:** The `--tags` and `--not-tags` options can be used in combination to further refine task execution based on your requirements.
+
+
+## 5. Using Help to get an Overview of Your Jobs
 
 The `--help` switch will show you a full list of all the configured job-tasks, the tags and the override options, describing how to configure a specific run.
 ```bash
@@ -135,7 +187,7 @@ job-param overrides:
 ```
 </details>
 
-### 3. Configuration
+## 6. Configuration
 
 `runem` searches for `.runem.yml` and will pre-load the command-line options with
 
@@ -144,7 +196,7 @@ Configuration is Yaml and consists of two main configurations, `config` and `job
 - `config` describes how the jobs should be run.
 - each `job`  entry descibe a job-task, such and running unit-tests, linting or running any other type of command.
 
-#### 3.1. `config` - Run 'em global config
+### 6.1. `config` - Run 'em global config
 
 - **phases:** 
   - *Description:* Specifies the different phases of the testing process, in the order they are to be run. Each job will be run under a specific phase.
@@ -164,7 +216,7 @@ Configuration is Yaml and consists of two main configurations, `config` and `job
   - **desc:** Provides a description of the option.
   - **alias:** (Optional) Provides an alias for the option if specified.
 
-#### 3.2. `job` - Job config
+### 6.2. `job` - Job config
 - **job:**
   - *Description:* Represents a specific job task that is to be run asynchorounsly.
   - *Fields:*
@@ -229,6 +281,7 @@ Configuration is Yaml and consists of two main configurations, `config` and `job
             - js
             - subproject4
             - pretty
+
 
 ---
 # Contributing to and supporting runem
