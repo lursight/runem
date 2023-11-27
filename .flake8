@@ -1,0 +1,19 @@
+[flake8]
+
+# E203 is not a pep8 standard warning
+# [idx : endidx] <- compliant
+# [idx: endidx] <- E203's version
+# W503 is no-longer a pep8 standard warning
+#  It is now considered best practice to have binary operators on separate
+#  lines instead of lining up the variables starts.
+ignore = E203, W503, E231
+
+# match python-black 80 + 10%, causes much shorter files
+max-line-length = 88
+
+# McCabe complexity
+max-complexity = 10
+
+# Enable flake8-bugbear
+select = C,E,F,W,B,B950
+extend-ignore = E203, E501

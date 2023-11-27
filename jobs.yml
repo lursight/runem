@@ -1,0 +1,283 @@
+- config:
+    phases:
+      - pre-run
+      - edit
+      - anal
+    files:
+      - filter:
+          tag: py
+          regex: ".*\\.py$"
+      - filter:
+          tag: app
+          regex: "app/.*\\.(js|ts|jsx|tsx)$"
+      - filter:
+          tag: data
+          regex: "app/.*\\.(js|ts|jsx|tsx)$"
+      - filter:
+          tag: json
+          regex: ".*\\.(json)$"
+    options:
+      - option:
+          default: true
+          name: black
+          type: bool
+          desc: allow/disallows py-black from running
+      - option:
+          alias: check
+          default: false
+          name: check_only
+          type: bool
+          desc: runs in check-mode, erroring if isort, black or any text-edits would occur
+      - option:
+          default: true
+          desc: generates coverage reports for whatever can generate coverage info when added
+          name: coverage
+          type: bool
+      - option:
+          default: true
+          desc: formats docs and comments in whatever job can do so
+          name: docformatter
+          type: bool
+      - option:
+          default: false
+          name: generate call graphs
+          type: bool
+          desc: Generates call-graphs in jobs that can
+      - option:
+          default: false
+          name: install deps
+          type: bool
+          desc: gets dep-installing job to run
+      - option:
+          default: true
+          name: isort
+          type: bool
+          desc: allow/disallows isort from running on python files
+      - option:
+          default: true
+          name: profile
+          desc: generate profile information in jobs that can
+          type: bool
+      - option:
+          alias: u
+          default: true
+          desc: update snapshots in jobs that can update data snapshots
+          name: update snapshots
+          type: bool
+      - option:
+          default: true
+          desc: run unit tests
+          name: unit test
+          type: bool
+      - option:
+          default: false
+          desc: run unit tests for the firebase function's data
+          name: unit test firebase data
+          type: bool
+      - option:
+          default: false
+          desc: run unit tests for the python code
+          name: unit test python
+          type: bool
+- job:
+    addr:
+      file: scripts/test-hooks/py.py
+      function: _job_py_code_reformat
+    ctx:
+      cwd: .
+      params:
+        limitFilesToGroup: true
+    label: reformat py
+    when:
+      phase: edit
+      tags:
+        - py
+- job:
+    addr:
+      file: scripts/test-hooks/app.py
+      function: _job_es_app_pretty
+    ctx:
+      cwd: app
+      params:
+        limitFilesToGroup: true
+    label: pretty app
+    when:
+      phase: edit
+      tags:
+        - app
+- job:
+    addr:
+      file: scripts/test-hooks/py.py
+      function: _job_py_pylint
+    ctx:
+      cwd: .
+      params:
+        limitFilesToGroup: true
+    label: pylint py
+    when:
+      phase: anal
+      tags:
+        - py
+        - lint
+- job:
+    addr:
+      file: scripts/test-hooks/py.py
+      function: _job_py_flake8
+    ctx:
+      cwd: .
+      params:
+        limitFilesToGroup: true
+    label: flake8 py
+    when:
+      phase: anal
+      tags:
+        - py
+        - lint
+- job:
+    addr:
+      file: scripts/test-hooks/py.py
+      function: _job_py_mypy
+    ctx:
+      cwd: .
+      params:
+        limitFilesToGroup: true
+    label: mypy py
+    when:
+      phase: anal
+      tags:
+        - py
+        - type
+- job:
+    addr:
+      file: scripts/test-hooks/py.py
+      function: _install_python_requirements
+    ctx:
+      cwd: .
+      params:
+        limitFilesToGroup: true
+    label: install python requirements
+    when:
+      phase: pre-run
+      tags:
+        - py
+- job:
+    addr:
+      file: scripts/test-hooks/app.py
+      function: _job_es_app_lint
+    ctx:
+      cwd: app
+      params:
+        limitFilesToGroup: true
+    label: eslint app
+    when:
+      phase: anal
+      tags:
+        - app
+        - lint
+- job:
+    addr:
+      file: scripts/test-hooks/app.py
+      function: _job_es_app_spellcheck
+    ctx:
+      cwd: app
+      params:
+        limitFilesToGroup: true
+    label: cspell app
+    when:
+      phase: anal
+      tags:
+        - app
+- job:
+    addr:
+      file: scripts/test-hooks/app.py
+      function: _job_es_app_typescript
+    ctx:
+      cwd: app
+      params:
+        limitFilesToGroup: true
+    label: typescript app
+    when:
+      phase: anal
+      tags:
+        - app
+        - type
+- job:
+    addr:
+      file: scripts/test-hooks/app.py
+      function: _job_es_app_jest
+    ctx:
+      cwd: app
+      params:
+        limitFilesToGroup: true
+    label: jest app
+    when:
+      phase: anal
+      tags:
+        - app
+- job:
+    addr:
+      file: scripts/test-hooks/data.py
+      function: _job_es_fb_funcs_lint
+    ctx:
+      cwd: scripts/firebase/data_functions
+      params:
+        limitFilesToGroup: true
+    label: eslint fb_funcs
+    when:
+      phase: anal
+      tags:
+        - data
+        - lint
+- job:
+    addr:
+      file: scripts/test-hooks/data.py
+      function: _job_es_fb_funcs_pretty
+    ctx:
+      cwd: scripts/firebase/data_functions
+      params:
+        limitFilesToGroup: true
+    label: pretty fb_funcs
+    when:
+      phase: edit
+      tags:
+        - data
+- job:
+    addr:
+      file: scripts/test-hooks/data.py
+      function: _job_es_firebase_function_typescript
+    ctx:
+      cwd: scripts/firebase/data_functions
+      params:
+        limitFilesToGroup: true
+    label: typescript fb_funcs
+    when:
+      phase: anal
+      tags:
+        - data
+        - type
+- job:
+    addr:
+      file: scripts/test-hooks/data.py
+      function: _job_es_firebase_function_jest
+    ctx:
+      cwd: scripts/firebase/data_functions
+      params:
+        limitFilesToGroup: true
+    label: jest fb_funcs
+    when:
+      phase: anal
+      tags:
+        - data
+- job:
+    addr:
+      file: scripts/test-hooks/json_validators.py
+      function: _json_validate
+    ctx:
+      cwd: .
+      params:
+        limitFilesToGroup: true
+    label: json validate
+    when:
+      phase: anal
+      tags:
+      - json
