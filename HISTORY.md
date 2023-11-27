@@ -4,6 +4,13 @@ Changelog
 
 (unreleased)
 ------------
+- Chore(typing): adds a py.typed marker file for upstream mypy tests.
+  [Frank Harrison]
+
+
+0.0.1 (2023-11-27)
+------------------
+- Release: version 0.0.1 🚀 [Frank Harrison]
 - Chore(release): moves release to script. [Frank Harrison]
 
   It wasn't working because read -p wasn't setting the TAG variabl for
