@@ -4,6 +4,12 @@ Changelog
 
 (unreleased)
 ------------
+- Chore(typing): adds the py.typed to the manifest. [Frank Harrison]
+
+
+0.0.2 (2023-11-27)
+------------------
+- Release: version 0.0.2 🚀 [Frank Harrison]
 - Chore(typing): adds a py.typed marker file for upstream mypy tests.
   [Frank Harrison]
 
