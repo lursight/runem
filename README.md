@@ -137,7 +137,7 @@ job-param overrides:
 
 ### 3. Configuration
 
-`runem` searches for `jobs.yml` and will pre-load the command-line options with
+`runem` searches for `.runem.yml` and will pre-load the command-line options with
 
 Configuration is Yaml and consists of two main configurations, `config` and `job`:
 

@@ -31,7 +31,7 @@ except ImportError:
 
 import yaml
 
-CFG_FILE_YMAL = pathlib.Path("jobs.yml")
+CFG_FILE_YMAL = pathlib.Path(".runem.yml")
 
 
 class FunctionNotFound(ValueError):
@@ -520,7 +520,7 @@ def _search_up_multiple_dirs_for_file(
 
 
 def _find_cfg() -> pathlib.Path:
-    """Searches up from the cwd for a jobs.yml config file."""
+    """Searches up from the cwd for a .runem.yml config file."""
     start_dirs = (pathlib.Path(".").absolute(),)
     cfg_cand: typing.Optional[pathlib.Path] = _search_up_multiple_dirs_for_file(
         start_dirs, CFG_FILE_YMAL
@@ -534,7 +534,7 @@ def _find_cfg() -> pathlib.Path:
 
 
 def _load_config() -> typing.Tuple[Config, pathlib.Path]:
-    """Finds and loads the jobs.yml file."""
+    """Finds and loads the .runem.yml file."""
     cfg_filepath: pathlib.Path = _find_cfg()
     with cfg_filepath.open("r+", encoding="utf-8") as config_file_handle:
         all_config = yaml.full_load(config_file_handle)
