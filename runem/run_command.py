@@ -37,7 +37,7 @@ def run_command(  # noqa: C901 # pylint: disable=too-many-branches
         valid_exit_ids = (0,)
 
     # create a new env with overrides
-    run_env = {"LANG_DO_PRINTS": "False"}
+    run_env: typing.Dict[str, str] = {"LANG_DO_PRINTS": "False"}
 
     if verbose:
         run_env = {"LANG_DO_PRINTS": "True"}
@@ -58,28 +58,28 @@ def run_command(  # noqa: C901 # pylint: disable=too-many-branches
     if env_overrides:
         env_overrides_dict = env_overrides
     # merge the overrides into the env
-    run_env = {**run_env, **os.environ.copy(), **env_overrides_dict}
+    run_env = {
+        **run_env,
+        **os.environ.copy(),
+        **env_overrides_dict,
+    }
+
+    run_env_param: typing.Optional[typing.Dict[str, str]] = None
+    if run_env:
+        run_env_param = run_env
 
     if verbose:
         print("lursight: test: " + "=" * TERMINAL_WIDTH)
 
     process: subprocess.CompletedProcess
     try:
-        if run_env:
-            process = subprocess.run(
-                cmd,
-                check=False,  # Do NOT throw on non-zero exit
-                env=run_env,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-            )  # raise on non-zero
-        else:
-            process = subprocess.run(
-                cmd,
-                check=False,  # Do NOT throw on non-zero exit
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-            )  # raise on non-zero
+        process = subprocess.run(
+            cmd,
+            check=False,  # Do NOT throw on non-zero exit
+            env=run_env_param,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+        )  # raise on non-zero
         if process.returncode not in valid_exit_ids:
             valid_exit_strs = ",".join([str(exit_code) for exit_code in valid_exit_ids])
             raise RuntimeError(
