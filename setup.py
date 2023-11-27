@@ -1,13 +1,15 @@
-"""Python setup.py for run_test package"""
+"""Python setup.py for runem package."""
 import io
 import os
+
 from setuptools import find_packages, setup
 
 
 def read(*paths, **kwargs):
     """Read the contents of a text file safely.
-    >>> read("run_test", "VERSION")
-    '0.1.0'
+
+    >>> read("runem", "VERSION")
+    '0.0.0'
     >>> read("README.md")
     ...
     """
@@ -30,17 +32,15 @@ def read_requirements(path):
 
 
 setup(
-    name="run_test",
-    version=read("run_test", "VERSION"),
-    description="Awesome run_test created by lursight",
-    url="https://github.com/lursight/run-test/",
+    name="runem",
+    version=read("runem", "VERSION"),
+    description="Awesome runem created by lursight",
+    url="https://github.com/lursight/runem/",
     long_description=read("README.md"),
     long_description_content_type="text/markdown",
     author="lursight",
     packages=find_packages(exclude=["tests", ".github"]),
     install_requires=read_requirements("requirements.txt"),
-    entry_points={
-        "console_scripts": ["run_test = run_test.__main__:main"]
-    },
+    entry_points={"console_scripts": ["runem = runem.__main__:main"]},
     extras_require={"test": read_requirements("requirements-test.txt")},
 )

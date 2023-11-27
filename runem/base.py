@@ -1,7 +1,6 @@
-"""
-run_test base module.
+"""Runem base module.
 
-This is the principal module of the run_test project.
+This is the principal module of the runem project.
 here you put your main classes and objects.
 
 Be creative! do whatever you want!
@@ -14,4 +13,4 @@ and then choose `flask` as template.
 """
 
 # example constant variable
-NAME = "run_test"
+NAME = "runem"

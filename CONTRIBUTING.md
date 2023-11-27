@@ -1,6 +1,6 @@
 # How to develop on this project
 
-run_test welcomes contributions from the community.
+runem welcomes contributions from the community.
 
 **You need PYTHON3!**
 
@@ -8,9 +8,9 @@ This instructions are for linux base systems. (Linux, MacOS, BSD, etc.)
 ## Setting up your own fork of this repo.
 
 - On github interface click on `Fork` button.
-- Clone your fork of this repo. `git clone git@github.com:YOUR_GIT_USERNAME/run-test.git`
-- Enter the directory `cd run-test`
-- Add upstream repo `git remote add upstream https://github.com/lursight/run-test`
+- Clone your fork of this repo. `git clone git@github.com:YOUR_GIT_USERNAME/runem.git`
+- Enter the directory `cd runem`
+- Add upstream repo `git remote add upstream https://github.com/lursight/runem`
 
 ## Setting up your own virtual environment
 

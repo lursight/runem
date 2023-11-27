@@ -18,3 +18,4 @@ PyYAML==6.0.1
 types-PyYAML==6.0.12.12
 requests-mock==1.10.0
 types-requests==2.31.0.2
+types-setuptools
