@@ -27,14 +27,14 @@ install:          ## Install the project in dev mode.
 .PHONY: fmt
 fmt:              ## Format code using black & isort.
 	$(ENV_PREFIX)isort runem/
-	$(ENV_PREFIX)black -l 79 runem/
-	$(ENV_PREFIX)black -l 79 tests/
+	$(ENV_PREFIX)black runem/
+	$(ENV_PREFIX)black tests/
 
 .PHONY: lint
 lint:             ## Run pep8, black, mypy linters.
 	$(ENV_PREFIX)flake8 runem/
-	$(ENV_PREFIX)black -l 79 --check runem/
-	$(ENV_PREFIX)black -l 79 --check tests/
+	$(ENV_PREFIX)black --check runem/
+	$(ENV_PREFIX)black --check tests/
 	$(ENV_PREFIX)mypy --ignore-missing-imports runem/
 
 .PHONY: test
