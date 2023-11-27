@@ -1,0 +1,50 @@
+# .coveragerc to control coverage.py
+[run]
+branch = True
+source = python/clients
+         python/server
+         python/common
+disable_warnings=include-ignored
+# store files in an easy-to-ignore or -delete file
+data_file=.coverage_report
+
+# Exclude any pyenvs
+omit =
+    *env*/*
+
+[report]
+# Regexes for lines to exclude from consideration
+exclude_lines =
+    # Have to re-enable the standard pragma
+    pragma: no cover
+
+    # Don't compain on input capture
+    ret_msg = input(msg) 
+
+    # Don't complain about missing debug-only code:
+    def __repr__
+    if self\.debug
+
+    # Don't complain if tests don't hit defensive assertion code:
+    raise AssertionError
+    raise NotImplementedError
+
+    # Don't complain if non-runnable code isn't run:
+    if 0:
+    if __name__ == .__main__.:
+
+    class GetInputProtocol
+    UnlimitedLoop
+
+    # ignore __exit__ exceptions
+    if x_type is not None:
+
+    # don't do anyting with the opt-in call-graph generator (the call-graphs
+    # stop coverage being reported)
+    if os.environ.get("LANG_CALLGRAPHS", "False") == "True":
+
+ignore_errors = True
+
+[html]
+# Assume we run this from the root dir
+directory=docs/coverage_python
