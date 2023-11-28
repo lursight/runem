@@ -594,10 +594,12 @@ def _run_job(
     file_lists: FilePathListLookup,
     options: Options,
 ) -> typing.Tuple[str, timedelta]:
+    label = job_config["label"]
+    if args.verbose:
+        print(f"START: {label}")
     root_path: pathlib.Path = cfg_filepath.parent
     function: typing.Callable
     job_tags: JobTags = set(job_config["when"]["tags"])
-    label = job_config["label"]
     os.chdir(root_path)
     function = get_test_function(job_config, cfg_filepath)
 
@@ -631,7 +633,8 @@ def _run_job(
         )
     end = timer()
     time_taken: timedelta = timedelta(seconds=end - start)
-    print(f"{label}: {time_taken}")
+    if args.verbose:
+        print(f"DONE: {label}: {time_taken}")
     return (label, time_taken)
 
 
@@ -944,11 +947,11 @@ def _plot_times(
         labels.insert(phase_start_idx, f"├{phase} (total)")
         times.insert(phase_start_idx, phase_total_time)
 
-    labels.append("_run_test")
-    times.append(overall_run_time.total_seconds())
-    for label, job_time in timing_data["_app"]:
-        labels.append(f"_run_test.{label}")
-        times.append(job_time.total_seconds())
+    for label, job_time in reversed(timing_data["_app"]):
+        labels.insert(0, f"├runem.{label}")
+        times.insert(0, job_time.total_seconds())
+    labels.insert(0, "runem")
+    times.insert(0, overall_run_time.total_seconds())
     if termplotlib:
         fig = termplotlib.figure()
         fig.barh(times, labels, force_ascii=False)
