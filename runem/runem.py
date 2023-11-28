@@ -1009,8 +1009,8 @@ def _main(  # noqa: C901 # pylint: disable=too-many-branches,too-many-statements
             continue
         print(
             (
-                f"Running '{phase}' with {num_concurrent_procs} concurrent "
-                f"processes across {len(jobs)} jobs"
+                f"Running '{phase}' with {num_concurrent_procs} workers "
+                f"processesing {len(jobs)} jobs"
             )
         )
         with multiprocessing.Pool(processes=num_concurrent_procs) as pool:
