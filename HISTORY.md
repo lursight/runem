@@ -4,6 +4,19 @@ Changelog
 
 (unreleased)
 ------------
+- Merge branch 'feat/time_saved' [Frank Harrison]
+- Docs: fixes the ambiguos language on the number of jobs/core being
+  used. [Frank Harrison]
+- Feat(time-saved): shows the time saved vs linear runs on DONE. [Frank
+  Harrison]
+- Chore(progressive-terminal): unifies two subprocess.run calls by
+  allowing the env to be None. [Frank Harrison]
+- Docs: adds --tags and --phases to the docs. [Frank Harrison]
+
+
+0.0.4 (2023-11-27)
+------------------
+- Release: version 0.0.4 🚀 [Frank Harrison]
 - Chore(typing): moves py.typed into package src dir. [Frank Harrison]
 
 
