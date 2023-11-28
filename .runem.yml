@@ -8,14 +8,11 @@
           tag: py
           regex: ".*\\.py$"
       - filter:
-          tag: app
-          regex: "app/.*\\.(js|ts|jsx|tsx)$"
-      - filter:
-          tag: data
-          regex: "app/.*\\.(js|ts|jsx|tsx)$"
-      - filter:
           tag: json
           regex: ".*\\.(json)$"
+      - filter:
+          tag: spell
+          regex: ".*\\.(py|yml|json)$"
     options:
       - option:
           default: true
@@ -281,3 +278,16 @@
       phase: anal
       tags:
       - json
+- job:
+    addr:
+      file: scripts/test-hooks/yarn.py
+      function: _job_spellcheck
+    ctx:
+      cwd: .
+      params:
+        limitFilesToGroup: true
+    label: spell check
+    when:
+      phase: anal
+      tags:
+      - spell

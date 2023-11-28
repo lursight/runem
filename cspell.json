@@ -1,0 +1,40 @@
+// cSpell Settings
+{
+    // Version of the setting file.  Always 0.2
+    "version": "0.2",
+    // language - current active spelling language
+    "language": "en-gb",
+    "ignorePaths": [
+        "**/.pyenv/**",
+        "./build",
+        "*.egg-info/"
+    ],
+    // words - list of words to be always considered correct
+    "words": [
+        "autouse",  // pytest fixture switch
+        "DEADCODE",  // I am haxor
+        "docformatter",  // python module
+        "doublethefish",
+        "elsewise",
+        "funcs",  // convenience for functions
+        "getfixturevalue",  // pytest
+        "isort",  // python module
+        "lursight", // creator
+        "MDGM",
+        "mypy",  // python module
+        "pylint",  // python module
+        "runem"  // this product
+    ],
+    // flagWords - list of words to be always considered incorrect
+    // This is useful for offensive words and common spelling errors.
+    // For example "hte" should be "the"
+    "flagWords": [
+        "cunt",
+        "hte",
+        "fuck",
+        "NO COMMIT",
+        "NOCOMMIT",
+        "NOCMMT",
+        "NOCOMMT"
+    ]
+}

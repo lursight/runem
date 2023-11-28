@@ -1,0 +1,21 @@
+{
+  "scripts": {
+    "spellCheck": "yarn run spellCheckFiles 'lursight/**/*.py' 'tests/**/*.py' '.runem.yml'",
+    "spellCheckFiles": "yarn run cspell  --no-progress --config ./cspell.json",
+    "prepare": "husky install ./scripts/git-hooks/husky/"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^17.4.4",
+    "@commitlint/config-conventional": "^17.4.4",
+    "cspell": "^6.4.2",
+    "husky": "^8.0.3"
+  },
+  "name": "runem",
+  "description": "run 'em as fast as you can",
+  "main": "na",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:lursight/runem.git"
+  },
+  "author": "Frank Harrison <frank@lursight.com>"
+}
