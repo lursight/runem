@@ -142,9 +142,9 @@ jobs:
 phases:
   --phases PHASES [PHASES ...]
                         Run only the phases passed in, and can be used to change the phase order. Phases are run in the order given. Defaults to
-                        '{'anal', 'edit', 'pre-run'}'.
+                        '{'analysis', 'edit', 'pre-run'}'.
   --not-phases PHASES_EXCLUDED [PHASES_EXCLUDED ...]
-                        List of phases to NOT run. This option does not change the phase run order. Options are '['anal', 'edit', 'pre-run']'.
+                        List of phases to NOT run. This option does not change the phase run order. Options are '['analysis', 'edit', 'pre-run']'.
 
 tags:
   --tags TAGS [TAGS ...]

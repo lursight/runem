@@ -2,20 +2,17 @@
     phases:
       - pre-run
       - edit
-      - anal
+      - analysis
     files:
       - filter:
           tag: py
           regex: ".*\\.py$"
       - filter:
-          tag: app
-          regex: "app/.*\\.(js|ts|jsx|tsx)$"
-      - filter:
-          tag: data
-          regex: "app/.*\\.(js|ts|jsx|tsx)$"
-      - filter:
           tag: json
           regex: ".*\\.(json)$"
+      - filter:
+          tag: spell
+          regex: ".*\\.(py|yml|json)$"
     options:
       - option:
           default: true
@@ -115,7 +112,7 @@
         limitFilesToGroup: true
     label: pylint py
     when:
-      phase: anal
+      phase: analysis
       tags:
         - py
         - lint
@@ -129,7 +126,7 @@
         limitFilesToGroup: true
     label: flake8 py
     when:
-      phase: anal
+      phase: analysis
       tags:
         - py
         - lint
@@ -143,7 +140,7 @@
         limitFilesToGroup: true
     label: mypy py
     when:
-      phase: anal
+      phase: analysis
       tags:
         - py
         - type
@@ -170,7 +167,7 @@
         limitFilesToGroup: true
     label: eslint app
     when:
-      phase: anal
+      phase: analysis
       tags:
         - app
         - lint
@@ -184,7 +181,7 @@
         limitFilesToGroup: true
     label: cspell app
     when:
-      phase: anal
+      phase: analysis
       tags:
         - app
 - job:
@@ -197,7 +194,7 @@
         limitFilesToGroup: true
     label: typescript app
     when:
-      phase: anal
+      phase: analysis
       tags:
         - app
         - type
@@ -211,7 +208,7 @@
         limitFilesToGroup: true
     label: jest app
     when:
-      phase: anal
+      phase: analysis
       tags:
         - app
 - job:
@@ -224,7 +221,7 @@
         limitFilesToGroup: true
     label: eslint fb_funcs
     when:
-      phase: anal
+      phase: analysis
       tags:
         - data
         - lint
@@ -251,7 +248,7 @@
         limitFilesToGroup: true
     label: typescript fb_funcs
     when:
-      phase: anal
+      phase: analysis
       tags:
         - data
         - type
@@ -265,7 +262,7 @@
         limitFilesToGroup: true
     label: jest fb_funcs
     when:
-      phase: anal
+      phase: analysis
       tags:
         - data
 - job:
@@ -278,6 +275,19 @@
         limitFilesToGroup: true
     label: json validate
     when:
-      phase: anal
+      phase: analysis
       tags:
       - json
+- job:
+    addr:
+      file: scripts/test-hooks/yarn.py
+      function: _job_spellcheck
+    ctx:
+      cwd: .
+      params:
+        limitFilesToGroup: true
+    label: spell check
+    when:
+      phase: analysis
+      tags:
+      - spell
