@@ -26,8 +26,8 @@ def run_command(  # noqa: C901 # pylint: disable=too-many-branches
     """Runs the given command, returning stdout or throwing on any error."""
     cmd_string: str = " ".join(cmd)
     if verbose:
-        print("lursight: test: " + "=" * TERMINAL_WIDTH)
-        print(f"lursight: test: {label}")
+        print("runem: test: " + "=" * TERMINAL_WIDTH)
+        print(f"runem: test: {label}")
         print(f"{cmd_string}")
         if valid_exit_ids is not None:
             valid_exit_strs = ",".join([str(exit_code) for exit_code in valid_exit_ids])
@@ -69,7 +69,7 @@ def run_command(  # noqa: C901 # pylint: disable=too-many-branches
         run_env_param = run_env
 
     if verbose:
-        print("lursight: test: " + "=" * TERMINAL_WIDTH)
+        print("runem: test: " + "=" * TERMINAL_WIDTH)
 
     process: subprocess.CompletedProcess
     try:
@@ -99,7 +99,7 @@ def run_command(  # noqa: C901 # pylint: disable=too-many-branches
             )
             env_overrides_as_string = f"\n\t{env_overrides_as_string} {cmd_string}"
         error_string = (
-            f"lursight: test: FATAL: command failed: {label}"
+            f"runem: test: FATAL: command failed: {label}"
             f"\n\t{env_overrides_as_string} {cmd_string}"
             f"\nERROR"
             f"\n\t{str(stdout)}"

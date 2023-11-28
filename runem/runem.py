@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Runs Lursight's lang tests, hopefully as fast as possible.
+"""`runem`, runs Lursight's dev-ops tools, hopefully as fast as possible.
 
 We don't yet:
 - account for load
