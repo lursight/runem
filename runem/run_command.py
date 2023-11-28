@@ -97,10 +97,10 @@ def run_command(  # noqa: C901 # pylint: disable=too-many-branches
             env_overrides_as_string = " ".join(
                 [f"{key}='{value}'" for key, value in env_overrides.items()]
             )
-            env_overrides_as_string = f"\n\t{env_overrides_as_string} {cmd_string}"
+            env_overrides_as_string = f"{env_overrides_as_string} "
         error_string = (
             f"runem: test: FATAL: command failed: {label}"
-            f"\n\t{env_overrides_as_string} {cmd_string}"
+            f"\n\t{env_overrides_as_string}{cmd_string}"
             f"\nERROR"
             f"\n\t{str(stdout)}"
             f"\nERROR END"
