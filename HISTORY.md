@@ -4,6 +4,17 @@ Changelog
 
 (unreleased)
 ------------
+- Merge branch 'chore/typos' [Frank Harrison]
+- Chore(typos): fixes a typos when warning about 0-jobs. [Frank
+  Harrison]
+- Chore(typos): stops the cmd_string printing twice. [Frank Harrison]
+
+  on error with ENVs the command string was printed twice
+
+
+0.0.6 (2023-11-28)
+------------------
+- Release: version 0.0.6 🚀 [Frank Harrison]
 - Merge branch 'chore/branding' [Frank Harrison]
 - Chore(logs): reduces the log out put for jobs that aren't being run.
   [Frank Harrison]
