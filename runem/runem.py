@@ -790,15 +790,16 @@ def filter_jobs(
             filtered_jobs=filtered_jobs,
             verbose=verbose,
         )
-        if len(filtered_jobs[phase]) > 0:
-            print(
-                (
-                    f"will run {len(filtered_jobs[phase])} jobs "
-                    f"for phase '{phase}' with tags '{tags_to_run}'"
-                )
-            )
-        else:
+        if len(filtered_jobs[phase]) == 0:
             print(f"No jobs for phase '{phase}' tags '{tags_to_run}'")
+            continue
+
+        print(
+            (
+                f"will run {len(filtered_jobs[phase])} jobs "
+                f"for phase '{phase}' with tags '{tags_to_run}'"
+            )
+        )
         print(f"\t{[job['label'] for job in filtered_jobs[phase]]}")
 
     return filtered_jobs
