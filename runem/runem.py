@@ -594,10 +594,12 @@ def _run_job(
     file_lists: FilePathListLookup,
     options: Options,
 ) -> typing.Tuple[str, timedelta]:
+    label = job_config["label"]
+    if args.verbose:
+        print(f"START: {label}")
     root_path: pathlib.Path = cfg_filepath.parent
     function: typing.Callable
     job_tags: JobTags = set(job_config["when"]["tags"])
-    label = job_config["label"]
     os.chdir(root_path)
     function = get_test_function(job_config, cfg_filepath)
 
@@ -631,7 +633,8 @@ def _run_job(
         )
     end = timer()
     time_taken: timedelta = timedelta(seconds=end - start)
-    print(f"{label}: {time_taken}")
+    if args.verbose:
+        print(f"DONE: {label}: {time_taken}")
     return (label, time_taken)
 
 
