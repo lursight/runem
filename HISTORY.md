@@ -4,6 +4,25 @@ Changelog
 
 (unreleased)
 ------------
+- Merge branch 'chore/add_spell_check' [Frank Harrison]
+- Chore(spell-check): disallows adolescent word. [Frank Harrison]
+- Chore(spell-check): adds spell-check job for runem. [Frank Harrison]
+- Merge branch 'chore/minor_improvement_of_log_output_and_report' [Frank
+  Harrison]
+- Chore(report): puts the runem times first in the report and indents.
+  [Frank Harrison]
+
+  ... also replaces 'run_test' with 'runem'
+- Chore(logs): reduce log verbosity in non-verbose mode. [Frank
+  Harrison]
+
+  ... but make it MORE useful in verbose mode.
+- Chore(logs): further reduce spurious output. [Frank Harrison]
+
+
+0.0.7 (2023-11-28)
+------------------
+- Release: version 0.0.7 🚀 [Frank Harrison]
 - Merge branch 'chore/typos' [Frank Harrison]
 - Chore(typos): fixes a typos when warning about 0-jobs. [Frank
   Harrison]
