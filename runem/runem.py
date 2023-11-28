@@ -910,10 +910,11 @@ def _plot_times(
     overall_run_time: timedelta,
     phase_run_oder: OrderedPhases,
     timing_data: TimingDataPhase,
-):
+) -> timedelta:
     """Prints a report to terminal on how well we performed."""
     labels: typing.List[str] = []
     times: typing.List[float] = []
+    job_time_sum: timedelta = timedelta()  # init to 0
     for phase in phase_run_oder:
         # print(f"Phase '{phase}' jobs took:")
         phase_total_time: float = 0.0
@@ -923,6 +924,7 @@ def _plot_times(
                 continue
             labels.append(f"│├{phase}.{label}")
             times.append(job_time.total_seconds())
+            job_time_sum += job_time
             phase_total_time += job_time.total_seconds()
         labels.insert(phase_start_idx, f"├{phase} (total)")
         times.insert(phase_start_idx, phase_total_time)
@@ -939,6 +941,9 @@ def _plot_times(
     else:
         for label, time in zip(labels, times):
             print(f"{label}: {time}s")
+
+    time_saved: timedelta = job_time_sum - overall_run_time
+    return time_saved
 
 
 def _main(  # noqa: C901 # pylint: disable=too-many-branches,too-many-statements
@@ -1004,8 +1009,8 @@ def _main(  # noqa: C901 # pylint: disable=too-many-branches,too-many-statements
             continue
         print(
             (
-                f"Running '{phase}' with {num_concurrent_procs} concurrent "
-                f"processes across {len(jobs)} jobs"
+                f"Running '{phase}' with {num_concurrent_procs} workers "
+                f"processesing {len(jobs)} jobs"
             )
         )
         with multiprocessing.Pool(processes=num_concurrent_procs) as pool:
@@ -1034,12 +1039,17 @@ def timed_main(argv: typing.List[str]) -> None:
     phase_run_oder, job_times = _main(argv)
     end = timer()
     time_taken: timedelta = timedelta(seconds=end - start)
-    _plot_times(
+    time_saved: timedelta = _plot_times(
         overall_run_time=time_taken,
         phase_run_oder=phase_run_oder,
         timing_data=job_times,
     )
-    print(f"DONE: ran in: {time_taken.total_seconds()}s")
+    print(
+        (
+            f"DONE: runem took: {time_taken.total_seconds()}s, "
+            f"saving you {time_saved.total_seconds()}s"
+        )
+    )
 
 
 if __name__ == "__main__":
