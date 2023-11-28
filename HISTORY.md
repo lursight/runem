@@ -4,6 +4,16 @@ Changelog
 
 (unreleased)
 ------------
+- Merge branch 'chore/branding' [Frank Harrison]
+- Chore(logs): reduces the log out put for jobs that aren't being run.
+  [Frank Harrison]
+- Docs: updates the TODOs. [Frank Harrison]
+- Docs: change references to lursight to runem. [Frank Harrison]
+
+
+0.0.5 (2023-11-28)
+------------------
+- Release: version 0.0.5 🚀 [Frank Harrison]
 - Merge branch 'feat/time_saved' [Frank Harrison]
 - Docs: fixes the ambiguos language on the number of jobs/core being
   used. [Frank Harrison]
