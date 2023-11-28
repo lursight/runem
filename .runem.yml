@@ -2,7 +2,7 @@
     phases:
       - pre-run
       - edit
-      - anal
+      - analysis
     files:
       - filter:
           tag: py
@@ -112,7 +112,7 @@
         limitFilesToGroup: true
     label: pylint py
     when:
-      phase: anal
+      phase: analysis
       tags:
         - py
         - lint
@@ -126,7 +126,7 @@
         limitFilesToGroup: true
     label: flake8 py
     when:
-      phase: anal
+      phase: analysis
       tags:
         - py
         - lint
@@ -140,7 +140,7 @@
         limitFilesToGroup: true
     label: mypy py
     when:
-      phase: anal
+      phase: analysis
       tags:
         - py
         - type
@@ -167,7 +167,7 @@
         limitFilesToGroup: true
     label: eslint app
     when:
-      phase: anal
+      phase: analysis
       tags:
         - app
         - lint
@@ -181,7 +181,7 @@
         limitFilesToGroup: true
     label: cspell app
     when:
-      phase: anal
+      phase: analysis
       tags:
         - app
 - job:
@@ -194,7 +194,7 @@
         limitFilesToGroup: true
     label: typescript app
     when:
-      phase: anal
+      phase: analysis
       tags:
         - app
         - type
@@ -208,7 +208,7 @@
         limitFilesToGroup: true
     label: jest app
     when:
-      phase: anal
+      phase: analysis
       tags:
         - app
 - job:
@@ -221,7 +221,7 @@
         limitFilesToGroup: true
     label: eslint fb_funcs
     when:
-      phase: anal
+      phase: analysis
       tags:
         - data
         - lint
@@ -248,7 +248,7 @@
         limitFilesToGroup: true
     label: typescript fb_funcs
     when:
-      phase: anal
+      phase: analysis
       tags:
         - data
         - type
@@ -262,7 +262,7 @@
         limitFilesToGroup: true
     label: jest fb_funcs
     when:
-      phase: anal
+      phase: analysis
       tags:
         - data
 - job:
@@ -275,7 +275,7 @@
         limitFilesToGroup: true
     label: json validate
     when:
-      phase: anal
+      phase: analysis
       tags:
       - json
 - job:
@@ -288,6 +288,6 @@
         limitFilesToGroup: true
     label: spell check
     when:
-      phase: anal
+      phase: analysis
       tags:
       - spell
