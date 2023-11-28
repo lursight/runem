@@ -7,6 +7,17 @@ We don't yet:
 - do any git-related stuff, like:
   - compare head to merge-target branch
   - check for changed files
+- support non-git repos
+- not stream stdout to terminal
+- have inter-job dependencies as that requires a smarter scheduler, we use woraround
+  this with phases, for now
+
+We do:
+- use git ls-files
+- run as many jobs as possible
+- hope that resources are enough i.e. we DO NOT measure resource use, yet.
+- time tests and tell you what used the most time, and how much time run-tests saved
+  you
 """
 import argparse
 import importlib
