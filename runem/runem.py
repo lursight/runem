@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Runs Lursight's lang tests, hopefully as fast as possible.
+"""`runem`, runs Lursight's dev-ops tools, hopefully as fast as possible.
 
 We don't yet:
 - account for load
@@ -7,6 +7,17 @@ We don't yet:
 - do any git-related stuff, like:
   - compare head to merge-target branch
   - check for changed files
+- support non-git repos
+- not stream stdout to terminal
+- have inter-job dependencies as that requires a smarter scheduler, we use woraround
+  this with phases, for now
+
+We do:
+- use git ls-files
+- run as many jobs as possible
+- hope that resources are enough i.e. we DO NOT measure resource use, yet.
+- time tests and tell you what used the most time, and how much time run-tests saved
+  you
 """
 import argparse
 import importlib
@@ -779,12 +790,15 @@ def filter_jobs(
             filtered_jobs=filtered_jobs,
             verbose=verbose,
         )
-        print(
-            (
-                f"will run {len(filtered_jobs[phase])} jobs "
-                f"for phase '{phase}' with tags '{tags_to_run}'"
+        if len(filtered_jobs[phase]) > 0:
+            print(
+                (
+                    f"will run {len(filtered_jobs[phase])} jobs "
+                    f"for phase '{phase}' with tags '{tags_to_run}'"
+                )
             )
-        )
+        else:
+            print(f"No Job for phase '{phase}' tags '{tags_to_run}'")
         print(f"\t{[job['label'] for job in filtered_jobs[phase]]}")
 
     return filtered_jobs
@@ -994,19 +1008,23 @@ def _main(  # noqa: C901 # pylint: disable=too-many-branches,too-many-statements
     start = timer()
 
     for phase in config_metadata.phases:
+        jobs = filtered_jobs_by_phase[phase]
+        if not jobs:
+            # As previously reported, no jobs for this phase
+            continue
+
         if phase not in phases_to_run:
             if args.verbose:
                 print(f"Skipping Phase {phase}")
             continue
+
         if args.verbose:
             print(f"Running Phase {phase}")
-        jobs = filtered_jobs_by_phase[phase]
-        num_concurrent_procs = (
+
+        num_concurrent_procs: int = (
             args.procs if args.procs != -1 else multiprocessing.cpu_count()
         )
-        if not jobs:
-            print(f"WARNING: No jobs for phase '{phase}', nothing to run.")
-            continue
+        num_concurrent_procs = min(num_concurrent_procs, len(jobs))
         print(
             (
                 f"Running '{phase}' with {num_concurrent_procs} workers "

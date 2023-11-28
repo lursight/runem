@@ -257,7 +257,7 @@ def _install_python_requirements(
     requirements_files = list(requirements_path.glob("requirements*.txt"))
     if not requirements_files:
         raise RuntimeError(
-            f"lursight: requirements files not found at {str(requirements_path.absolute())}"
+            f"runem: requirements files not found at {str(requirements_path.absolute())}"
         )
     cmd = [
         "python3",
