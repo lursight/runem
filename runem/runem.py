@@ -798,7 +798,7 @@ def filter_jobs(
                 )
             )
         else:
-            print(f"No Job for phase '{phase}' tags '{tags_to_run}'")
+            print(f"No jobs for phase '{phase}' tags '{tags_to_run}'")
         print(f"\t{[job['label'] for job in filtered_jobs[phase]]}")
 
     return filtered_jobs
