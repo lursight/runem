@@ -16,8 +16,8 @@ def get_stdout(process: subprocess.CompletedProcess, prefix: str) -> str:
 
 
 def run_command(  # noqa: C901 # pylint: disable=too-many-branches
+    cmd: typing.List[str],  # 'cmd' is the only thing that can't be optionally kwargs
     label: str,
-    cmd: typing.List[str],
     verbose: bool,
     env_overrides: typing.Optional[dict] = None,
     ignore_fails: bool = False,
