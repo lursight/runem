@@ -645,7 +645,7 @@ def _run_job(
 
 
 def _get_test_function(
-    cfg_filepath: typing.Optional[pathlib.Path],
+    cfg_filepath: pathlib.Path,
     module_name: str,
     module_file_path: pathlib.Path,
     function_to_load: str,
@@ -665,7 +665,16 @@ def _get_test_function(
     if not module_spec.loader:
         raise FunctionNotFound("unable to load module")
     module_spec.loader.exec_module(module)
-    function: JobFunction = getattr(module, function_to_load)
+    try:
+        function: JobFunction = getattr(module, function_to_load)
+    except AttributeError as err:
+        raise FunctionNotFound(
+            (
+                f"ERROR! Check that function '{function_to_load}' "
+                f"exists in '{module_file_path}' as expected in "
+                f"your config at '{str(cfg_filepath)}"
+            )
+        ) from err
     return function
 
 
@@ -857,10 +866,17 @@ def _parse_job_config(
     Returns the tags generated
     """
     try:
+        job_names_used = job["label"] in in_out_job_names
+        if job_names_used:
+            print("ERROR: duplicate job label!")
+            print(f"\t'{job['label']}' is used twice or more in {str(cfg_filepath)}")
+            sys.exit(1)
+
         # try and load the function _before_ we schedule it's execution
         get_test_function(job, cfg_filepath)
         phase_id: PhaseName = job["when"]["phase"]
         in_out_jobs_by_phase[phase_id].append(job)
+
         in_out_job_names.add(job["label"])
         in_out_phases.add(job["when"]["phase"])
         for tag in job["when"]["tags"]:
