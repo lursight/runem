@@ -706,9 +706,19 @@ def get_test_function(job_config: JobConfig, cfg_filepath: pathlib.Path) -> JobF
     Also re-address the job-config.
     """
     function_to_load: str = job_config["addr"]["function"]
-    module_file_path: pathlib.Path = _find_job_module(
-        cfg_filepath, job_config["addr"]["file"]
-    )
+    try:
+        module_file_path: pathlib.Path = _find_job_module(
+            cfg_filepath, job_config["addr"]["file"]
+        )
+    except FunctionNotFound as err:
+        raise FunctionNotFound(
+            (
+                f"Whilst loading job '{job_config['label']}' runem failed to find "
+                f"job.addr.file '{job_config['addr']['file']}' looking for "
+                f"job.addr.function '{function_to_load}'"
+            )
+        ) from err
+
     module_name = module_file_path.stem.replace(" ", "_").replace("-", "_")
 
     try:
