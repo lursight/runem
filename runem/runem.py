@@ -721,24 +721,9 @@ def get_test_function(job_config: JobConfig, cfg_filepath: pathlib.Path) -> JobF
 
     module_name = module_file_path.stem.replace(" ", "_").replace("-", "_")
 
-    try:
-        function = _get_test_function(
-            cfg_filepath, module_name, module_file_path, function_to_load
-        )
-    except FunctionNotFound:
-        print(
-            (
-                f"WARNING: job: '{job_config['label']}': Failed to find "
-                f"function file {job_config['addr']['file']}"
-            )
-        )
-        # re-write the file entry in the job
-        job_config["addr"]["file"] = __file__
-        module_file_path = pathlib.Path(job_config["addr"]["file"])
-        # the follow may throw if the fun isn't in this file, as intended
-        function = _get_test_function(
-            cfg_filepath, module_name, module_file_path, function_to_load
-        )
+    function = _get_test_function(
+        cfg_filepath, module_name, module_file_path, function_to_load
+    )
 
     # re-write the job-config file-path for the module with the one that worked
     job_config["addr"]["file"] = str(module_file_path)
