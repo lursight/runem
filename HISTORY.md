@@ -4,6 +4,42 @@ Changelog
 
 (unreleased)
 ------------
+- Merge branch 'chore/format_yml' [Frank Harrison]
+- Chore(format-yml): reformats the .runem.yml file. [Frank Harrison]
+- Chore(format-yml): adds yml files to the prettier command. [Frank
+  Harrison]
+
+  This means that runems own runem config is reformatted
+- Merge branch 'feat/warn_on_bad_names' [Frank Harrison]
+- Feat(bad-label): errors on bad labels. [Frank Harrison]
+
+  .. not a massive improvment but really helps clarify what you SHOULD be looking at when things go wrong, which is nice
+- Feat(bad-func-ref-message): gives a better error message on bad
+  function references. [Frank Harrison]
+
+  Specifically when those functions cannot be found inside the file/module
+  that they're reference to by the .runem.yml
+- Merge branch 'chore/pretty_json' [Frank Harrison]
+- Chore(pretty-json): prettifies cspell.json. [Frank Harrison]
+- Chore(pretty-json): adds jobs to use prettifier via yarn. [Frank
+  Harrison]
+
+  ... currently this only targets json files
+- Merge branch 'chore/kwargs' [Frank Harrison]
+- Chore(kwargs): makes run_command 'cmd' the first thing as it cannot be
+  infered from the runem kwargs. [Frank Harrison]
+- Feat(kwargs): moves to using kwargs by preference when calling jobs.
+  [Frank Harrison]
+
+  ... jobs can then pass those kwargs down to the run_command
+- Chore(kwargs): deletes 0xDEADCODE. [Frank Harrison]
+
+  This deletes deadcode that was left over from the move out of the lursight codebase
+
+
+0.0.11 (2023-11-29)
+-------------------
+- Release: version 0.0.11 🚀 [Frank Harrison]
 - Merge branch 'fix/warning_when_no_files_for_job' [Frank Harrison]
 - Fix(warn-no-files): starts troubleshooting. [Frank Harrison]
 - Fix(warn-no-files): updates README after deleting defunct jobs. [Frank
