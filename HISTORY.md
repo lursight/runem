@@ -4,6 +4,20 @@ Changelog
 
 (unreleased)
 ------------
+- Merge branch 'fix/warning_when_no_files_for_job' [Frank Harrison]
+- Fix(warn-no-files): starts troubleshooting. [Frank Harrison]
+- Fix(warn-no-files): updates README after deleting defunct jobs. [Frank
+  Harrison]
+- Fix(warn-no-files): removes defunct job-specs. [Frank Harrison]
+- Fix(warn-no-files): ads more information when a job isn't run because
+  of files. [Frank Harrison]
+
+  TBH this shows a problem in the spec method
+
+
+0.0.10 (2023-11-29)
+-------------------
+- Release: version 0.0.10 🚀 [Frank Harrison]
 - Merge branch 'docs/update_readme' [Frank Harrison]
 - Docs: make readme more readable. [Frank Harrison]
 
