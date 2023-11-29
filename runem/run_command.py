@@ -22,13 +22,12 @@ def run_command(  # noqa: C901 # pylint: disable=too-many-branches
     env_overrides: typing.Optional[dict] = None,
     ignore_fails: bool = False,
     valid_exit_ids: typing.Optional[typing.Tuple[int, ...]] = None,
+    **kwargs: typing.Any,
 ) -> str:
     """Runs the given command, returning stdout or throwing on any error."""
     cmd_string: str = " ".join(cmd)
     if verbose:
-        print("runem: test: " + "=" * TERMINAL_WIDTH)
-        print(f"runem: test: {label}")
-        print(f"{cmd_string}")
+        print(f"runem: running: start: {label}: {cmd_string}")
         if valid_exit_ids is not None:
             valid_exit_strs = ",".join([str(exit_code) for exit_code in valid_exit_ids])
             print(f"allowed return ids are: {valid_exit_strs}")
@@ -67,9 +66,6 @@ def run_command(  # noqa: C901 # pylint: disable=too-many-branches
     run_env_param: typing.Optional[typing.Dict[str, str]] = None
     if run_env:
         run_env_param = run_env
-
-    if verbose:
-        print("runem: test: " + "=" * TERMINAL_WIDTH)
 
     process: subprocess.CompletedProcess
     try:
@@ -110,5 +106,5 @@ def run_command(  # noqa: C901 # pylint: disable=too-many-branches
     cmd_stdout: str = get_stdout(process, prefix=label)
     if verbose:
         print(cmd_stdout)
-
+        print(f"runem: running: done: {label}: {cmd_string}")
     return cmd_stdout

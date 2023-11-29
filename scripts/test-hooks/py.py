@@ -3,21 +3,17 @@ import shutil
 import typing
 
 from runem.run_command import run_command
-
-FilePathSerialise = str
-FilePathList = typing.List[FilePathSerialise]
-OptionName = str
-OptionValue = bool
-Options = typing.Dict[OptionName, OptionValue]
+from runem.runem import FilePathList, JobName, Options
 
 
 def _job_py_code_reformat(
-    options: Options,
-    python_files: FilePathList,
-    verbose: bool = False,
     **kwargs: typing.Any,
 ) -> None:
     """Runs python formatting code in serial order as one influences the other."""
+    label: JobName = kwargs["label"]
+    options: Options = kwargs["options"]
+    python_files: FilePathList = kwargs["file_list"]
+
     # put into 'check' mode if requested on the command line
     extra_args = []
     docformatter_extra_args = [
@@ -38,7 +34,8 @@ def _job_py_code_reformat(
             *extra_args,
             *python_files,
         ]
-        run_command("isort", cmd=isort_cmd, verbose=verbose)
+        kwargs["label"] = (f"{label} isort",)
+        run_command(cmd=isort_cmd, **kwargs)
 
     if "black" in options and options["black"]:
         black_cmd = [
@@ -48,7 +45,8 @@ def _job_py_code_reformat(
             *extra_args,
             *python_files,
         ]
-        run_command("black", cmd=black_cmd, verbose=verbose)
+        kwargs["label"] = (f"{label} black",)
+        run_command(cmd=black_cmd, **kwargs)
 
     if "docformatter" in options and options["docformatter"]:
         docformatter_cmd = [
@@ -70,22 +68,21 @@ def _job_py_code_reformat(
         if "check_only" in options and options["check_only"]:
             # in check it is ONLY ok if no work/change was required
             allowed_exits = (0,)
+        kwargs["label"] = (f"{label} docformatter",)
         run_command(
-            "docformatter",
             cmd=docformatter_cmd,
-            verbose=verbose,
             ignore_fails=False,
             valid_exit_ids=allowed_exits,
+            **kwargs,
         )
 
 
 def _job_py_pylint(
-    options: Options,
-    python_files: FilePathList,
-    root_path: pathlib.Path,
-    verbose: bool = False,
     **kwargs: typing.Any,
 ) -> None:
+    python_files: FilePathList = kwargs["file_list"]
+    root_path: pathlib.Path = kwargs["root_path"]
+
     pylint_cfg = root_path / ".pylint.rc"
     if not pylint_cfg.exists():
         raise RuntimeError(f"PYLINT Config not found at '{pylint_cfg}'")
@@ -99,16 +96,14 @@ def _job_py_pylint(
         f"--rcfile={pylint_cfg}",
         *python_files,
     ]
-    run_command("pylint", cmd=pylint_cmd, verbose=verbose)
+    run_command(cmd=pylint_cmd, **kwargs)
 
 
 def _job_py_flake8(
-    options: Options,
-    python_files: FilePathList,
-    root_path: pathlib.Path,
-    verbose: bool = False,
     **kwargs: typing.Any,
 ) -> None:
+    python_files: FilePathList = kwargs["file_list"]
+    root_path: pathlib.Path = kwargs["root_path"]
     flake8_rc = root_path / ".flake8"
     if not flake8_rc.exists():
         raise RuntimeError(f"flake8 config not found at '{flake8_rc}'")
@@ -119,27 +114,25 @@ def _job_py_flake8(
         "flake8",
         *python_files,
     ]
-    run_command("flake8", cmd=flake8_cmd, verbose=verbose)
+    run_command(cmd=flake8_cmd, **kwargs)
 
 
 def _job_py_mypy(
-    options: Options,
-    python_files: FilePathList,
-    verbose: bool = False,
     **kwargs: typing.Any,
 ) -> None:
+    python_files: FilePathList = kwargs["file_list"]
     mypy_cmd = ["python3", "-m", "mypy", *python_files]
-    run_command("mypy", cmd=mypy_cmd, verbose=verbose)
+    run_command(cmd=mypy_cmd, **kwargs)
 
 
 def _job_py_pytest(
-    options: Options,
-    python_files: FilePathList,
-    procs: int,
-    root_path: pathlib.Path,
-    verbose: bool = False,
     **kwargs: typing.Any,
 ) -> None:
+    label: JobName = kwargs["label"]
+    options: Options = kwargs["options"]
+    procs: int = kwargs["procs"]
+    root_path: pathlib.Path = kwargs["root_path"]
+
     # TODO: use pytest.ini config pytest
     # pytest_cfg = root_path / ".pytest.ini"
     # assert pytest_cfg.exists()
@@ -187,12 +180,11 @@ def _job_py_pytest(
     if "generate call graphs" in options and options["generate call graphs"]:
         env_overrides = {**env_overrides, "LANG_CALLGRAPHS": "True"}
 
+    kwargs["label"] = (f"{label} pytest",)
     run_command(
-        "pytest",
         cmd=cmd_pytest,
-        verbose=verbose,
         env_overrides=env_overrides,
-        ignore_fails=False,
+        **kwargs,
     )
 
     if "coverage" in options and options["coverage"]:
@@ -211,7 +203,8 @@ def _job_py_pytest(
             str(coverage_output_dir / "cobertura.xml"),
             f"--rcfile={str(coverage_cfg)}",
         ]
-        run_command("cobertura coverage", gen_cobertura_coverage_report_cmd, verbose)
+        kwargs["label"] = (f"{label} coverage icobertura",)
+        run_command(cmd=gen_cobertura_coverage_report_cmd, **kwargs)
 
         # then a html report
         gen_html_coverage_report_cmd = [
@@ -221,7 +214,8 @@ def _job_py_pytest(
             "html",
             f"--rcfile={str(coverage_cfg)}",
         ]
-        run_command("cli coverage", gen_html_coverage_report_cmd, verbose)
+        kwargs["label"] = (f"{label} coverage html",)
+        run_command(cmd=gen_html_coverage_report_cmd, **kwargs)
 
         # then a standard command-line report that causes the tests to fail.
         gen_cli_coverage_report_cmd = [
@@ -232,7 +226,8 @@ def _job_py_pytest(
             "--fail-under=100",
             f"--rcfile={str(coverage_cfg)}",
         ]
-        run_command("cli coverage", gen_cli_coverage_report_cmd, verbose)
+        kwargs["label"] = (f"{label} coverage cli",)
+        run_command(cmd=gen_cli_coverage_report_cmd, **kwargs)
         assert coverage_output_dir.exists(), coverage_output_dir
         assert (coverage_output_dir / "index.html").exists(), (
             coverage_output_dir / "index.html"
@@ -244,12 +239,10 @@ def _job_py_pytest(
 
 
 def _install_python_requirements(
-    options: Options,
-    python_files: FilePathList,
-    root_path: pathlib.Path,
-    verbose: bool = False,
     **kwargs: typing.Any,
 ) -> None:
+    options: Options = kwargs["options"]
+    root_path: pathlib.Path = kwargs["root_path"]
     if not ("install deps" in options and options["install deps"]):
         # not enabled
         return
@@ -268,4 +261,4 @@ def _install_python_requirements(
     ]
     for req_file in requirements_files:
         cmd.extend(["--requirement", str(req_file)])
-    run_command("requirements install", cmd=cmd, verbose=verbose)
+    run_command(cmd=cmd, **kwargs)
