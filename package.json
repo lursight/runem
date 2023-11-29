@@ -5,7 +5,7 @@
     "prepare": "husky install ./scripts/git-hooks/husky/",
     "pretty": "yarn run prettyNoWrite --write --log-level error",
     "prettyCheck": "yarn run prettyNoWrite --check",
-    "prettyNoWrite": "prettier '*.json'"
+    "prettyNoWrite": "prettier '*.json' '*.yml'"
   },
   "devDependencies": {
     "@commitlint/cli": "^17.4.4",
