@@ -630,11 +630,12 @@ def _run_job(
         function(args, options, file_list)
     else:
         function(
-            options,  # type: ignore
-            file_list,  # type: ignore
+            options=options,  # type: ignore
+            file_list=file_list,  # type: ignore
             procs=args.procs,
             root_path=root_path,
             verbose=args.verbose,
+            **job_config,
         )
     end = timer()
     time_taken: timedelta = timedelta(seconds=end - start)

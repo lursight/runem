@@ -5,10 +5,7 @@ from runem.runem import Options
 
 
 def _job_spellcheck(
-    options: Options,
-    es_files: typing.List[str],
-    verbose: bool = False,
     **kwargs: typing.Any,
 ) -> None:
     es_spellcheck = ["yarn", "run", "spellCheck"]
-    run_command("spellcheck", es_spellcheck, verbose)
+    run_command(cmd=es_spellcheck, **kwargs)
