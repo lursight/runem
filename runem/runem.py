@@ -804,6 +804,10 @@ def filter_jobs(
     verbose: bool,
 ) -> PhaseGroupedJobs:
     """Filters the jobs to match requested tags."""
+    print(f"filtering for tags {tags_to_run}", end="")
+    if tags_to_avoid:
+        print("excluding jobs with tags {tags_to_avoid}", end="")
+    print()
     filtered_jobs: PhaseGroupedJobs = defaultdict(list)
     for phase in config_metadata.phases:
         if phase not in phases_to_run:
@@ -825,7 +829,7 @@ def filter_jobs(
         print(
             (
                 f"will run {len(filtered_jobs[phase])} jobs "
-                f"for phase '{phase}' with tags '{tags_to_run}'"
+                f"for phase '{phase}'"
             )
         )
         print(f"\t{[job['label'] for job in filtered_jobs[phase]]}")
