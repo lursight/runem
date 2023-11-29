@@ -89,6 +89,7 @@
       phase: edit
       tags:
         - py
+        - format
 - job:
     addr:
       file: scripts/test-hooks/py.py
@@ -170,3 +171,17 @@
       phase: analysis
       tags:
       - spell
+- job:
+    addr:
+      file: scripts/test-hooks/yarn.py
+      function: _job_prettier
+    ctx:
+      cwd: .
+      params:
+        limitFilesToGroup: true
+    label: prettier
+    when:
+      phase: analysis
+      tags:
+      - json
+      - format

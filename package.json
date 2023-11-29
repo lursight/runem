@@ -2,13 +2,17 @@
   "scripts": {
     "spellCheck": "yarn run spellCheckFiles 'lursight/**/*.py' 'tests/**/*.py' '.runem.yml'",
     "spellCheckFiles": "yarn run cspell  --no-progress --config ./cspell.json",
-    "prepare": "husky install ./scripts/git-hooks/husky/"
+    "prepare": "husky install ./scripts/git-hooks/husky/",
+    "pretty": "yarn run prettyNoWrite --write --log-level error",
+    "prettyCheck": "yarn run prettyNoWrite --check",
+    "prettyNoWrite": "prettier '*.json'"
   },
   "devDependencies": {
     "@commitlint/cli": "^17.4.4",
     "@commitlint/config-conventional": "^17.4.4",
     "cspell": "^6.4.2",
-    "husky": "^8.0.3"
+    "husky": "^8.0.3",
+    "prettier": "^3.1.0"
   },
   "name": "runem",
   "description": "run 'em as fast as you can",
