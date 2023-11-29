@@ -651,13 +651,22 @@ def _get_test_function(
     function_to_load: str,
 ) -> JobFunction:
     """Given a job-description dynamically loads the test-function so we can call it."""
+
+    # first locate the module relative to the config file
+    abs_module_file_path: pathlib.Path = (
+        cfg_filepath.parent / module_file_path
+    ).absolute()
+
     # load the function
     module_spec = importlib.util.spec_from_file_location(
-        function_to_load, module_file_path
+        function_to_load, abs_module_file_path
     )
     if not module_spec:
         raise FunctionNotFound(
-            f"unable to load '${function_to_load}' from '{module_file_path}"
+            (
+                f"unable to load '${function_to_load}' from '{str(module_file_path)} "
+                f"relative to '{str(cfg_filepath)}"
+            )
         )
 
     module = importlib.util.module_from_spec(module_spec)
@@ -671,7 +680,7 @@ def _get_test_function(
         raise FunctionNotFound(
             (
                 f"ERROR! Check that function '{function_to_load}' "
-                f"exists in '{module_file_path}' as expected in "
+                f"exists in '{str(module_file_path)}' as expected in "
                 f"your config at '{str(cfg_filepath)}"
             )
         ) from err
@@ -683,6 +692,7 @@ def _find_job_module(cfg_filepath: pathlib.Path, module_file_path: str) -> pathl
     module_path: pathlib.Path = pathlib.Path(module_file_path)
 
     module_path_cands = [
+        module_path,
         module_path.absolute(),
         (cfg_filepath.parent / module_file_path).absolute(),
     ]
@@ -697,7 +707,7 @@ def _find_job_module(cfg_filepath: pathlib.Path, module_file_path: str) -> pathl
             )
         )
     module_path = module_path.absolute()
-    return module_path.relative_to(pathlib.Path(".").absolute())
+    return module_path.relative_to(cfg_filepath.parent.absolute())
 
 
 def get_test_function(job_config: JobConfig, cfg_filepath: pathlib.Path) -> JobFunction:
@@ -719,26 +729,16 @@ def get_test_function(job_config: JobConfig, cfg_filepath: pathlib.Path) -> JobF
             )
         ) from err
 
+    anchored_file_path = cfg_filepath.parent / module_file_path
+    assert (
+        anchored_file_path.exists()
+    ), f"{module_file_path} not found at {anchored_file_path}!"
+
     module_name = module_file_path.stem.replace(" ", "_").replace("-", "_")
 
-    try:
-        function = _get_test_function(
-            cfg_filepath, module_name, module_file_path, function_to_load
-        )
-    except FunctionNotFound:
-        print(
-            (
-                f"WARNING: job: '{job_config['label']}': Failed to find "
-                f"function file {job_config['addr']['file']}"
-            )
-        )
-        # re-write the file entry in the job
-        job_config["addr"]["file"] = __file__
-        module_file_path = pathlib.Path(job_config["addr"]["file"])
-        # the follow may throw if the fun isn't in this file, as intended
-        function = _get_test_function(
-            cfg_filepath, module_name, module_file_path, function_to_load
-        )
+    function = _get_test_function(
+        cfg_filepath, module_name, module_file_path, function_to_load
+    )
 
     # re-write the job-config file-path for the module with the one that worked
     job_config["addr"]["file"] = str(module_file_path)
@@ -804,6 +804,10 @@ def filter_jobs(
     verbose: bool,
 ) -> PhaseGroupedJobs:
     """Filters the jobs to match requested tags."""
+    print(f"filtering for tags {tags_to_run}", end="")
+    if tags_to_avoid:
+        print("excluding jobs with tags {tags_to_avoid}", end="")
+    print()
     filtered_jobs: PhaseGroupedJobs = defaultdict(list)
     for phase in config_metadata.phases:
         if phase not in phases_to_run:
@@ -825,7 +829,7 @@ def filter_jobs(
         print(
             (
                 f"will run {len(filtered_jobs[phase])} jobs "
-                f"for phase '{phase}' with tags '{tags_to_run}'"
+                f"for phase '{phase}'"
             )
         )
         print(f"\t{[job['label'] for job in filtered_jobs[phase]]}")
@@ -1020,6 +1024,9 @@ def _main(  # noqa: C901 # pylint: disable=too-many-branches,too-many-statements
 
     if args.verbose:
         print(f"loaded config from {cfg_filepath}")
+
+    # first anchor the cwd to the config-file, so that git ls-files works
+    os.chdir(cfg_filepath.parent)
 
     file_lists: FilePathListLookup = _find_files(config_metadata)
     assert file_lists
