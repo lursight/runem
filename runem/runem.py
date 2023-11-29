@@ -866,10 +866,17 @@ def _parse_job_config(
     Returns the tags generated
     """
     try:
+        job_names_used = job["label"] in in_out_job_names
+        if job_names_used:
+            print("ERROR: duplicate job label!")
+            print(f"\t'{job['label']}' is used twice or more in {str(cfg_filepath)}")
+            sys.exit(1)
+
         # try and load the function _before_ we schedule it's execution
         get_test_function(job, cfg_filepath)
         phase_id: PhaseName = job["when"]["phase"]
         in_out_jobs_by_phase[phase_id].append(job)
+
         in_out_job_names.add(job["label"])
         in_out_phases.add(job["when"]["phase"])
         for tag in job["when"]["tags"]:
