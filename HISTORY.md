@@ -4,6 +4,13 @@ Changelog
 
 (unreleased)
 ------------
+- Merge branch 'docs/update_readme' [Frank Harrison]
+- Docs: make readme more readable. [Frank Harrison]
+
+
+0.0.9 (2023-11-29)
+------------------
+- Release: version 0.0.9 🚀 [Frank Harrison]
 - Merge branch 'fix/remove_lursight_env_refs' [Frank Harrison]
 - Fix(lursight-envs): removes lursight envs from runem. [Frank Harrison]
 
