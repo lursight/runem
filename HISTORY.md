@@ -4,6 +4,13 @@ Changelog
 
 (unreleased)
 ------------
+- Merge branch 'fix/remove_lursight_env_refs' [Frank Harrison]
+- Fix(lursight-envs): removes lursight envs from runem. [Frank Harrison]
+
+
+0.0.8 (2023-11-28)
+------------------
+- Release: version 0.0.8 🚀 [Frank Harrison]
 - Merge branch 'chore/add_spell_check' [Frank Harrison]
 - Chore(spell-check): disallows adolescent word. [Frank Harrison]
 - Chore(spell-check): adds spell-check job for runem. [Frank Harrison]
