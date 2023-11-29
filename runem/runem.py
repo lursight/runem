@@ -645,7 +645,7 @@ def _run_job(
 
 
 def _get_test_function(
-    cfg_filepath: typing.Optional[pathlib.Path],
+    cfg_filepath: pathlib.Path,
     module_name: str,
     module_file_path: pathlib.Path,
     function_to_load: str,
@@ -665,7 +665,16 @@ def _get_test_function(
     if not module_spec.loader:
         raise FunctionNotFound("unable to load module")
     module_spec.loader.exec_module(module)
-    function: JobFunction = getattr(module, function_to_load)
+    try:
+        function: JobFunction = getattr(module, function_to_load)
+    except AttributeError as err:
+        raise FunctionNotFound(
+            (
+                f"ERROR! Check that function '{function_to_load}' "
+                f"exists in '{module_file_path}' as expected in "
+                f"your config at '{str(cfg_filepath)}"
+            )
+        ) from err
     return function
 
 
