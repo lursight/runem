@@ -60,6 +60,8 @@ Jobs are tagged in the .runem.yml config file. Each unique tags is made availabl
 
 You can control which types of jobs to run via tags. Just tag the job in the config and then from the command-line you can add `--tags` or `--not-tags` to refine exactly which jobs will be run. 
 
+To debug why a job is not selected pass `--verbose`.
+
 For example, if you have a `python` tagged job or jobs, to run only run those jobs you would do the following:
 
 ```bash
@@ -136,8 +138,8 @@ usage: runem.py [-h] [--jobs JOBS [JOBS ...]] [--not-jobs JOBS_EXCLUDED [JOBS_EX
                 [--black] [--no-black] [--check-only] [--no-check-only] [--coverage] [--no-coverage] [--docformatter] [--no-docformatter]
                 [--generate-call-graphs] [--no-generate-call-graphs] [--install-deps] [--no-install-deps] [--isort] [--no-isort] [--profile]
                 [--no-profile] [--update-snapshots] [--no-update-snapshots] [--unit-test] [--no-unit-test] [--unit-test-firebase-data]
-                [--no-unit-test-firebase-data] [--unit-test-python] [--no-unit-test-python] [--call-graphs | --no-call-graphs] [--procs PROCS]
-                [--root ROOT_DIR] [--verbose | --no-verbose | -v]
+                [--no-unit-test-firebase-data] [--unit-test-python] [--no-unit-test-python] [--call-graphs | --no-call-graphs]
+                [--procs PROCS] [--root ROOT_DIR] [--verbose | --no-verbose | -v]
 
 Runs the Lursight Lang test-suite
 
@@ -151,27 +153,25 @@ options:
 
 jobs:
   --jobs JOBS [JOBS ...]
-                        List of job-names to run the given jobs. Other filters will modify this list. Defaults to '['cspell app', 'eslint app',
-                        'eslint fb_funcs', 'flake8 py', 'install python requirements', 'jest app', 'jest fb_funcs', 'json validate', 'mypy py',
-                        'pretty app', 'pretty fb_funcs', 'pylint py', 'reformat py', 'typescript app', 'typescript fb_funcs']'
+                        List of job-names to run the given jobs. Other filters will modify this list. Defaults to '['flake8 py', 'install
+                        python requirements', 'json validate', 'mypy py', 'pylint py', 'reformat py', 'spell check']'
   --not-jobs JOBS_EXCLUDED [JOBS_EXCLUDED ...]
-                        List of job-names to NOT run. Defaults to empty. Available options are: '['cspell app', 'eslint app', 'eslint fb_funcs',
-                        'flake8 py', 'install python requirements', 'jest app', 'jest fb_funcs', 'json validate', 'mypy py', 'pretty app',
-                        'pretty fb_funcs', 'pylint py', 'reformat py', 'typescript app', 'typescript fb_funcs']'
+                        List of job-names to NOT run. Defaults to empty. Available options are: '['flake8 py', 'install python requirements',
+                        'json validate', 'mypy py', 'pylint py', 'reformat py', 'spell check']'
 
 phases:
   --phases PHASES [PHASES ...]
-                        Run only the phases passed in, and can be used to change the phase order. Phases are run in the order given. Defaults to
-                        '{'analysis', 'edit', 'pre-run'}'.
+                        Run only the phases passed in, and can be used to change the phase order. Phases are run in the order given. Defaults
+                        to '{'edit', 'pre-run', 'analysis'}'.
   --not-phases PHASES_EXCLUDED [PHASES_EXCLUDED ...]
-                        List of phases to NOT run. This option does not change the phase run order. Options are '['analysis', 'edit', 'pre-run']'.
+                        List of phases to NOT run. This option does not change the phase run order. Options are '['analysis', 'edit', 'pre-
+                        run']'.
 
 tags:
   --tags TAGS [TAGS ...]
-                        Only jobs with the given tags. Defaults to '['app', 'data', 'json', 'lint', 'py', 'type']'.
+                        Only jobs with the given tags. Defaults to '['json', 'lint', 'py', 'spell', 'type']'.
   --not-tags TAGS_EXCLUDED [TAGS_EXCLUDED ...]
-                        Removes one or more tags from the list of job tags to be run. Options are '['app', 'data', 'json', 'lint', 'py',
-                        'type']'.
+                        Removes one or more tags from the list of job tags to be run. Options are '['json', 'lint', 'py', 'spell', 'type']'.
 
 job-param overrides:
   --black               allow/disallows py-black from running

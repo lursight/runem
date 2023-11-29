@@ -615,6 +615,7 @@ def _run_job(
 
     if not file_list:
         # no files to work on
+        print(f"WARNING: skipping job '{label}', no files for job")
         return (f"{label}: no files!", timedelta(0))
     if job_config["ctx"]["cwd"]:
         os.chdir(root_path / job_config["ctx"]["cwd"])
