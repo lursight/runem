@@ -1021,6 +1021,9 @@ def _main(  # noqa: C901 # pylint: disable=too-many-branches,too-many-statements
     if args.verbose:
         print(f"loaded config from {cfg_filepath}")
 
+    # first anchor the cwd to the config-file, so that git ls-files works
+    os.chdir(cfg_filepath.parent)
+
     file_lists: FilePathListLookup = _find_files(config_metadata)
     assert file_lists
     print(f"found {len(file_lists)} batches, ", end="")
