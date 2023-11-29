@@ -4,6 +4,26 @@ Changelog
 
 (unreleased)
 ------------
+- Merge branch 'fix/working_from_non-root_dirs' [Frank Harrison]
+- Chore(logs): reduces duplicate log out for tag-filters. [Frank
+  Harrison]
+- Fixup: fixes the labels used for some jobs after simplifying params.
+  [Frank Harrison]
+- Fix(git-ls-files): chdir to the cfg dir so git-ls-files picks up all
+  file. [Frank Harrison]
+
+  .... of course this assumes that the file is next to the .git directory
+- Fix(job.addr): anchors the function-module lookup to the cfg file.
+  [Frank Harrison]
+
+  This should now be much more consistent.
+- Fix(job.addr): removes deprecated code for hooks in main runem file.
+  [Frank Harrison]
+
+
+0.0.13 (2023-11-29)
+-------------------
+- Release: version 0.0.13 🚀 [Frank Harrison]
 - Merge branch 'feat/better_module_find_error_msg' [Frank Harrison]
 - Feat(better-module-msg): improves the information given when loading a
   job address. [Frank Harrison]
