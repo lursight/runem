@@ -34,7 +34,7 @@ def _job_py_code_reformat(
             *extra_args,
             *python_files,
         ]
-        kwargs["label"] = (f"{label} isort",)
+        kwargs["label"] = f"{label} isort"
         run_command(cmd=isort_cmd, **kwargs)
 
     if "black" in options and options["black"]:
@@ -45,7 +45,7 @@ def _job_py_code_reformat(
             *extra_args,
             *python_files,
         ]
-        kwargs["label"] = (f"{label} black",)
+        kwargs["label"] = f"{label} black"
         run_command(cmd=black_cmd, **kwargs)
 
     if "docformatter" in options and options["docformatter"]:
@@ -68,7 +68,7 @@ def _job_py_code_reformat(
         if "check_only" in options and options["check_only"]:
             # in check it is ONLY ok if no work/change was required
             allowed_exits = (0,)
-        kwargs["label"] = (f"{label} docformatter",)
+        kwargs["label"] = f"{label} docformatter"
         run_command(
             cmd=docformatter_cmd,
             ignore_fails=False,
@@ -180,7 +180,7 @@ def _job_py_pytest(
     if "generate call graphs" in options and options["generate call graphs"]:
         env_overrides = {**env_overrides, "LANG_CALLGRAPHS": "True"}
 
-    kwargs["label"] = (f"{label} pytest",)
+    kwargs["label"] = f"{label} pytest"
     run_command(
         cmd=cmd_pytest,
         env_overrides=env_overrides,
@@ -203,7 +203,7 @@ def _job_py_pytest(
             str(coverage_output_dir / "cobertura.xml"),
             f"--rcfile={str(coverage_cfg)}",
         ]
-        kwargs["label"] = (f"{label} coverage icobertura",)
+        kwargs["label"] = f"{label} coverage icobertura"
         run_command(cmd=gen_cobertura_coverage_report_cmd, **kwargs)
 
         # then a html report
@@ -214,7 +214,7 @@ def _job_py_pytest(
             "html",
             f"--rcfile={str(coverage_cfg)}",
         ]
-        kwargs["label"] = (f"{label} coverage html",)
+        kwargs["label"] = f"{label} coverage html"
         run_command(cmd=gen_html_coverage_report_cmd, **kwargs)
 
         # then a standard command-line report that causes the tests to fail.
@@ -226,7 +226,7 @@ def _job_py_pytest(
             "--fail-under=100",
             f"--rcfile={str(coverage_cfg)}",
         ]
-        kwargs["label"] = (f"{label} coverage cli",)
+        kwargs["label"] = f"{label} coverage cli"
         run_command(cmd=gen_cli_coverage_report_cmd, **kwargs)
         assert coverage_output_dir.exists(), coverage_output_dir
         assert (coverage_output_dir / "index.html").exists(), (
