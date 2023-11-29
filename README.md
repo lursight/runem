@@ -16,6 +16,7 @@ The name "runem" is derived from the fusion of "run" and "them," encapsulating t
     - [4.1. Tag filters](#41-tag-filters)
       - [4.1.1. Run jobs only with the 'lint' tag:](#411-run-jobs-only-with-the-lint-tag)
       - [4.1.2. If you want to lint all code _except_ nodejs code (and you have the apprpriate tags):](#412-if-you-want-to-lint-all-code-except-nodejs-code-and-you-have-the-apprpriate-tags)
+      - [4.1.3. Run fast checks on `pre-commit`](#413-run-fast-checks-on-pre-commit)
     - [4.2. phase filters](#42-phase-filters)
       - [4.2.1 Focus on a phase](#421-focus-on-a-phase)
       - [4.2.2 Exclude slow phases temporarily](#422-exclude-slow-phases-temporarily)
@@ -55,13 +56,19 @@ $ python -m runem [--tags tag1,tag2,tag3] [--not-tags tag1,tag2,tag3] \
 ```
 
 ### 4.1. Tag filters
-You can control which types of jobs to run via tag. Just tag the job in the config and then from the command-line you can add `--tags` or `--not-tags` to refine exactly which jobs will be run. 
+Jobs are tagged in the .runem.yml config file. Each unique tags is made available on the command-line. To see which tags are available use `--help`. To add a new tag extend the `tags` field in the `job` config.
 
-To run only run jobs that have the `python` tag (for example, you define the tags) you would do the following:
+You can control which types of jobs to run via tags. Just tag the job in the config and then from the command-line you can add `--tags` or `--not-tags` to refine exactly which jobs will be run. 
+
+For example, if you have a `python` tagged job or jobs, to run only run those jobs you would do the following:
 
 ```bash
 runem --tags python
 ```
+
+`--tags` are exclusive filter in, that is the tags passed in replace are the only tags that are run. This allows one to focus on running just a subset of tags.
+
+`--not-tags` are subtractive filter out, that is any job with these tags are not run, even if they have tags set via the `--tags` switch. Meaning you can choose to run `python` tagged jobed but not run the `lint` jobs with `--tags python --not-tags lint`, and so on.
 
 #### 4.1.1. Run jobs only with the 'lint' tag:
 
@@ -75,13 +82,26 @@ runem --tags lint
 runem --tags lint --not-tags deprecated
 ```
 
+#### 4.1.3. Run fast checks on `pre-commit`
+
+If you have fast jobs that tagged as appropriate for pre-commit hooks.
+
+```bash
+mkdir scripts/git-hooks
+echo "runem --tags pre-commit" > scripts/git-hooks/pre-commit
+# add the following to .git/config
+# [core]
+#   # ... existing config ...
+#	  hooksPath = ./scripts/git-hooks/husky/
+```
+
 ### 4.2. phase filters
 
-Sometimes you know you just want to run a specific phase to iterate quickly within that phase-context. 
+Sometimes just want to run a specific phase, so you can focus on it and iterate quickly, within that context. 
 
 #### 4.2.1 Focus on a phase
 
-For example you might want to run the 'reformat' phase as you're preparing a commit and are just made cosmetic changes e.g. updating the docs.
+For example, if you have a `reformat` phase, you might want to run just `reformat` jobs phase whilst preparing a commit and are just preparing cosmetic changes e.g. updating comments, syntax, or docs.
 
 ```bash
 runem --phase reformat
@@ -89,7 +109,7 @@ runem --phase reformat
 
 #### 4.2.2 Exclude slow phases temporarily
 
-Or you are tightly iterating on the 'test' phase coverage and do not care about formating as long as you can see your coverage results ASAP, but everything that comes after that stage. So if you have 4 stages `bootstrap`, `pre-run`, `reformat`, `test` and `verify` you can exlude the slower reformat-stage with the following and everything else will run
+If you have 4 stages `bootstrap`, `pre-run`, `reformat`, `test` and `verify` phase, and are tightly iterating and focusing on the 'test-coverage' aspect of the test-phase, then you do not care about formating as long as you can see your coverage results ASAP. However if your test-coverage starts passing then you will care about subsequent stages, so you can exlude the slower reformat-stage with the following and everything else will run.
 
 ```bash
 runem --not-phase pre-run reformat
