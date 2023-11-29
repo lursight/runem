@@ -157,7 +157,7 @@
     when:
       phase: analysis
       tags:
-      - json
+        - json
 - job:
     addr:
       file: scripts/test-hooks/yarn.py
@@ -170,7 +170,7 @@
     when:
       phase: analysis
       tags:
-      - spell
+        - spell
 - job:
     addr:
       file: scripts/test-hooks/yarn.py
@@ -183,5 +183,5 @@
     when:
       phase: analysis
       tags:
-      - json
-      - format
+        - json
+        - format
