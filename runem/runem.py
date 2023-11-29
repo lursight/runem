@@ -153,6 +153,7 @@ class ConfigMetadata:
 
     def __init__(
         self,
+        cfg_filepath: pathlib.Path,
         phases: OrderedPhases,
         options: OptionConfigs,
         file_filters: TagFileFilters,
@@ -161,6 +162,7 @@ class ConfigMetadata:
         job_phases: JobPhases,
         job_tags: JobTags,
     ) -> None:
+        self.cfg_filepath = cfg_filepath
         self.phases = phases
         self.options = options
         self.file_filters = file_filters
@@ -345,12 +347,14 @@ def _parse_args(
         type=int,
     )
 
+    config_dir: pathlib.Path = config_metadata.cfg_filepath.parent
     parser.add_argument(
         "--root",
         dest="root_dir",
-        default=os.environ["LANG_CHECKOUT"],
+        default=config_dir,
         help=(
-            "which dir to use as the base-dir for testing, " "defaults to checkout root"
+            "which dir to use as the base-dir for testing, "
+            f"defaults to directory containing the config '{config_dir}'"
         ),
         required=False,
     )
@@ -914,6 +918,7 @@ def _parse_config(config: Config, cfg_filepath: pathlib.Path) -> ConfigMetadata:
 
     # tags = tags.union(("python", "es", "firebase_funcs"))
     return ConfigMetadata(
+        cfg_filepath,
         phase_order,
         options,
         file_filters,
