@@ -4,6 +4,14 @@ Changelog
 
 (unreleased)
 ------------
+- Merge branch 'feat/better_module_find_error_msg' [Frank Harrison]
+- Feat(better-module-msg): improves the information given when loading a
+  job address. [Frank Harrison]
+
+
+0.0.12 (2023-11-29)
+-------------------
+- Release: version 0.0.12 🚀 [Frank Harrison]
 - Merge branch 'chore/format_yml' [Frank Harrison]
 - Chore(format-yml): reformats the .runem.yml file. [Frank Harrison]
 - Chore(format-yml): adds yml files to the prettier command. [Frank
