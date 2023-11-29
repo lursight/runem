@@ -60,6 +60,8 @@ Jobs are tagged in the .runem.yml config file. Each unique tags is made availabl
 
 You can control which types of jobs to run via tags. Just tag the job in the config and then from the command-line you can add `--tags` or `--not-tags` to refine exactly which jobs will be run. 
 
+To debug why a job is not selected pass `--verbose`.
+
 For example, if you have a `python` tagged job or jobs, to run only run those jobs you would do the following:
 
 ```bash
