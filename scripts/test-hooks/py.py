@@ -180,8 +180,6 @@ def _job_py_pytest(
         "LURSIGHT_DB_SCHEMA": "sqlite",
         "PYTHONPATH": str(root_path / "python"),
     }
-    if "generate call graphs" in options and options["generate call graphs"]:
-        env_overrides = {**env_overrides, "LANG_CALLGRAPHS": "True"}
 
     kwargs["label"] = f"{label} pytest"
     run_command(
@@ -206,7 +204,7 @@ def _job_py_pytest(
             str(coverage_output_dir / "cobertura.xml"),
             f"--rcfile={str(coverage_cfg)}",
         ]
-        kwargs["label"] = f"{label} coverage icobertura"
+        kwargs["label"] = f"{label} coverage cobertura"
         run_command(cmd=gen_cobertura_coverage_report_cmd, **kwargs)
 
         # then a html report

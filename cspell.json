@@ -7,19 +7,44 @@
   "ignorePaths": ["**/.pyenv/**", "./build", "*.egg-info/"],
   // words - list of words to be always considered correct
   "words": [
+    "argsparse", // python module
     "autouse", // pytest fixture switch
+    "buildah", // Open Container Initiative (OCI) container builder
+    "chdir", // python func for chnaging pwd
+    "cicd", // simplification of ci/cd
+    "cobertura", // coverage auto format for ci/cd
+    "conftest", // pytest config file name
+    "containerfile", // docker container file used by the project template
+    "coveragerc", // the python coverage config
     "DEADCODE", // I am haxor
     "docformatter", // python module
     "doublethefish",
     "elsewise",
+    "exitfirst", // pylint switch
+    "fixup", // used alot to denot fixing an issue
     "funcs", // convenience for functions
     "getfixturevalue", // pytest
     "isort", // python module
+    "kwargs", // key-word args shorthand
+    "linters", // collection of linting tools
     "lursight", // creator
     "MDGM",
+    "mkdocs", // python module for building docs from .md files
     "mypy", // python module
+    "negatise", //made up word for args utils
+    "prettifier", // npm module for auto-formatting code
+    "procs", // runem switch for managing the number of proccesses we want to run
     "pylint", // python module
-    "runem" // this product
+    "pypi", // the python package index
+    "pytest", // the python module for testing
+    "rcfile", // name of a type of config file
+    "refs", // git references
+    "runem", // this product
+    "setuptools", // python module
+    "stefanzweifel", // the author of the temnplate used for runem's github
+    "termplotlib", // python module for graphing on the terminal
+    "venv", // abreviation of virtual-env
+    "virtualenv" // python module for managing virtual-environments
   ],
   // flagWords - list of words to be always considered incorrect
   // This is useful for offensive words and common spelling errors.

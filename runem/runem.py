@@ -9,7 +9,7 @@ We don't yet:
   - check for changed files
 - support non-git repos
 - not stream stdout to terminal
-- have inter-job dependencies as that requires a smarter scheduler, we use woraround
+- have inter-job dependencies as that requires a smarter scheduler, we workaround
   this with phases, for now
 
 We do:
@@ -42,7 +42,7 @@ except ImportError:
 
 import yaml
 
-CFG_FILE_YMAL = pathlib.Path(".runem.yml")
+CFG_FILE_YAML = pathlib.Path(".runem.yml")
 
 
 class FunctionNotFound(ValueError):
@@ -59,7 +59,7 @@ TimingDataPhase = typing.Dict[PhaseName, typing.List[typing.Tuple[str, timedelta
 
 
 class OptionConfig(typing.TypedDict):
-    """Speci for configuring job option overrides."""
+    """Spec for configuring job option overrides."""
 
     name: str
     aliases: typing.Optional[typing.List[str]]
@@ -93,7 +93,7 @@ JobFunction = typing.Callable[[argparse.Namespace, Options, FilePathList], None]
 
 
 class JobParamConfig(typing.TypedDict):
-    """Configures what paramters are passed to the test-callable.
+    """Configures what parameters are passed to the test-callable.
 
     FIXME: this isn't actually used at all, yet
     """
@@ -123,7 +123,7 @@ class JobWhen(typing.TypedDict):
 class JobConfig(typing.TypedDict):
     """A dict that defines a job to be run.
 
-    It consists of the label, adress, context and filter information
+    It consists of the label, address, context and filter information
     """
 
     label: str  # the name of the job
@@ -191,24 +191,24 @@ class GlobalConfig(typing.TypedDict):
     # the core ide here is to ensure that certain types of job-dependencies,
     # such as code-reformatting jobs run before analysis tools, therefore making
     # any error messages about the code give consistent line numbers e..g if a
-    # reformatter edits a file the error line will move and the analysis phase
+    # re-formatter edits a file the error line will move and the analysis phase
     # will report the wrong line.
     phases: OrderedPhases
 
-    # Options control the extra flags that are optionaly consumed by job.
+    # Options control the extra flags that are optionally consumed by job.
     # Options configured here are used to set command-line-options. All options
     # and their current state are passed to each job.
     options: typing.List[OptionConfigSerialised]
 
     # File filters control which files will be passed to jobs for a given tags.
-    # Job will recieve the super-set of files for all that job's tags.
+    # Job will receive the super-set of files for all that job's tags.
     files: typing.List[TagFileFilterSerialised]
 
 
 class GlobalSerialisedConfig(typing.TypedDict):
     """Intended to make reading a config file easier.
 
-    Unlike JobSerialisedConfig, this type may not actually help readabilty.
+    Unlike JobSerialisedConfig, this type may not actually help readability.
 
     An intermediary type for serialisation of the global config, the 'global' resides
     inside a 'global' key and therefore is easier to find and reason about.
@@ -222,7 +222,7 @@ class JobSerialisedConfig(typing.TypedDict):
 
     An intermediary typ for serialisation as each 'job' resides inside a 'job' key.
 
-    This makes formatting of YAML configd _significantly_ easier to understand.
+    This makes formatting of YAML config _significantly_ easier to understand.
     """
 
     job: JobConfig
@@ -511,9 +511,9 @@ def _search_up_dirs_for_file(
 ) -> typing.Optional[pathlib.Path]:
     """Search 'up' from start_dir looking for search_filename."""
     while 1:
-        cfg_cand = start_dir / search_filename
-        if cfg_cand.exists():
-            return cfg_cand
+        cfg_candidate = start_dir / search_filename
+        if cfg_candidate.exists():
+            return cfg_candidate
         exhausted_stack: bool = start_dir == start_dir.parent
         if exhausted_stack:
             return None
@@ -537,11 +537,11 @@ def _search_up_multiple_dirs_for_file(
 def _find_cfg() -> pathlib.Path:
     """Searches up from the cwd for a .runem.yml config file."""
     start_dirs = (pathlib.Path(".").absolute(),)
-    cfg_cand: typing.Optional[pathlib.Path] = _search_up_multiple_dirs_for_file(
-        start_dirs, CFG_FILE_YMAL
+    cfg_candidate: typing.Optional[pathlib.Path] = _search_up_multiple_dirs_for_file(
+        start_dirs, CFG_FILE_YAML
     )
-    if cfg_cand:
-        return cfg_cand
+    if cfg_candidate:
+        return cfg_candidate
 
     # error out and exit as we currently require the cfg file as it lists jobs.
     print(f"ERROR: Config not found! Looked from {start_dirs}")
@@ -573,7 +573,7 @@ def _find_files(config_metadata: ConfigMetadata) -> FilePathListLookup:
         in_out_file_lists=file_lists,
     )
 
-    # now ensure the file lists are sorted so we get deterministic behavior in tests
+    # now ensure the file lists are sorted so we get deterministic behaviour in tests
     for job_type in file_lists:
         file_lists[job_type] = sorted(file_lists[job_type])
     return file_lists
@@ -630,7 +630,7 @@ def _run_job(
     start = timer()
     func_signature = inspect.signature(function)
     if args.verbose:
-        print(f"sub-proc: running {job_config['label']}")
+        print(f"job: running {job_config['label']}")
     if "args" in func_signature.parameters:
         function(args, options, file_list)
     else:
@@ -696,18 +696,18 @@ def _find_job_module(cfg_filepath: pathlib.Path, module_file_path: str) -> pathl
     """Attempts to find the true location of the job-function module."""
     module_path: pathlib.Path = pathlib.Path(module_file_path)
 
-    module_path_cands = [
+    module_path_candidates = [
         module_path,
         module_path.absolute(),
         (cfg_filepath.parent / module_file_path).absolute(),
     ]
-    for module_path in module_path_cands:
+    for module_path in module_path_candidates:
         if module_path.exists():
             break
     if not module_path.exists():
         raise FunctionNotFound(
             (
-                f"unable to find test-function module looked in {module_path_cands} running "
+                f"unable to find test-function module looked in {module_path_candidates} running "
                 f"from '{pathlib.Path('.').absolute()}'"
             )
         )
@@ -900,7 +900,7 @@ def _parse_job_config(
 
 
 def _parse_config(config: Config, cfg_filepath: pathlib.Path) -> ConfigMetadata:
-    """Validates and restructure the config to make it more convienient to use."""
+    """Validates and restructure the config to make it more convenient to use."""
     jobs_by_phase: PhaseGroupedJobs = defaultdict(list)
     job_names: JobNames = set()
     job_phases: JobPhases = set()
@@ -991,7 +991,12 @@ def _plot_times(
     times.insert(0, overall_run_time.total_seconds())
     if termplotlib:
         fig = termplotlib.figure()
-        fig.barh(times, labels, force_ascii=False)
+        # cspell:disable-next-line
+        fig.barh(
+            times,
+            labels,
+            force_ascii=False,
+        )
         fig.show()
     else:
         for label, time in zip(labels, times):
@@ -1072,7 +1077,7 @@ def _main(  # noqa: C901 # pylint: disable=too-many-branches,too-many-statements
         print(
             (
                 f"Running '{phase}' with {num_concurrent_procs} workers "
-                f"processesing {len(jobs)} jobs"
+                f"processing {len(jobs)} jobs"
             )
         )
         with multiprocessing.Pool(processes=num_concurrent_procs) as pool:

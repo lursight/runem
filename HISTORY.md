@@ -52,11 +52,11 @@ Changelog
 - Chore(format-yml): adds yml files to the prettier command. [Frank
   Harrison]
 
-  This means that runems own runem config is reformatted
+  This means that runem's own runem config is reformatted
 - Merge branch 'feat/warn_on_bad_names' [Frank Harrison]
 - Feat(bad-label): errors on bad labels. [Frank Harrison]
 
-  .. not a massive improvment but really helps clarify what you SHOULD be looking at when things go wrong, which is nice
+  .. not a massive improvement but really helps clarify what you SHOULD be looking at when things go wrong, which is nice
 - Feat(bad-func-ref-message): gives a better error message on bad
   function references. [Frank Harrison]
 
@@ -70,7 +70,7 @@ Changelog
   ... currently this only targets json files
 - Merge branch 'chore/kwargs' [Frank Harrison]
 - Chore(kwargs): makes run_command 'cmd' the first thing as it cannot be
-  infered from the runem kwargs. [Frank Harrison]
+  inferred from the runem kwargs. [Frank Harrison]
 - Feat(kwargs): moves to using kwargs by preference when calling jobs.
   [Frank Harrison]
 
@@ -152,7 +152,7 @@ Changelog
 ------------------
 - Release: version 0.0.5 🚀 [Frank Harrison]
 - Merge branch 'feat/time_saved' [Frank Harrison]
-- Docs: fixes the ambiguos language on the number of jobs/core being
+- Docs: fixes the ambiguous language on the number of jobs/core being
   used. [Frank Harrison]
 - Feat(time-saved): shows the time saved vs linear runs on DONE. [Frank
   Harrison]
@@ -185,10 +185,10 @@ Changelog
 - Release: version 0.0.1 🚀 [Frank Harrison]
 - Chore(release): moves release to script. [Frank Harrison]
 
-  It wasn't working because read -p wasn't setting the TAG variabl for
+  It wasn't working because read -p wasn't setting the TAG variable for
   some reason, I suspect because of the makefile.
 - Merge branch 'chore/update_ci_cd_black' [Frank Harrison]
-- Chore(black-ci-cd): removes line-limit sizes for pyblack runs in
+- Chore(black-ci-cd): removes line-limit sizes for py-black runs in
   actions. [Frank Harrison]
 - Merge branch 'chore/fix_sponsorship_link' [Frank Harrison]
 - Chore(sponsorship): fixes a link to sponsorship. [Frank Harrison]

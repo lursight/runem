@@ -40,7 +40,7 @@ Lets take a look at the structure of this template:
 ├── README.md                # The main readme for the project
 ├── setup.py                 # The setup.py file for installing and packaging the project
 ├── requirements.txt         # An empty file to hold the requirements for the project
-├── requirements-test.txt    # List of requirements for testing and devlopment
+├── requirements-test.txt    # List of requirements for testing and development
 ├── setup.py                 # The setup.py file for installing and packaging the project
 └── tests                    # Unit tests for the project (add mote tests files here)
     ├── conftest.py          # Configuration, hooks and fixtures for pytest
@@ -67,38 +67,11 @@ Also, poetry doesn't have a good support for installing projects in development 
 ### Why the `requirements.txt` is empty ?
 
 This template is a low dependency project, so it doesn't have any extra dependencies.
-You can add new dependencies as you will or you can use the `make init` command to
-generate a `requirements.txt` file based on the template you choose `flask, fastapi, click etc`.
 
 ### Why there is a `requirements-test.txt` file ?
 
 This file lists all the requirements for testing and development,
 I think the development environment and testing environment should be as similar as possible.
-
-Except those tools that are up to the developer choice (like ipython, ipdb etc).
-
-### Why the template doesn't have a `pyproject.toml` file ?
-
-It is possible to run `pip install https://github.com/name/repo/tarball/main` and
-have pip to download the package direcly from Git repo.
-
-For that to work you need to have a `setup.py` file, and `pyproject.toml` is not
-supported for that kind of installation.
-
-I think it is easier for example you want to install specific branch or tag you can
-do `pip install https://github.com/name/repo/tarball/{TAG|REVISON|COMMIT}`
-
-People automating CI for your project will be grateful for having a setup.py file
-
-### Why isn't this template made as a cookiecutter template?
-
-I really like [cookiecutter](https://github.com/cookiecutter/cookiecutter) and it is a great way to create new projects,
-but for this template I wanted to use the Github `Use this template` button,
-to use this template doesn't require to install extra tooling such as cookiecutter.
-
-Just click on [Use this template](https://github.com/rochacbruno/python-project-template/generate) and you are good to go.
-
-The substituions are done using github actions and a simple sed script.
 
 ### Why `VERSION` is kept in a static plain text file?
 
@@ -126,7 +99,7 @@ the project when running on a testing environment.
 
 I added those files to make it easier for packaging in different formats.
 
-### Why conftest includes a go_to_tmpdir fixture?
+### Why conftest includes a go_to_tmp_path_ fixture?
 
 When your project deals with file system operations, it is a good idea to use
 a fixture to create a temporary directory and then remove it after the test.
@@ -146,33 +119,15 @@ However I figured out that pre-commit adds extra dependency and it an entry barr
 for new contributors.
 
 Having the linting, checks and formatting as simple commands on the [Makefile](Makefile)
-makes it easier to undestand and change.
+makes it easier to understand and change.
 
 Once the project is bigger and complex, having pre-commit as a dependency can be a good idea.
 
 ### Why the CLI is not using click?
 
 I wanted to provide a simple template for a CLI application on the project main entry point
-click and typer are great alternatives but are external dependencies and this template
+click and other tools are great alternatives but are external dependencies and this template
 doesn't add dependencies besides those used for development.
-
-### Why this doesn't provide a full example of application using Flask or Django?
-
-as I said before, I want it to be simple and multipurpose, so I decided to not include
-external dependencies and programming design decisions.
-
-It is up to you to decide if you want to use Flask or Django and to create your application
-the way you think is best.
-
-This template provides utilities in the Makefile to make it easier to you can run:
-
-```bash
-$ make init 
-Which template do you want to apply? [flask, fastapi, click, typer]? > flask
-Generating a new project with Flask ...
-```
-
-Then the above will download the Flask template and apply it to the project.
 
 ## The Makefile
 
