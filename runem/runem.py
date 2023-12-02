@@ -54,8 +54,23 @@ class FunctionNotFound(ValueError):
 JobName = str
 JobTag = str
 PhaseName = str
+ReportUrl = str | pathlib.Path
+ReportUrlInfo = typing.Tuple[str, ReportUrl]
+ReportUrls = typing.List[ReportUrlInfo]
 
-TimingDataPhase = typing.Dict[PhaseName, typing.List[typing.Tuple[str, timedelta]]]
+
+class JobReturnData(typing.TypedDict, total=False):
+    """A dict that defines job result to be reported to the user."""
+
+    reportUrls: ReportUrls  # urls containing reports for the user
+
+
+JobTiming = typing.Tuple[str, timedelta]
+JobReturn = typing.Optional[JobReturnData]
+JobRunMetadata = typing.Tuple[JobTiming, JobReturn]
+JobRunTimesByPhase = typing.Dict[PhaseName, typing.List[JobTiming]]
+JobRunReportByPhase = typing.Dict[PhaseName, ReportUrls]
+JobRunMetadatasByPhase = typing.Dict[PhaseName, typing.List[JobRunMetadata]]
 
 
 class OptionConfig(typing.TypedDict):
@@ -86,7 +101,6 @@ TagFileFilters = typing.Dict[JobTag, TagFileFilter]
 FilePathSerialise = str
 FilePathList = typing.List[FilePathSerialise]
 FilePathListLookup = typing.DefaultDict[JobTag, FilePathList]
-
 
 # FIXME: this type is no-longer the actual spec of the test-functions
 JobFunction = typing.Callable[[argparse.Namespace, Options, FilePathList], None]
@@ -597,7 +611,7 @@ def _run_job(
     args: argparse.Namespace,
     file_lists: FilePathListLookup,
     options: Options,
-) -> typing.Tuple[str, timedelta]:
+) -> typing.Tuple[typing.Tuple[str, timedelta], JobReturn]:
     label = job_config["label"]
     if args.verbose:
         print(f"START: {label}")
@@ -616,7 +630,7 @@ def _run_job(
     if not file_list:
         # no files to work on
         print(f"WARNING: skipping job '{label}', no files for job")
-        return (f"{label}: no files!", timedelta(0))
+        return (f"{label}: no files!", timedelta(0)), None
     if (
         "ctx" in job_config
         and job_config["ctx"] is not None
@@ -631,10 +645,11 @@ def _run_job(
     func_signature = inspect.signature(function)
     if args.verbose:
         print(f"job: running {job_config['label']}")
+    reports: JobReturn
     if "args" in func_signature.parameters:
-        function(args, options, file_list)
+        reports = function(args, options, file_list)
     else:
-        function(
+        reports = function(
             options=options,  # type: ignore
             file_list=file_list,  # type: ignore
             procs=args.procs,
@@ -646,7 +661,8 @@ def _run_job(
     time_taken: timedelta = timedelta(seconds=end - start)
     if args.verbose:
         print(f"DONE: {label}: {time_taken}")
-    return (label, time_taken)
+    timing_data = (label, time_taken)
+    return (timing_data, reports)
 
 
 def _get_test_function(
@@ -964,7 +980,7 @@ def _parse_config(config: Config, cfg_filepath: pathlib.Path) -> ConfigMetadata:
 def _plot_times(
     overall_run_time: timedelta,
     phase_run_oder: OrderedPhases,
-    timing_data: TimingDataPhase,
+    timing_data: JobRunTimesByPhase,
 ) -> timedelta:
     """Prints a report to terminal on how well we performed."""
     labels: typing.List[str] = []
@@ -1006,10 +1022,37 @@ def _plot_times(
     return time_saved
 
 
+def _report_on_run(
+    phase_run_oder: OrderedPhases,
+    job_run_metadatas: JobRunMetadatasByPhase,
+    overall_runtime: timedelta,
+):
+    timing_data: JobRunTimesByPhase = defaultdict(list)
+    report_data: JobRunReportByPhase = defaultdict(list)
+    for phase in job_run_metadatas:
+        for timing, reports in job_run_metadatas[phase]:
+            timing_data[phase].append(timing)
+            if reports:
+                report_data[phase].extend(reports["reportUrls"])
+    time_saved: timedelta = _plot_times(
+        overall_run_time=overall_runtime,
+        phase_run_oder=phase_run_oder,
+        timing_data=timing_data,
+    )
+    for phase in phase_run_oder:
+        for job_report_url_info in report_data[phase]:
+            if not job_report_url_info:
+                continue
+            print(
+                f"report: {str(job_report_url_info[0])}: {str(job_report_url_info[1])}"
+            )
+    return time_saved
+
+
 def _main(  # noqa: C901 # pylint: disable=too-many-branches,too-many-statements
     argv: typing.List[str],
-) -> typing.Tuple[OrderedPhases, TimingDataPhase]:
-    job_times: TimingDataPhase = defaultdict(list)
+) -> typing.Tuple[OrderedPhases, JobRunMetadatasByPhase]:
+    job_run_metadatas: JobRunMetadatasByPhase = defaultdict(list)
     start = timer()
     config: Config
     cfg_filepath: pathlib.Path
@@ -1052,7 +1095,9 @@ def _main(  # noqa: C901 # pylint: disable=too-many-branches,too-many-statements
     )
     end = timer()
 
-    job_times["_app"].append(("pre-build", timedelta(seconds=end - start)))
+    job_run_metadatas["_app"].append(
+        (("pre-build", (timedelta(seconds=end - start))), None)
+    )
 
     start = timer()
 
@@ -1083,7 +1128,7 @@ def _main(  # noqa: C901 # pylint: disable=too-many-branches,too-many-statements
         with multiprocessing.Pool(processes=num_concurrent_procs) as pool:
             # use starmap so we can pass down the job-configs and the args and the files
 
-            job_times[phase] = pool.starmap(
+            job_run_metadatas[phase] = pool.starmap(
                 _run_job,
                 zip(
                     jobs,
@@ -1093,24 +1138,23 @@ def _main(  # noqa: C901 # pylint: disable=too-many-branches,too-many-statements
                     repeat(options),
                 ),
             )
+
     end = timer()
 
-    job_times["_app"].append(("run-phases", timedelta(seconds=end - start)))
-    return config_metadata.phases, job_times
+    phase_run_timing: JobTiming = ("run-phases", timedelta(seconds=end - start))
+    phase_run_report: JobReturn = None
+    phase_run_metadata: JobRunMetadata = (phase_run_timing, phase_run_report)
+    job_run_metadatas["_app"].append(phase_run_metadata)
+    return config_metadata.phases, job_run_metadatas
 
 
 def timed_main(argv: typing.List[str]) -> None:
     start = timer()
     phase_run_oder: OrderedPhases
-    job_times: TimingDataPhase
-    phase_run_oder, job_times = _main(argv)
+    phase_run_oder, job_run_metadatas = _main(argv)
     end = timer()
     time_taken: timedelta = timedelta(seconds=end - start)
-    time_saved: timedelta = _plot_times(
-        overall_run_time=time_taken,
-        phase_run_oder=phase_run_oder,
-        timing_data=job_times,
-    )
+    time_saved = _report_on_run(phase_run_oder, job_run_metadatas, time_taken)
     print(
         (
             f"DONE: runem took: {time_taken.total_seconds()}s, "

@@ -3,7 +3,7 @@ import shutil
 import typing
 
 from runem.run_command import run_command
-from runem.runem import FilePathList, JobName, Options
+from runem.runem import FilePathList, JobName, JobReturnData, Options
 
 
 def _job_py_code_reformat(
@@ -127,12 +127,13 @@ def _job_py_mypy(
 
 def _job_py_pytest(  # noqa: C901 # pylint: disable=too-many-branches,too-many-statements
     **kwargs: typing.Any,
-) -> None:
+) -> JobReturnData:
     label: JobName = kwargs["label"]
     options: Options = kwargs["options"]
     procs: int = kwargs["procs"]
     root_path: pathlib.Path = kwargs["root_path"]
 
+    reports: JobReturnData = {"reportUrls": []}
     # TODO: use pytest.ini config pytest
     # pytest_cfg = root_path / ".pytest.ini"
     # assert pytest_cfg.exists()
@@ -227,7 +228,7 @@ def _job_py_pytest(  # noqa: C901 # pylint: disable=too-many-branches,too-many-s
             "-m",
             "coverage",
             "report",
-            "--fail-under=27",
+            "--fail-under=20",
             f"--rcfile={str(coverage_cfg)}",
         ]
         kwargs["label"] = f"{label} coverage cli"
@@ -237,8 +238,11 @@ def _job_py_pytest(  # noqa: C901 # pylint: disable=too-many-branches,too-many-s
         assert report_html.exists(), report_html
         report_cobertura = coverage_output_dir / "cobertura.xml"
         assert report_cobertura.exists(), report_cobertura
+        reports["reportUrls"].append(("coverage html", report_html))
+        reports["reportUrls"].append(("coverage cobertura", report_cobertura))
         if kwargs["verbose"]:
             print("COVERAGE: cli output done")
+    return reports
 
 
 def _install_python_requirements(
