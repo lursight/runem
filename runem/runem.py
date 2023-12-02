@@ -831,12 +831,7 @@ def filter_jobs(
             print(f"No jobs for phase '{phase}' tags '{tags_to_run}'")
             continue
 
-        print(
-            (
-                f"will run {len(filtered_jobs[phase])} jobs "
-                f"for phase '{phase}'"
-            )
-        )
+        print((f"will run {len(filtered_jobs[phase])} jobs for phase '{phase}'"))
         print(f"\t{[job['label'] for job in filtered_jobs[phase]]}")
 
     return filtered_jobs
