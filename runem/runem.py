@@ -109,7 +109,7 @@ class JobAddressConfig(typing.TypedDict):
 
 
 class JobContextConfig(typing.TypedDict):
-    params: JobParamConfig  # what parameters the job needs
+    params: typing.Optional[JobParamConfig]  # what parameters the job needs
     cwd: typing.Optional[str]  # the path to run the command in
 
 
@@ -128,7 +128,7 @@ class JobConfig(typing.TypedDict):
 
     label: str  # the name of the job
     addr: JobAddressConfig  # which callable to call
-    ctx: JobContextConfig  # how to call the callable
+    ctx: typing.Optional[JobContextConfig]  # how to call the callable
     when: JobWhen  # when to call the job
 
 
@@ -617,7 +617,12 @@ def _run_job(
         # no files to work on
         print(f"WARNING: skipping job '{label}', no files for job")
         return (f"{label}: no files!", timedelta(0))
-    if job_config["ctx"]["cwd"]:
+    if (
+        "ctx" in job_config
+        and job_config["ctx"] is not None
+        and "cwd" in job_config["ctx"]
+        and job_config["ctx"]["cwd"]
+    ):
         os.chdir(root_path / job_config["ctx"]["cwd"])
     else:
         os.chdir(root_path)
@@ -826,12 +831,7 @@ def filter_jobs(
             print(f"No jobs for phase '{phase}' tags '{tags_to_run}'")
             continue
 
-        print(
-            (
-                f"will run {len(filtered_jobs[phase])} jobs "
-                f"for phase '{phase}'"
-            )
-        )
+        print((f"will run {len(filtered_jobs[phase])} jobs for phase '{phase}'"))
         print(f"\t{[job['label'] for job in filtered_jobs[phase]]}")
 
     return filtered_jobs

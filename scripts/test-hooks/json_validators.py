@@ -2,12 +2,7 @@ import pathlib
 import typing
 
 from runem.run_command import run_command
-
-FilePathSerialise = str
-FilePathList = typing.List[FilePathSerialise]
-OptionName = str
-OptionValue = bool
-Options = typing.Dict[OptionName, OptionValue]
+from runem.runem import FilePathList
 
 
 def _json_validate(
@@ -17,9 +12,15 @@ def _json_validate(
     json_files: FilePathList = kwargs["file_list"]
     json_with_comments = ("cspell.json", "tsconfig.spec.json")
     for json_file in json_files:
-        if pathlib.Path(json_file).name in json_with_comments:
+        json_path = pathlib.Path(json_file)
+        if not json_path.exists():
+            raise RuntimeError(
+                f"could not find '{str(json_path)}, in {pathlib.Path('.').absolute()}"
+            )
+        if json_path.name in json_with_comments:
             # until we use a validator that allows comments in json, skip these
             continue
+
         cmd = ["python", "-m", "json.tool", f"{json_file}"]
         kwargs["label"] = f"{label} {json_file}"
         run_command(cmd=cmd, **kwargs)
