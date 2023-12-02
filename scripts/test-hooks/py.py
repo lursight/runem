@@ -137,6 +137,9 @@ def _job_py_pytest(
     # pytest_cfg = root_path / ".pytest.ini"
     # assert pytest_cfg.exists()
 
+    if "profile" in options and options["profile"]:
+        raise RuntimeError("not implemented - see run_test.sh for how to implement")
+
     pytest_path = root_path / "test" / "unit"
     assert pytest_path.exists()
 
