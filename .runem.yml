@@ -46,7 +46,7 @@
           type: bool
           desc: allow/disallows isort from running on python files
       - option:
-          default: true
+          default: false
           name: profile
           desc: generate profile information in jobs that can
           type: bool
@@ -111,6 +111,17 @@
       tags:
         - py
         - type
+- job:
+    addr:
+      file: scripts/test_hooks/py.py
+      function: _job_py_pytest
+    label: pytest
+    when:
+      phase: analysis
+      tags:
+        - py
+        - unit test
+        - test
 - job:
     addr:
       file: scripts/test_hooks/py.py
