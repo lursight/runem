@@ -4,5 +4,5 @@ import sys
 from runem.runem import timed_main
 
 
-def main():  # pragma: no cover
+def main():
     timed_main(sys.argv)
