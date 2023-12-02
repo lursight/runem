@@ -51,9 +51,14 @@ class FunctionNotFound(ValueError):
     pass
 
 
+# meta-data types
 JobName = str
 JobTag = str
+JobNames = typing.Set[JobName]
+JobPhases = typing.Set[str]
+JobTags = typing.Set[JobTag]
 PhaseName = str
+OrderedPhases = typing.Tuple[PhaseName, ...]
 ReportUrl = str | pathlib.Path
 ReportUrlInfo = typing.Tuple[str, ReportUrl]
 ReportUrls = typing.List[ReportUrlInfo]
@@ -93,7 +98,7 @@ Options = typing.Dict[OptionName, OptionValue]
 
 
 class TagFileFilter(typing.TypedDict):
-    tag: str
+    tag: JobTag
     regex: str
 
 
@@ -130,17 +135,17 @@ class JobContextConfig(typing.TypedDict):
 class JobWhen(typing.TypedDict):
     """Configures WHEN to call the callable i.e. priority."""
 
-    tags: typing.List[str]  # the job tags - used for filtering job-types
-    phase: str  # the phase when the job should be run
+    tags: JobTags  # the job tags - used for filtering job-types
+    phase: PhaseName  # the phase when the job should be run
 
 
-class JobConfig(typing.TypedDict):
+class JobConfig(typing.TypedDict, total=False):
     """A dict that defines a job to be run.
 
     It consists of the label, address, context and filter information
     """
 
-    label: str  # the name of the job
+    label: JobName  # the name of the job
     addr: JobAddressConfig  # which callable to call
     ctx: typing.Optional[JobContextConfig]  # how to call the callable
     when: JobWhen  # when to call the job
@@ -148,11 +153,6 @@ class JobConfig(typing.TypedDict):
 
 Jobs = typing.List[JobConfig]
 
-# meta-data types
-JobNames = typing.Set[JobName]
-JobPhases = typing.Set[str]
-JobTags = typing.Set[JobTag]
-OrderedPhases = typing.Tuple[PhaseName, ...]
 PhaseGroupedJobs = typing.DefaultDict[PhaseName, typing.List[JobConfig]]
 
 
@@ -881,7 +881,7 @@ def _parse_global_config(
     return global_config["phases"], options, file_filters
 
 
-def _parse_job_config(
+def parse_job_config(
     cfg_filepath: pathlib.Path,
     job: JobConfig,
     in_out_tags: JobTags,
@@ -953,7 +953,7 @@ def _parse_config(config: Config, cfg_filepath: pathlib.Path) -> ConfigMetadata:
 
         job_entry: JobSerialisedConfig = entry  # type: ignore  # see above
         job: JobConfig = job_entry["job"]
-        _parse_job_config(
+        parse_job_config(
             cfg_filepath,
             job,
             in_out_tags=tags,
