@@ -189,11 +189,14 @@ def _job_py_pytest(  # noqa: C901 # pylint: disable=too-many-branches,too-many-s
     )
 
     if "coverage" in options and options["coverage"]:
-        coverage_output_dir = root_path / "docs" / "coverage_python"
+        reports_dir: pathlib.Path = root_path / "reports"
+        reports_dir.mkdir(parents=False, exist_ok=True)
+        coverage_output_dir: pathlib.Path = reports_dir / "coverage_python"
         if coverage_output_dir.exists():
             shutil.rmtree(coverage_output_dir)
         coverage_output_dir.mkdir(exist_ok=True)
-        print("COVERAGE: Collating coverage")
+        if kwargs["verbose"]:
+            print("COVERAGE: Collating coverage")
         # first generate the coverage report for our gitlab cicd
         gen_cobertura_coverage_report_cmd = [
             "python3",
@@ -230,13 +233,12 @@ def _job_py_pytest(  # noqa: C901 # pylint: disable=too-many-branches,too-many-s
         kwargs["label"] = f"{label} coverage cli"
         run_command(cmd=gen_cli_coverage_report_cmd, **kwargs)
         assert coverage_output_dir.exists(), coverage_output_dir
-        assert (coverage_output_dir / "index.html").exists(), (
-            coverage_output_dir / "index.html"
-        )
-        assert (coverage_output_dir / "cobertura.xml").exists(), (
-            coverage_output_dir / "cobertura.xml"
-        )
-        print("COVERAGE: cli output done")
+        report_html = coverage_output_dir / "index.html"
+        assert report_html.exists(), report_html
+        report_cobertura = coverage_output_dir / "cobertura.xml"
+        assert report_cobertura.exists(), report_cobertura
+        if kwargs["verbose"]:
+            print("COVERAGE: cli output done")
 
 
 def _install_python_requirements(

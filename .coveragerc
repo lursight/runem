@@ -1,9 +1,9 @@
 # .coveragerc to control coverage.py
 [run]
 branch = True
-source = python/clients
-         python/server
-         python/common
+source = runem
+         tests
+         scripts/test-hooks
 disable_warnings=include-ignored
 # store files in an easy-to-ignore or -delete file
 data_file=.coverage_report
@@ -47,4 +47,4 @@ ignore_errors = True
 
 [html]
 # Assume we run this from the root dir
-directory=docs/coverage_python
+directory=reports/coverage_python
