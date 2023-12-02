@@ -80,10 +80,6 @@
     addr:
       file: scripts/test-hooks/py.py
       function: _job_py_code_reformat
-    ctx:
-      cwd: .
-      params:
-        limitFilesToGroup: true
     label: reformat py
     when:
       phase: edit
@@ -94,10 +90,6 @@
     addr:
       file: scripts/test-hooks/py.py
       function: _job_py_pylint
-    ctx:
-      cwd: .
-      params:
-        limitFilesToGroup: true
     label: pylint py
     when:
       phase: analysis
@@ -108,10 +100,6 @@
     addr:
       file: scripts/test-hooks/py.py
       function: _job_py_flake8
-    ctx:
-      cwd: .
-      params:
-        limitFilesToGroup: true
     label: flake8 py
     when:
       phase: analysis
@@ -122,10 +110,6 @@
     addr:
       file: scripts/test-hooks/py.py
       function: _job_py_mypy
-    ctx:
-      cwd: .
-      params:
-        limitFilesToGroup: true
     label: mypy py
     when:
       phase: analysis
@@ -136,10 +120,6 @@
     addr:
       file: scripts/test-hooks/py.py
       function: _install_python_requirements
-    ctx:
-      cwd: .
-      params:
-        limitFilesToGroup: true
     label: install python requirements
     when:
       phase: pre-run
@@ -149,10 +129,6 @@
     addr:
       file: scripts/test-hooks/json_validators.py
       function: _json_validate
-    ctx:
-      cwd: .
-      params:
-        limitFilesToGroup: true
     label: json validate
     when:
       phase: analysis
@@ -162,10 +138,6 @@
     addr:
       file: scripts/test-hooks/yarn.py
       function: _job_spellcheck
-    ctx:
-      cwd: .
-      params:
-        limitFilesToGroup: true
     label: spell check
     when:
       phase: analysis
@@ -175,10 +147,6 @@
     addr:
       file: scripts/test-hooks/yarn.py
       function: _job_prettier
-    ctx:
-      cwd: .
-      params:
-        limitFilesToGroup: true
     label: prettier
     when:
       phase: analysis
