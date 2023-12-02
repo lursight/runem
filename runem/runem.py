@@ -912,7 +912,9 @@ def _parse_job_config(
         for tag in job["when"]["tags"]:
             in_out_tags.add(tag)
     except KeyError as err:
-        raise ValueError(f"job config entry is missing data {job}") from err
+        raise ValueError(
+            f"job config entry is missing '{err.args[0]}' data. Have {job}"
+        ) from err
 
 
 def _parse_config(config: Config, cfg_filepath: pathlib.Path) -> ConfigMetadata:
