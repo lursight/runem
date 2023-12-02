@@ -4,6 +4,21 @@ Changelog
 
 (unreleased)
 ------------
+- Merge branch 'feat/add_optional_ctx_config' [Frank Harrison]
+- Chore(json-check): adds validation for if a file exists in json-
+  validate. [Frank Harrison]
+- Chore: black. [Frank Harrison]
+- Chore(test-profile): flags that the profile option isn't actually used
+  yet. [Frank Harrison]
+- Feat(defaults): allows the 'ctx' config to default to root_dir and the
+  other config to not exist. [Frank Harrison]
+
+  ... as limitFilesToGroup isn't actually used
+
+
+0.0.14 (2023-11-29)
+-------------------
+- Release: version 0.0.14 🚀 [Frank Harrison]
 - Merge branch 'fix/working_from_non-root_dirs' [Frank Harrison]
 - Chore(logs): reduces duplicate log out for tag-filters. [Frank
   Harrison]
