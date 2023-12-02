@@ -180,8 +180,6 @@ def _job_py_pytest(
         "LURSIGHT_DB_SCHEMA": "sqlite",
         "PYTHONPATH": str(root_path / "python"),
     }
-    if "generate call graphs" in options and options["generate call graphs"]:
-        env_overrides = {**env_overrides, "LANG_CALLGRAPHS": "True"}
 
     kwargs["label"] = f"{label} pytest"
     run_command(

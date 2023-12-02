@@ -37,11 +37,6 @@
           type: bool
       - option:
           default: false
-          name: generate call graphs
-          type: bool
-          desc: Generates call-graphs in jobs that can
-      - option:
-          default: false
           name: install deps
           type: bool
           desc: gets dep-installing job to run
