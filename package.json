@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "spellCheck": "yarn run spellCheckFiles 'lursight/**/*.py' 'tests/**/*.py' '.runem.yml'",
+    "spellCheck": "yarn run spellCheckFiles '**/*.py' '.runem.yml' '**/*.md' LICENSE .runem.yml",
     "spellCheckFiles": "yarn run cspell  --no-progress --config ./cspell.json",
     "prepare": "husky install ./scripts/git-hooks/husky/",
     "pretty": "yarn run prettyNoWrite --write --log-level error",

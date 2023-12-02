@@ -80,7 +80,7 @@ def run_command(  # noqa: C901 # pylint: disable=too-many-branches
             valid_exit_strs = ",".join([str(exit_code) for exit_code in valid_exit_ids])
             raise RuntimeError(
                 (
-                    f"non-zero exit {process.returncode} (alowed are "
+                    f"non-zero exit {process.returncode} (allowed are "
                     f"{valid_exit_strs}) from {cmd_string}"
                 )
             )

@@ -15,7 +15,7 @@ The name "runem" is derived from the fusion of "run" and "them," encapsulating t
   - [4. Basic Usage](#4-basic-usage)
     - [4.1. Tag filters](#41-tag-filters)
       - [4.1.1. Run jobs only with the 'lint' tag:](#411-run-jobs-only-with-the-lint-tag)
-      - [4.1.2. If you want to lint all code _except_ nodejs code (and you have the apprpriate tags):](#412-if-you-want-to-lint-all-code-except-nodejs-code-and-you-have-the-apprpriate-tags)
+      - [4.1.2. If you want to lint all code _except_ nodejs code (and you have the appropriate tags):](#412-if-you-want-to-lint-all-code-except-nodejs-code-and-you-have-the-appropriate-tags)
       - [4.1.3. Run fast checks on `pre-commit`](#413-run-fast-checks-on-pre-commit)
     - [4.2. phase filters](#42-phase-filters)
       - [4.2.1 Focus on a phase](#421-focus-on-a-phase)
@@ -70,7 +70,7 @@ runem --tags python
 
 `--tags` are exclusive filter in, that is the tags passed in replace are the only tags that are run. This allows one to focus on running just a subset of tags.
 
-`--not-tags` are subtractive filter out, that is any job with these tags are not run, even if they have tags set via the `--tags` switch. Meaning you can choose to run `python` tagged jobed but not run the `lint` jobs with `--tags python --not-tags lint`, and so on.
+`--not-tags` are subtractive filter out, that is any job with these tags are not run, even if they have tags set via the `--tags` switch. Meaning you can choose to run `python` tagged job but not run the `lint` jobs with `--tags python --not-tags lint`, and so on.
 
 #### 4.1.1. Run jobs only with the 'lint' tag:
 
@@ -78,7 +78,7 @@ runem --tags python
 runem --tags lint
 ```
 
-#### 4.1.2. If you want to lint all code _except_ nodejs code (and you have the apprpriate tags):
+#### 4.1.2. If you want to lint all code _except_ nodejs code (and you have the appropriate tags):
 
 ```bash
 runem --tags lint --not-tags deprecated
@@ -111,7 +111,7 @@ runem --phase reformat
 
 #### 4.2.2 Exclude slow phases temporarily
 
-If you have 4 stages `bootstrap`, `pre-run`, `reformat`, `test` and `verify` phase, and are tightly iterating and focusing on the 'test-coverage' aspect of the test-phase, then you do not care about formating as long as you can see your coverage results ASAP. However if your test-coverage starts passing then you will care about subsequent stages, so you can exlude the slower reformat-stage with the following and everything else will run.
+If you have 4 stages `bootstrap`, `pre-run`, `reformat`, `test` and `verify` phase, and are tightly iterating and focusing on the 'test-coverage' aspect of the test-phase, then you do not care about formatting as long as you can see your coverage results ASAP. However if your test-coverage starts passing then you will care about subsequent stages, so you can exclude the slower reformat-stage with the following and everything else will run.
 
 ```bash
 runem --not-phase pre-run reformat
@@ -214,20 +214,20 @@ job-param overrides:
 Configuration is Yaml and consists of two main configurations, `config` and `job`:
 
 - `config` describes how the jobs should be run.
-- each `job`  entry descibe a job-task, such and running unit-tests, linting or running any other type of command.
+- each `job`  entry describe a job-task, such and running unit-tests, linting or running any other type of command.
 
 ### 6.1. `config` - Run 'em global config
 
 - **phases:** 
   - *Description:* Specifies the different phases of the testing process, in the order they are to be run. Each job will be run under a specific phase.
-  - *Values:* A list of strings representing "phases" such as pre-run (e.g. bootstrapping), edit (running pyblack or prettifier or clangtools), and analysis (unit-tests, coverage, linting).
+  - *Values:* A list of strings representing "phases" such as pre-run (e.g. bootstrapping), edit (running py-black or prettifier or clang-tools), and analysis (unit-tests, coverage, linting).
 
 - **files:**
-  - *Description:* Defines filters for categorizing files based on tags and regular expressions. Maps tags to files-to-be tested. If a job has one or more tags that map to file-filters that job will recieve all files that match those filters.
+  - *Description:* Defines filters for categorizing files based on tags and regular expressions. Maps tags to files-to-be tested. If a job has one or more tags that map to file-filters that job will receive all files that match those filters.
   - *Values:* A list of dictionaries, each containing a 'filter' key with 'tag' and 'regex' subkeys.
 
 - **options:**
-  - *Description:* Configures various option-overides for the job-tasks. Overrides can be set on the command line and acceessed by jobs to turn on or off features such as 'check-only' or to opt out of sub-tasks.
+  - *Description:* Configures various option-overrides for the job-tasks. Overrides can be set on the command line and accessed by jobs to turn on or off features such as 'check-only' or to opt out of sub-tasks.
   - *Values:* A list of dictionaries, each containing an 'option' key with 'default' boolean value, a 'name', a 'type', a 'desc', and optional 'alias' subkeys. NOTE: only 'bool' types are currently supported.
 
   - **default:** Specifies the default value of the option.
@@ -238,7 +238,7 @@ Configuration is Yaml and consists of two main configurations, `config` and `job
 
 ### 6.2. `job` - Job config
 - **job:**
-  - *Description:* Represents a specific job task that is to be run asynchorounsly.
+  - *Description:* Represents a specific job task that is to be run asynchronously.
   - *Fields:*
     - **addr:**
       - *Description:* Specifies the address details of the job, including the file and function.

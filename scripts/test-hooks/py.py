@@ -204,7 +204,7 @@ def _job_py_pytest(
             str(coverage_output_dir / "cobertura.xml"),
             f"--rcfile={str(coverage_cfg)}",
         ]
-        kwargs["label"] = f"{label} coverage icobertura"
+        kwargs["label"] = f"{label} coverage cobertura"
         run_command(cmd=gen_cobertura_coverage_report_cmd, **kwargs)
 
         # then a html report
