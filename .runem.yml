@@ -73,7 +73,7 @@
           type: bool
 - job:
     addr:
-      file: scripts/test-hooks/py.py
+      file: scripts/test_hooks/py.py
       function: _job_py_code_reformat
     label: reformat py
     when:
@@ -83,7 +83,7 @@
         - format
 - job:
     addr:
-      file: scripts/test-hooks/py.py
+      file: scripts/test_hooks/py.py
       function: _job_py_pylint
     label: pylint py
     when:
@@ -93,7 +93,7 @@
         - lint
 - job:
     addr:
-      file: scripts/test-hooks/py.py
+      file: scripts/test_hooks/py.py
       function: _job_py_flake8
     label: flake8 py
     when:
@@ -103,7 +103,7 @@
         - lint
 - job:
     addr:
-      file: scripts/test-hooks/py.py
+      file: scripts/test_hooks/py.py
       function: _job_py_mypy
     label: mypy py
     when:
@@ -113,7 +113,7 @@
         - type
 - job:
     addr:
-      file: scripts/test-hooks/py.py
+      file: scripts/test_hooks/py.py
       function: _install_python_requirements
     label: install python requirements
     when:
@@ -122,7 +122,7 @@
         - py
 - job:
     addr:
-      file: scripts/test-hooks/json_validators.py
+      file: scripts/test_hooks/json_validators.py
       function: _json_validate
     label: json validate
     when:
@@ -131,7 +131,7 @@
         - json
 - job:
     addr:
-      file: scripts/test-hooks/yarn.py
+      file: scripts/test_hooks/yarn.py
       function: _job_spellcheck
     label: spell check
     when:
@@ -140,7 +140,7 @@
         - spell
 - job:
     addr:
-      file: scripts/test-hooks/yarn.py
+      file: scripts/test_hooks/yarn.py
       function: _job_prettier
     label: prettier
     when:
