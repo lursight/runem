@@ -707,8 +707,8 @@ def _find_job_module(cfg_filepath: pathlib.Path, module_file_path: str) -> pathl
     if not module_path.exists():
         raise FunctionNotFound(
             (
-                f"unable to find test-function module looked in {module_path_candidates} running "
-                f"from '{pathlib.Path('.').absolute()}'"
+                f"unable to find test-function module looked in {module_path_candidates} "
+                f"running from '{pathlib.Path('.').absolute()}'"
             )
         )
     module_path = module_path.absolute()
