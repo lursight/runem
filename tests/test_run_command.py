@@ -135,6 +135,100 @@ def test_run_command_basic_call_non_zero_exit_code(run_mock: Mock) -> None:
     "runem.run_command.subprocess_run",
     return_value=subprocess.CompletedProcess(
         args=[],
+        returncode=1,  # use an error-code of 1, FAIL
+        stdout=str.encode("test output"),
+    ),
+)
+def test_run_command_ignore_fails_skips_failures_for_non_zero_exit_code(
+    run_mock: Mock,
+) -> None:
+    """Mimic non-zero exit code, but ensure we do NOT raise when ignore_fails=True."""
+    # capture any prints the run_command() does, should be informative in verbose=True mode
+    with io.StringIO() as buf, redirect_stdout(buf):
+        output = runem.run_command.run_command(
+            cmd=["ls"],
+            label="test command",
+            verbose=False,
+            ignore_fails=True,
+        )
+        assert (
+            output == ""
+        ), "expected empty output on failed run with 'ignore_fails=True'"
+
+        run_command_stdout = buf.getvalue()
+
+    # check the log output hasn't changed. Update as needed.
+    assert run_command_stdout == ""
+    run_mock.assert_called_once()
+
+
+@patch(
+    "runem.run_command.subprocess_run",
+    return_value=subprocess.CompletedProcess(
+        args=[],
+        returncode=0,  # leave valid_exit_ids param at default of 0, no-error
+        stdout=str.encode("test output"),
+    ),
+)
+def test_run_command_ignore_fails_skips_no_side_effects_on_success(
+    run_mock: Mock,
+) -> None:
+    """Mimic non-zero exit code, but ensure we do NOT raise when ignore_fails=True."""
+    # capture any prints the run_command() does, should be informative in verbose=True mode
+    with io.StringIO() as buf, redirect_stdout(buf):
+        output = runem.run_command.run_command(
+            cmd=["ls"],
+            label="test command",
+            verbose=False,
+            ignore_fails=True,
+        )
+        assert (
+            output == "test output"
+        ), "expected empty output on failed run with 'ignore_fails=True'"
+
+        run_command_stdout = buf.getvalue()
+
+    # check the log output hasn't changed. Update as needed.
+    assert run_command_stdout == ""
+    run_mock.assert_called_once()
+
+
+@patch(
+    "runem.run_command.subprocess_run",
+    return_value=subprocess.CompletedProcess(
+        args=[],
+        returncode=3,  # use 3, aka error code, but we will allow this later
+        stdout=str.encode("test output"),
+    ),
+)
+def test_run_command_ignore_fails_skips_no_side_effects_on_success_with_valid_exit_ids(
+    run_mock: Mock,
+) -> None:
+    """Mimic non-zero exit code, but ensure we do NOT raise when ignore_fails=True."""
+    # capture any prints the run_command() does, should be informative in verbose=True mode
+    with io.StringIO() as buf, redirect_stdout(buf):
+        output = runem.run_command.run_command(
+            cmd=["ls"],
+            label="test command",
+            verbose=False,
+            valid_exit_ids=(3,),  # matches patch value for 'returncode' above
+            ignore_fails=True,
+        )
+        assert (
+            output == "test output"
+        ), "expected empty output on failed run with 'ignore_fails=True'"
+
+        run_command_stdout = buf.getvalue()
+
+    # check the log output hasn't changed. Update as needed.
+    assert run_command_stdout == ""
+    run_mock.assert_called_once()
+
+
+@patch(
+    "runem.run_command.subprocess_run",
+    return_value=subprocess.CompletedProcess(
+        args=[],
         returncode=3,  # set to 3 to mimic tools that return non-zero in aok modes
         stdout=str.encode("test output"),
     ),
