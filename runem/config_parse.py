@@ -50,7 +50,10 @@ def _parse_global_config(
             tag = actual_filter["tag"]
             file_filters[tag] = actual_filter
 
-    return global_config["phases"], options, file_filters
+    phases: OrderedPhases = tuple()
+    if "phases" in global_config:
+        phases = global_config["phases"]
+    return phases, options, file_filters
 
 
 def parse_job_config(
@@ -114,10 +117,10 @@ def parse_config(config: Config, cfg_filepath: pathlib.Path) -> ConfigMetadata:
                         "Found two global config entries, expected only one 'config' section. "
                         f"second one is {entry}"
                     )
+                seen_global = True
                 global_entry: GlobalSerialisedConfig = entry  # type: ignore  # see above
                 global_config: GlobalConfig = global_entry["config"]
                 phase_order, options, file_filters = _parse_global_config(global_config)
-                assert phase_order, "phase order defined in config but is empty!"
                 continue
 
             # not a global or a job entry, what is it
