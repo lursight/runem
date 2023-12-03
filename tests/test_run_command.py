@@ -61,6 +61,10 @@ def test_get_stdout_handles_non_started_processes() -> None:
     ),
 )
 def test_run_command_basic_call(run_mock: Mock) -> None:
+    """Test normal operation of the run_command.
+
+    That is, that we can run a successful command and set the run-context for it
+    """
     # capture any prints the run_command() does, should be none in verbose=False mode
     with io.StringIO() as buf, redirect_stdout(buf):
         output = runem.run_command.run_command(
@@ -70,6 +74,11 @@ def test_run_command_basic_call(run_mock: Mock) -> None:
     assert output == "test output"
     assert "" == run_command_stdout, "expected empty output when verbosity is off"
     run_mock.assert_called_once()
+    assert len(run_mock.call_args) == 2
+    assert run_mock.call_args[0] == (["ls"],)
+    call_ctx = run_mock.call_args[1]
+    env = call_ctx["env"]
+    assert len(env.keys()) > 0, "expected the calling env to be passed to the command"
 
 
 @patch(
@@ -79,6 +88,7 @@ def test_run_command_basic_call(run_mock: Mock) -> None:
     ),
 )
 def test_run_command_basic_call_verbose(run_mock: Mock) -> None:
+    """Test that we get extra output when the verbose flag is set."""
     # capture any prints the run_command() does, should be informative in verbose=True mode
     with io.StringIO() as buf, redirect_stdout(buf):
         output = runem.run_command.run_command(
@@ -101,7 +111,7 @@ def test_run_command_basic_call_verbose(run_mock: Mock) -> None:
     "runem.run_command.subprocess_run",
     return_value=subprocess.CompletedProcess(
         args=[],
-        returncode=1,  # leave valid_exit_ids param at default of None/0
+        returncode=1,  # use an error-code of 1, FAIL
         stdout=str.encode("test output"),
     ),
 )
@@ -130,6 +140,7 @@ def test_run_command_basic_call_non_zero_exit_code(run_mock: Mock) -> None:
     ),
 )
 def test_run_command_basic_call_non_standard_exit_ok_code(run_mock: Mock) -> None:
+    """Tests the feature that handles non-standard exit codes."""
     # capture any prints the run_command() does, should be informative in verbose=True mode
     with io.StringIO() as buf, redirect_stdout(buf):
         output = runem.run_command.run_command(
@@ -157,6 +168,7 @@ def test_run_command_basic_call_non_standard_exit_ok_code(run_mock: Mock) -> Non
 def test_run_command_basic_call_non_standard_exit_ok_code_verbose(
     run_mock: Mock,
 ) -> None:
+    """Tests we handle non-standard exit codes & log out extra relevant information."""
     # capture any prints the run_command() does, should be informative in verbose=True mode
     with io.StringIO() as buf, redirect_stdout(buf):
         output = runem.run_command.run_command(
@@ -177,3 +189,99 @@ def test_run_command_basic_call_non_standard_exit_ok_code_verbose(
         "runem: running: done: test command: ls\n"
     )
     run_mock.assert_called_once()
+
+
+@patch(
+    "runem.run_command.subprocess_run",
+    return_value=subprocess.CompletedProcess(
+        args=[], returncode=0, stdout=str.encode("test output")
+    ),
+)
+def test_run_command_with_env(run_mock: Mock) -> None:
+    """Tests that the env is passed to the subprocess."""
+    # capture any prints the run_command() does, should be none in verbose=False mode
+    with io.StringIO() as buf, redirect_stdout(buf):
+        output = runem.run_command.run_command(
+            cmd=["ls"],
+            label="test command",
+            verbose=False,
+            env_overrides={"TEST_ENV_1": "1", "TEST_ENV_2": "2"},
+        )
+        run_command_stdout = buf.getvalue()
+    assert output == "test output"
+    assert "" == run_command_stdout, "expected empty output when verbosity is off"
+    assert len(run_mock.call_args) == 2
+    assert run_mock.call_args[0] == (["ls"],)
+    call_ctx = run_mock.call_args[1]
+    env = call_ctx["env"]
+    assert "TEST_ENV_1" in env
+    assert "TEST_ENV_2" in env
+    assert env["TEST_ENV_1"] == "1"
+    assert env["TEST_ENV_2"] == "2"
+
+
+@patch(
+    "runem.run_command.subprocess_run",
+    return_value=subprocess.CompletedProcess(
+        args=[], returncode=0, stdout=str.encode("test output")
+    ),
+)
+def test_run_command_with_env_verbose(run_mock: Mock) -> None:
+    """Tests that the env is handled and logged out in verbose mode."""
+    # capture any prints the run_command() does, should be none in verbose=False mode
+    with io.StringIO() as buf, redirect_stdout(buf):
+        output = runem.run_command.run_command(
+            cmd=["ls"],
+            label="test command",
+            verbose=True,
+            env_overrides={"TEST_ENV_1": "1", "TEST_ENV_2": "2"},
+        )
+        run_command_stdout = buf.getvalue()
+    assert output == "test output"
+    assert run_command_stdout == (
+        "runem: running: start: test command: ls\n"
+        "RUN ENV OVERRIDES: LANG_DO_PRINTS='True' ls\n"
+        "ENV OVERRIDES: TEST_ENV_1='1' TEST_ENV_2='2' ls\n"
+        "test output\n"
+        "runem: running: done: test command: ls\n"
+    )
+    assert len(run_mock.call_args) == 2
+    assert run_mock.call_args[0] == (["ls"],)
+    call_ctx = run_mock.call_args[1]
+    env = call_ctx["env"]
+    assert "TEST_ENV_1" in env
+    assert "TEST_ENV_2" in env
+    assert env["TEST_ENV_1"] == "1"
+    assert env["TEST_ENV_2"] == "2"
+
+
+@patch(
+    "runem.run_command.subprocess_run",
+    return_value=subprocess.CompletedProcess(
+        args=[], returncode=1, stdout=str.encode("test output")
+    ),
+)
+def test_run_command_with_env_on_error(run_mock: Mock) -> None:
+    """Tests that the env is passed to the subprocess and prints on error."""
+    # capture any prints the run_command() does, should be none in verbose=False mode
+    with io.StringIO() as buf, redirect_stdout(buf):
+        with pytest.raises(runem.run_command.RunCommandBadExitCode) as err_info:
+            runem.run_command.run_command(
+                cmd=["ls"],
+                label="test command",
+                verbose=False,
+                env_overrides={"TEST_ENV_1": "1", "TEST_ENV_2": "2"},
+            )
+        run_command_stdout = buf.getvalue()
+
+    assert "TEST_ENV_1='1' TEST_ENV_2='2'" in str(err_info.value)
+
+    assert "" == run_command_stdout, "expected empty output when verbosity is off"
+    assert len(run_mock.call_args) == 2
+    assert run_mock.call_args[0] == (["ls"],)
+    call_ctx = run_mock.call_args[1]
+    env = call_ctx["env"]
+    assert "TEST_ENV_1" in env
+    assert "TEST_ENV_2" in env
+    assert env["TEST_ENV_1"] == "1"
+    assert env["TEST_ENV_2"] == "2"

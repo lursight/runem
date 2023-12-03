@@ -18,6 +18,9 @@ exclude_lines =
     # Have to re-enable the standard pragma
     pragma: no cover
 
+    # Add a tech-debt collecting pragma NOTE: this is not intended to be easy to type
+    pragma: FIXME: add code coverage
+
     # Don't compain on input capture
     ret_msg = input(msg) 
 

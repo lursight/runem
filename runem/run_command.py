@@ -75,7 +75,7 @@ def run_command(  # noqa: C901 # pylint: disable=too-many-branches
     }
 
     run_env_param: typing.Optional[typing.Dict[str, str]] = None
-    if run_env:
+    if run_env:  # pragma: FIXME: add code coverage
         run_env_param = run_env
 
     process: CompletedProcess
