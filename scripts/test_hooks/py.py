@@ -3,7 +3,7 @@ import shutil
 import typing
 
 from runem.run_command import run_command
-from runem.runem import FilePathList, JobName, JobReturnData, Options
+from runem.types import FilePathList, JobName, JobReturnData, Options
 
 
 def _job_py_code_reformat(
