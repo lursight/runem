@@ -40,6 +40,7 @@
     "pytest", // the python module for testing
     "rcfile", // name of a type of config file
     "refs", // git references
+    "ronseal", // ronseal, does what it says on the tin
     "runem", // this product
     "setuptools", // python module
     "stefanzweifel", // the author of the temnplate used for runem's github

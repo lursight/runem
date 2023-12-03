@@ -1,16 +1,29 @@
 import re
-import subprocess
 import typing
 from collections import defaultdict
+from subprocess import check_output as subprocess_check_output
 
 from runem.types import ConfigMetadata, FilePathListLookup
 
 
 def find_files(config_metadata: ConfigMetadata) -> FilePathListLookup:
+    """Ronseal function, finds files.
+
+    For brevity we use git-ls-files, which, for now, limits us to working in git projects.
+
+    Previous incarnations used various methods:
+        - in bash we used find with hard-coded exclude filters
+        - the bash version was ported to python using os.walk()
+        - the limitations of using hardcoded values were overcome using
+          `gitignore-parser` but it is too slow on larger projects and 'runem' becomes
+          the largest overhead, which isn't acceptable
+
+    TODO: make this function support plugins.
+    """
     file_lists: FilePathListLookup = defaultdict(list)
 
     file_paths: typing.List[str] = (
-        subprocess.check_output(
+        subprocess_check_output(
             "git ls-files",
             shell=True,
         )
