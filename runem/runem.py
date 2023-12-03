@@ -26,8 +26,6 @@ import inspect
 import multiprocessing
 import os
 import pathlib
-import re
-import subprocess
 import sys
 import typing
 from collections import defaultdict
@@ -36,6 +34,7 @@ from itertools import repeat
 from timeit import default_timer as timer
 
 from runem.config import load_config
+from runem.files import find_files
 from runem.types import (
     Config,
     ConfigMetadata,
@@ -345,41 +344,6 @@ def _alias_to_switch(switch_name_alias: str, negatise: bool = False) -> str:
     if negatise:
         return f"--no-{switch_name_alias}"
     return f"--{switch_name_alias}"
-
-
-def _find_files(config_metadata: ConfigMetadata) -> FilePathListLookup:
-    file_lists: FilePathListLookup = defaultdict(list)
-
-    file_paths: typing.List[str] = (
-        subprocess.check_output(
-            "git ls-files",
-            shell=True,
-        )
-        .decode("utf-8")
-        .splitlines()
-    )
-    _bucket_file_by_tag(
-        file_paths,
-        config_metadata,
-        in_out_file_lists=file_lists,
-    )
-
-    # now ensure the file lists are sorted so we get deterministic behaviour in tests
-    for job_type in file_lists:
-        file_lists[job_type] = sorted(file_lists[job_type])
-    return file_lists
-
-
-def _bucket_file_by_tag(  # noqa: C901 # pylint: disable=too-many-branches
-    file_paths: typing.List[str],
-    config_metadata: ConfigMetadata,
-    in_out_file_lists: FilePathListLookup,
-) -> None:
-    """Groups files by the file.filters iin the config."""
-    for file_path in file_paths:
-        for tag, file_filter in config_metadata.file_filters.items():
-            if re.search(file_filter["regex"], file_path):
-                in_out_file_lists[tag].append(file_path)
 
 
 def _run_job(
@@ -855,7 +819,7 @@ def _main(  # noqa: C901 # pylint: disable=too-many-branches,too-many-statements
     # first anchor the cwd to the config-file, so that git ls-files works
     os.chdir(cfg_filepath.parent)
 
-    file_lists: FilePathListLookup = _find_files(config_metadata)
+    file_lists: FilePathListLookup = find_files(config_metadata)
     assert file_lists
     print(f"found {len(file_lists)} batches, ", end="")
     for tag in sorted(file_lists.keys()):
