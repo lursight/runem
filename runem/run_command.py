@@ -6,6 +6,10 @@ TERMINAL_WIDTH = 86
 
 
 def get_stdout(process: subprocess.CompletedProcess, prefix: str) -> str:
+    """Gets stdout from the given process, handling badly configured process objects.
+
+    Additionally prefixes each line of the output with a label.
+    """
     stdout: str
     try:
         stdout = str(process.stdout.decode("utf-8"))
