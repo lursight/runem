@@ -1,11 +1,18 @@
 import os
-import subprocess
 import typing
+from subprocess import PIPE as SUBPROCESS_PIPE
+from subprocess import STDOUT as SUBPROCESS_STDOUT
+from subprocess import CompletedProcess
+from subprocess import run as subprocess_run
 
 TERMINAL_WIDTH = 86
 
 
-def get_stdout(process: subprocess.CompletedProcess, prefix: str) -> str:
+class RunCommandBadExitCode(RuntimeError):
+    pass
+
+
+def get_stdout(process: CompletedProcess, prefix: str) -> str:
     """Gets stdout from the given process, handling badly configured process objects.
 
     Additionally prefixes each line of the output with a label.
@@ -34,7 +41,7 @@ def run_command(  # noqa: C901 # pylint: disable=too-many-branches
         print(f"runem: running: start: {label}: {cmd_string}")
         if valid_exit_ids is not None:
             valid_exit_strs = ",".join([str(exit_code) for exit_code in valid_exit_ids])
-            print(f"allowed return ids are: {valid_exit_strs}")
+            print(f"runem:\tallowed return ids are: {valid_exit_strs}")
 
     if valid_exit_ids is None:
         valid_exit_ids = (0,)
@@ -71,18 +78,18 @@ def run_command(  # noqa: C901 # pylint: disable=too-many-branches
     if run_env:
         run_env_param = run_env
 
-    process: subprocess.CompletedProcess
+    process: CompletedProcess
     try:
-        process = subprocess.run(
+        process = subprocess_run(
             cmd,
             check=False,  # Do NOT throw on non-zero exit
             env=run_env_param,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
+            stdout=SUBPROCESS_PIPE,
+            stderr=SUBPROCESS_STDOUT,
         )  # raise on non-zero
         if process.returncode not in valid_exit_ids:
             valid_exit_strs = ",".join([str(exit_code) for exit_code in valid_exit_ids])
-            raise RuntimeError(
+            raise RunCommandBadExitCode(
                 (
                     f"non-zero exit {process.returncode} (allowed are "
                     f"{valid_exit_strs}) from {cmd_string}"
@@ -105,6 +112,10 @@ def run_command(  # noqa: C901 # pylint: disable=too-many-branches
             f"\n\t{str(stdout)}"
             f"\nERROR END"
         )
+
+        if isinstance(err, RunCommandBadExitCode):
+            raise RunCommandBadExitCode(error_string) from err
+        # fallback to raising a RuntimeError
         raise RuntimeError(error_string) from err
 
     cmd_stdout: str = get_stdout(process, prefix=label)
