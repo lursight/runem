@@ -133,6 +133,31 @@ def test_run_command_basic_call_non_zero_exit_code(run_mock: Mock) -> None:
 
 @patch(
     "runem.run_command.subprocess_run",
+    side_effect=ValueError,
+    return_value=subprocess.CompletedProcess(
+        args=[],
+        returncode=1,  # use an error-code of 1, FAIL
+        stdout=str.encode(""),
+    ),
+)
+def test_run_command_handles_throwing_command(run_mock: Mock) -> None:
+    """Mimic non-zero exit code."""
+    # capture any prints the run_command() does, should be informative in verbose=True mode
+    with io.StringIO() as buf, redirect_stdout(buf):
+        with pytest.raises(runem.run_command.RunCommandUnhandledError):
+            runem.run_command.run_command(
+                cmd=["ls"], label="test command", verbose=False
+            )
+
+        run_command_stdout = buf.getvalue()
+
+    # check the log output hasn't changed. Update as needed.
+    assert run_command_stdout == ""
+    run_mock.assert_called_once()
+
+
+@patch(
+    "runem.run_command.subprocess_run",
     return_value=subprocess.CompletedProcess(
         args=[],
         returncode=1,  # use an error-code of 1, FAIL

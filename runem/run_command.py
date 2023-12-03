@@ -12,6 +12,10 @@ class RunCommandBadExitCode(RuntimeError):
     pass
 
 
+class RunCommandUnhandledError(RuntimeError):
+    pass
+
+
 def get_stdout(process: CompletedProcess, prefix: str) -> str:
     """Gets stdout from the given process, handling badly configured process objects.
 
@@ -78,7 +82,9 @@ def run_command(  # noqa: C901 # pylint: disable=too-many-branches
     if run_env:  # pragma: FIXME: add code coverage
         run_env_param = run_env
 
-    process: CompletedProcess
+    # init the process in case it throws for things like not being able to
+    # convert the command to a list of strings.
+    process: typing.Optional[CompletedProcess] = None
     try:
         process = subprocess_run(
             cmd,
@@ -98,7 +104,7 @@ def run_command(  # noqa: C901 # pylint: disable=too-many-branches
     except BaseException as err:
         if ignore_fails:
             return ""
-        stdout: str = get_stdout(process, prefix=f"{label}: ERROR: ")
+        stdout: str = get_stdout(process, prefix=f"{label}: ERROR: ") if process else ""
         env_overrides_as_string = ""
         if env_overrides:
             env_overrides_as_string = " ".join(
@@ -115,9 +121,10 @@ def run_command(  # noqa: C901 # pylint: disable=too-many-branches
 
         if isinstance(err, RunCommandBadExitCode):
             raise RunCommandBadExitCode(error_string) from err
-        # fallback to raising a RuntimeError
-        raise RuntimeError(error_string) from err
+        # fallback to raising a RunCommandUnhandledError
+        raise RunCommandUnhandledError(error_string) from err
 
+    assert process is not None
     cmd_stdout: str = get_stdout(process, prefix=label)
     if verbose:
         print(cmd_stdout)
