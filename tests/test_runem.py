@@ -6,59 +6,8 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from runem.runem import (
-    JobConfig,
-    JobNames,
-    JobPhases,
-    JobTags,
-    PhaseGroupedJobs,
-    parse_job_config,
-    timed_main,
-)
+from runem.runem import timed_main
 from runem.types import Config, GlobalSerialisedConfig
-
-
-def test_parse_job_config() -> None:
-    job_config: JobConfig = {
-        "addr": {
-            "file": __file__,
-            "function": "test_parse_job_config",
-        },
-        "label": "reformat py",
-        "when": {
-            "phase": "edit",
-            "tags": set(
-                (
-                    "py",
-                    "format",
-                )
-            ),
-        },
-    }
-    tags: JobTags = set(["py"])
-    jobs_by_phase: PhaseGroupedJobs = defaultdict(list)
-    job_names: JobNames = set()
-    phases: JobPhases = set()
-    parse_job_config(
-        cfg_filepath=pathlib.Path(__file__),
-        job=job_config,
-        in_out_tags=tags,
-        in_out_jobs_by_phase=jobs_by_phase,
-        in_out_job_names=job_names,
-        in_out_phases=phases,
-    )
-    assert tags == {"format", "py"}
-    assert jobs_by_phase == {
-        "edit": [
-            {
-                "addr": {"file": "test_runem.py", "function": "test_parse_job_config"},
-                "label": "reformat py",
-                "when": {"phase": "edit", "tags": set(("py", "format"))},
-            }
-        ]
-    }
-    assert job_names == {"reformat py"}
-    assert phases == {"edit"}
 
 
 def test_runem_basic() -> None:

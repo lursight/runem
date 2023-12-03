@@ -20,8 +20,6 @@ We do:
   you
 """
 import argparse
-import importlib
-import importlib.util
 import inspect
 import multiprocessing
 import os
@@ -34,18 +32,15 @@ from itertools import repeat
 from timeit import default_timer as timer
 
 from runem.config import load_config
+from runem.config_parse import parse_config
 from runem.files import find_files
+from runem.job_function_python import get_job_function
 from runem.types import (
     Config,
     ConfigMetadata,
-    ConfigNodes,
     FilePathList,
     FilePathListLookup,
-    FunctionNotFound,
-    GlobalConfig,
-    GlobalSerialisedConfig,
     JobConfig,
-    JobFunction,
     JobNames,
     JobPhases,
     JobReturn,
@@ -53,18 +48,13 @@ from runem.types import (
     JobRunMetadatasByPhase,
     JobRunReportByPhase,
     JobRunTimesByPhase,
-    JobSerialisedConfig,
     JobTags,
     JobTiming,
     OptionConfig,
-    OptionConfigs,
     Options,
     OrderedPhases,
     PhaseGroupedJobs,
     PhaseName,
-    TagFileFilter,
-    TagFileFilters,
-    TagFileFilterSerialised,
 )
 
 try:
@@ -360,7 +350,7 @@ def _run_job(
     function: typing.Callable
     job_tags: JobTags = set(job_config["when"]["tags"])
     os.chdir(root_path)
-    function = get_test_function(job_config, cfg_filepath)
+    function = get_job_function(job_config, cfg_filepath)
 
     # get the files for all files found for this job's tags
     file_list: FilePathList = []
@@ -404,107 +394,6 @@ def _run_job(
         print(f"DONE: {label}: {time_taken}")
     timing_data = (label, time_taken)
     return (timing_data, reports)
-
-
-def _get_test_function(
-    cfg_filepath: pathlib.Path,
-    module_name: str,
-    module_file_path: pathlib.Path,
-    function_to_load: str,
-) -> JobFunction:
-    """Given a job-description dynamically loads the test-function so we can call it."""
-
-    # first locate the module relative to the config file
-    abs_module_file_path: pathlib.Path = (
-        cfg_filepath.parent / module_file_path
-    ).absolute()
-
-    # load the function
-    module_spec = importlib.util.spec_from_file_location(
-        function_to_load, abs_module_file_path
-    )
-    if not module_spec:
-        raise FunctionNotFound(
-            (
-                f"unable to load '${function_to_load}' from '{str(module_file_path)} "
-                f"relative to '{str(cfg_filepath)}"
-            )
-        )
-
-    module = importlib.util.module_from_spec(module_spec)
-    sys.modules[module_name] = module
-    if not module_spec.loader:
-        raise FunctionNotFound("unable to load module")
-    module_spec.loader.exec_module(module)
-    try:
-        function: JobFunction = getattr(module, function_to_load)
-    except AttributeError as err:
-        raise FunctionNotFound(
-            (
-                f"ERROR! Check that function '{function_to_load}' "
-                f"exists in '{str(module_file_path)}' as expected in "
-                f"your config at '{str(cfg_filepath)}"
-            )
-        ) from err
-    return function
-
-
-def _find_job_module(cfg_filepath: pathlib.Path, module_file_path: str) -> pathlib.Path:
-    """Attempts to find the true location of the job-function module."""
-    module_path: pathlib.Path = pathlib.Path(module_file_path)
-
-    module_path_candidates = [
-        module_path,
-        module_path.absolute(),
-        (cfg_filepath.parent / module_file_path).absolute(),
-    ]
-    for module_path in module_path_candidates:
-        if module_path.exists():
-            break
-    if not module_path.exists():
-        raise FunctionNotFound(
-            (
-                f"unable to find test-function module looked in {module_path_candidates} "
-                f"running from '{pathlib.Path('.').absolute()}'"
-            )
-        )
-    module_path = module_path.absolute()
-    return module_path.relative_to(cfg_filepath.parent.absolute())
-
-
-def get_test_function(job_config: JobConfig, cfg_filepath: pathlib.Path) -> JobFunction:
-    """Given a job-description dynamically loads the test-function so we can call it.
-
-    Also re-address the job-config.
-    """
-    function_to_load: str = job_config["addr"]["function"]
-    try:
-        module_file_path: pathlib.Path = _find_job_module(
-            cfg_filepath, job_config["addr"]["file"]
-        )
-    except FunctionNotFound as err:
-        raise FunctionNotFound(
-            (
-                f"Whilst loading job '{job_config['label']}' runem failed to find "
-                f"job.addr.file '{job_config['addr']['file']}' looking for "
-                f"job.addr.function '{function_to_load}'"
-            )
-        ) from err
-
-    anchored_file_path = cfg_filepath.parent / module_file_path
-    assert (
-        anchored_file_path.exists()
-    ), f"{module_file_path} not found at {anchored_file_path}!"
-
-    module_name = module_file_path.stem.replace(" ", "_").replace("-", "_")
-
-    function = _get_test_function(
-        cfg_filepath, module_name, module_file_path, function_to_load
-    )
-
-    # re-write the job-config file-path for the module with the one that worked
-    job_config["addr"]["file"] = str(module_file_path)
-    return function
 
 
 def _get_jobs_matching(
@@ -594,132 +483,6 @@ def filter_jobs(
     return filtered_jobs
 
 
-def _parse_global_config(
-    global_config: GlobalConfig,
-) -> typing.Tuple[OrderedPhases, OptionConfigs, TagFileFilters]:
-    """Parses and validates a global-config entry read in from disk.
-
-    Returns the phases in the order we want to run them
-    """
-    options: OptionConfigs = ()
-    if "options" in global_config:
-        options = tuple(
-            option_serialised["option"]
-            for option_serialised in global_config["options"]
-        )
-
-    file_filters: TagFileFilters = {}
-    if "files" in global_config:
-        file_filter: TagFileFilterSerialised
-        serialised_filters: typing.List[TagFileFilterSerialised] = global_config[
-            "files"
-        ]
-        for file_filter in serialised_filters:
-            actual_filter: TagFileFilter = file_filter["filter"]
-            tag = actual_filter["tag"]
-            file_filters[tag] = actual_filter
-
-    return global_config["phases"], options, file_filters
-
-
-def parse_job_config(
-    cfg_filepath: pathlib.Path,
-    job: JobConfig,
-    in_out_tags: JobTags,
-    in_out_jobs_by_phase: PhaseGroupedJobs,
-    in_out_job_names: JobNames,
-    in_out_phases: JobPhases,
-) -> None:
-    """Parses and validates a job-entry read in from disk.
-
-    Tries to relocate the function address relative to the config-file
-
-    Returns the tags generated
-    """
-    try:
-        job_names_used = job["label"] in in_out_job_names
-        if job_names_used:
-            print("ERROR: duplicate job label!")
-            print(f"\t'{job['label']}' is used twice or more in {str(cfg_filepath)}")
-            sys.exit(1)
-
-        # try and load the function _before_ we schedule it's execution
-        get_test_function(job, cfg_filepath)
-        phase_id: PhaseName = job["when"]["phase"]
-        in_out_jobs_by_phase[phase_id].append(job)
-
-        in_out_job_names.add(job["label"])
-        in_out_phases.add(job["when"]["phase"])
-        for tag in job["when"]["tags"]:
-            in_out_tags.add(tag)
-    except KeyError as err:
-        raise ValueError(
-            f"job config entry is missing '{err.args[0]}' data. Have {job}"
-        ) from err
-
-
-def _parse_config(config: Config, cfg_filepath: pathlib.Path) -> ConfigMetadata:
-    """Validates and restructure the config to make it more convenient to use."""
-    jobs_by_phase: PhaseGroupedJobs = defaultdict(list)
-    job_names: JobNames = set()
-    job_phases: JobPhases = set()
-    tags: JobTags = set()
-    entry: ConfigNodes
-    seen_global: bool = False
-    phase_order: OrderedPhases = ()
-    options: OptionConfigs = ()
-    file_filters: TagFileFilters = {}
-    for entry in config:
-        # we apply a type-ignore here as we know (for now) that jobs have "job"
-        # keys and global configs have "global" keys
-        isinstance_job: bool = "job" in entry  # type: ignore
-        if not isinstance_job:
-            # we apply a type-ignore here as we know (for now) that jobs have "job"
-            # keys and global configs have "global" keys
-            isinstance_global: bool = "config" in entry  # type: ignore
-            if isinstance_global:
-                if seen_global:
-                    raise ValueError(
-                        "Found two global config entries, expected only one 'config' section. "
-                        f"second one is {entry}"
-                    )
-                global_entry: GlobalSerialisedConfig = entry  # type: ignore  # see above
-                global_config: GlobalConfig = global_entry["config"]
-                phase_order, options, file_filters = _parse_global_config(global_config)
-                assert phase_order, "phase order defined in config but is empty!"
-                continue
-
-            # not a global or a job entry, what is it
-            raise RuntimeError(f"invalid 'job' or 'global' config entry, {entry}")
-
-        job_entry: JobSerialisedConfig = entry  # type: ignore  # see above
-        job: JobConfig = job_entry["job"]
-        parse_job_config(
-            cfg_filepath,
-            job,
-            in_out_tags=tags,
-            in_out_jobs_by_phase=jobs_by_phase,
-            in_out_job_names=job_names,
-            in_out_phases=job_phases,
-        )
-
-    if not phase_order:
-        print("WARNING: phase ordering not configured! Runs will be non-deterministic!")
-        phase_order = tuple(job_phases)
-
-    # tags = tags.union(("python", "es", "firebase_funcs"))
-    return ConfigMetadata(
-        cfg_filepath,
-        phase_order,
-        options,
-        file_filters,
-        jobs_by_phase,
-        job_names,
-        job_phases,
-        tags,
-    )
-
-
 def _plot_times(
     overall_run_time: timedelta,
     phase_run_oder: OrderedPhases,
@@ -800,7 +563,7 @@ def _main(  # noqa: C901 # pylint: disable=too-many-branches,too-many-statements
     config: Config
     cfg_filepath: pathlib.Path
     config, cfg_filepath = load_config()
-    config_metadata: ConfigMetadata = _parse_config(config, cfg_filepath)
+    config_metadata: ConfigMetadata = parse_config(config, cfg_filepath)
     args: argparse.Namespace
     tags_to_run: JobTags
     options: Options
