@@ -43,9 +43,11 @@ from runem.types import (
     JobReturn,
     JobRunMetadata,
     JobRunMetadatasByPhase,
+    Jobs,
     JobTiming,
     OrderedPhases,
     PhaseGroupedJobs,
+    PhaseName,
 )
 
 
@@ -72,7 +74,84 @@ def _determine_run_parameters(argv) -> ConfigMetadata:
     return config_metadata
 
 
-def _main(  # noqa: C901 # pylint: disable=too-many-branches,too-many-statements
+def _process_jobs(
+    config_metadata: ConfigMetadata,
+    file_lists: FilePathListLookup,
+    in_out_job_run_metadatas: JobRunMetadatasByPhase,
+    phase: PhaseName,
+    jobs: Jobs,
+) -> None:
+    """Execute each given job asynchronously.
+
+    This is where the major real-world time savings happen, and it could be
+    better, much, much better.
+
+    TODO: this is where we do the scheduling, if we wanted to be smarter about
+          it and, for instance, run the longest-running job first with quicker
+          jobs completing around it, then we would work out that schedule here.
+    """
+    num_concurrent_procs: int = (
+        config_metadata.args.procs
+        if config_metadata.args.procs != -1
+        else multiprocessing.cpu_count()
+    )
+    num_concurrent_procs = min(num_concurrent_procs, len(jobs))
+    print(
+        (
+            f"Running '{phase}' with {num_concurrent_procs} workers "
+            f"processing {len(jobs)} jobs"
+        )
+    )
+    with multiprocessing.Pool(processes=num_concurrent_procs) as pool:
+        # use starmap so we can pass down the job-configs and the args and the files
+        in_out_job_run_metadatas[phase] = pool.starmap(
+            job_runner,
+            zip(
+                jobs,
+                repeat(config_metadata),
+                repeat(file_lists),
+            ),
+        )
+
+
+def _process_jobs_by_phase(
+    config_metadata: ConfigMetadata,
+    file_lists: FilePathListLookup,
+    filtered_jobs_by_phase: PhaseGroupedJobs,
+    in_out_job_run_metadatas: JobRunMetadatasByPhase,
+) -> None:
+    """Execute each job asynchronously, grouped by phase.
+
+    Whilst it is conceptually useful to group jobs by 'phase', Phases are
+    ostensibly a poor-man's dependency graph. With a proper dependency graph
+    Phases could be phased out, or at least used less. For new users, and to get
+    a quick and dirty solution up and running, Phases are probably a very good
+    idea and easy to grasp.
+
+    TODO: augment (NOT REPLACE) with dependency graph. New users and hacker
+          dev-ops/SREs find phases useful and, more importantly, quick to
+          implement.
+    """
+    for phase in config_metadata.phases:
+        jobs = filtered_jobs_by_phase[phase]
+        if not jobs:
+            # As previously reported, no jobs for this phase
+            continue
+
+        if phase not in config_metadata.phases_to_run:
+            if config_metadata.args.verbose:
+                print(f"Skipping Phase {phase}")
+            continue
+
+        if config_metadata.args.verbose:
+            print(f"Running Phase {phase}")
+
+        _process_jobs(
+            config_metadata, file_lists, in_out_job_run_metadatas, phase, jobs
+        )
+
+
+def _main(
     argv: typing.List[str],
 ) -> typing.Tuple[OrderedPhases, JobRunMetadatasByPhase]:
     start = timer()
@@ -102,43 +181,9 @@ def _main(  # noqa: C901 # pylint: disable=too-many-branches,too-many-statements
 
     start = timer()
 
-    for phase in config_metadata.phases:
-        jobs = filtered_jobs_by_phase[phase]
-        if not jobs:
-            # As previously reported, no jobs for this phase
-            continue
-
-        if phase not in config_metadata.phases_to_run:
-            if config_metadata.args.verbose:
-                print(f"Skipping Phase {phase}")
-            continue
-
-        if config_metadata.args.verbose:
-            print(f"Running Phase {phase}")
-
-        num_concurrent_procs: int = (
-            config_metadata.args.procs
-            if config_metadata.args.procs != -1
-            else multiprocessing.cpu_count()
-        )
-        num_concurrent_procs = min(num_concurrent_procs, len(jobs))
-        print(
-            (
-                f"Running '{phase}' with {num_concurrent_procs} workers "
-                f"processing {len(jobs)} jobs"
-            )
-        )
-        with multiprocessing.Pool(processes=num_concurrent_procs) as pool:
-            # use starmap so we can pass down the job-configs and the args and the files
-
-            job_run_metadatas[phase] = pool.starmap(
-                job_runner,
-                zip(
-                    jobs,
-                    repeat(config_metadata),
-                    repeat(file_lists),
-                ),
-            )
+    _process_jobs_by_phase(
+        config_metadata, file_lists, filtered_jobs_by_phase, job_run_metadatas
+    )
 
     end = timer()
 

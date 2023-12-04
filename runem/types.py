@@ -112,7 +112,7 @@ class JobConfig(typing.TypedDict, total=False):
 
 Jobs = typing.List[JobConfig]
 
-PhaseGroupedJobs = typing.DefaultDict[PhaseName, typing.List[JobConfig]]
+PhaseGroupedJobs = typing.DefaultDict[PhaseName, Jobs]
 
 
 class OptionConfigSerialised(typing.TypedDict):
