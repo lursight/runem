@@ -2,8 +2,9 @@ import pathlib
 from collections import defaultdict
 from unittest.mock import Mock, patch
 
+from runem.config_metadata import ConfigMetadata
 from runem.files import find_files
-from runem.types import ConfigMetadata, FilePathListLookup
+from runem.types import FilePathListLookup
 
 
 @patch(

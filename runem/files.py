@@ -3,7 +3,8 @@ import typing
 from collections import defaultdict
 from subprocess import check_output as subprocess_check_output
 
-from runem.types import ConfigMetadata, FilePathListLookup
+from runem.config_metadata import ConfigMetadata
+from runem.types import FilePathListLookup
 
 
 def find_files(config_metadata: ConfigMetadata) -> FilePathListLookup:

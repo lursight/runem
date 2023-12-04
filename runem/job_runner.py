@@ -5,15 +5,9 @@ import typing
 from datetime import timedelta
 from timeit import default_timer as timer
 
+from runem.config_metadata import ConfigMetadata
 from runem.job_function_python import get_job_function
-from runem.types import (
-    ConfigMetadata,
-    FilePathList,
-    FilePathListLookup,
-    JobConfig,
-    JobReturn,
-    JobTags,
-)
+from runem.types import FilePathList, FilePathListLookup, JobConfig, JobReturn, JobTags
 
 
 def job_runner(

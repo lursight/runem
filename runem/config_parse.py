@@ -3,10 +3,10 @@ import sys
 import typing
 from collections import defaultdict
 
+from runem.config_metadata import ConfigMetadata
 from runem.job_function_python import get_job_function
 from runem.types import (
     Config,
-    ConfigMetadata,
     ConfigNodes,
     GlobalConfig,
     GlobalSerialisedConfig,

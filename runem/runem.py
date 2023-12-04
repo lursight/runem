@@ -31,6 +31,7 @@ from timeit import default_timer as timer
 
 from runem.command_line import parse_args
 from runem.config import load_config
+from runem.config_metadata import ConfigMetadata
 from runem.config_parse import parse_config
 from runem.files import find_files
 from runem.job_filter import filter_jobs
@@ -38,7 +39,6 @@ from runem.job_runner import job_runner
 from runem.report import report_on_run
 from runem.types import (
     Config,
-    ConfigMetadata,
     FilePathListLookup,
     JobReturn,
     JobRunMetadata,

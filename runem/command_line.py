@@ -4,7 +4,8 @@ import pathlib
 import sys
 import typing
 
-from runem.types import ConfigMetadata, JobNames, OptionConfig, Options
+from runem.config_metadata import ConfigMetadata
+from runem.types import JobNames, OptionConfig, Options
 
 
 def parse_args(

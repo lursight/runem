@@ -1,8 +1,8 @@
 import typing
 from collections import defaultdict
 
+from runem.config_metadata import ConfigMetadata
 from runem.types import (
-    ConfigMetadata,
     JobConfig,
     JobNames,
     JobPhases,
