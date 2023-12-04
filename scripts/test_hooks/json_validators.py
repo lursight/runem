@@ -2,7 +2,7 @@ import pathlib
 import typing
 
 from runem.run_command import run_command
-from runem.runem import FilePathList
+from runem.types import FilePathList
 
 
 def _json_validate(

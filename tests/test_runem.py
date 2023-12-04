@@ -52,9 +52,8 @@ def test_runem_basic_with_config(
         runem_stdout = buf.getvalue().split("\n")
         assert [
             "found 1 batches, 1 'mock phase' files, ",
-            "filtering for tags set()",
             "skipping phase 'mock phase'",
-        ] == runem_stdout[:3]
+        ] == runem_stdout[:2]
 
 
 @patch(
@@ -103,10 +102,10 @@ def test_runem_with_full_config(
     find_files_mock.return_value = minimal_file_lists
     with io.StringIO() as buf, redirect_stdout(buf):
         # with pytest.raises(SystemExit):
-        timed_main(["--help"])
+        timed_main(["--verbose"])
         runem_stdout = buf.getvalue().split("\n")
         assert [
             "found 1 batches, 1 'mock phase' files, ",
-            "filtering for tags {'dummy tag 1', 'dummy tag 2'}",
+            "filtering for tags 'dummy tag 1', 'dummy tag 2'",
             "will run 1 jobs for phase 'dummy phase 1'",
         ] == runem_stdout[:3]

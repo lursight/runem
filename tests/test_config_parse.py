@@ -4,13 +4,17 @@ from collections import defaultdict
 import pytest
 
 from runem.config_parse import _parse_global_config, parse_config, parse_job_config
-from runem.runem import JobConfig, JobNames, JobPhases, JobTags, PhaseGroupedJobs
 from runem.types import (
     Config,
     ConfigMetadata,
     GlobalConfig,
     GlobalSerialisedConfig,
+    JobConfig,
+    JobNames,
+    JobPhases,
     JobSerialisedConfig,
+    JobTags,
+    PhaseGroupedJobs,
 )
 
 
