@@ -51,7 +51,7 @@ from runem.types import (
 )
 
 
-def _determine_run_parameters(argv) -> ConfigMetadata:
+def _determine_run_parameters(argv: typing.List[str]) -> ConfigMetadata:
     """Loads config, parsing cli input and produces the run config.
 
     This is where the power of run'em resides. We match a declarative config with useful
@@ -136,11 +136,6 @@ def _process_jobs_by_phase(
         jobs = filtered_jobs_by_phase[phase]
         if not jobs:
             # As previously reported, no jobs for this phase
-            continue
-
-        if phase not in config_metadata.phases_to_run:
-            if config_metadata.args.verbose:
-                print(f"Skipping Phase {phase}")
             continue
 
         if config_metadata.args.verbose:

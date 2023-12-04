@@ -65,6 +65,7 @@ def report_on_run(
     job_run_metadatas: JobRunMetadatasByPhase,
     overall_runtime: timedelta,
 ):
+    print("runem: reports:")
     timing_data: JobRunTimesByPhase = defaultdict(list)
     report_data: JobRunReportByPhase = defaultdict(list)
     for phase in job_run_metadatas:
