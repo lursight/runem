@@ -37,11 +37,12 @@ JobRunReportByPhase = typing.Dict[PhaseName, ReportUrls]
 JobRunMetadatasByPhase = typing.Dict[PhaseName, typing.List[JobRunMetadata]]
 
 
-class OptionConfig(typing.TypedDict):
+class OptionConfig(typing.TypedDict, total=False):
     """Spec for configuring job option overrides."""
 
     name: str
     aliases: typing.Optional[typing.List[str]]
+    alias: typing.Optional[str]
     default: bool
     type: str
     desc: typing.Optional[str]

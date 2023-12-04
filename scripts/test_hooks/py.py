@@ -161,6 +161,10 @@ def _job_py_pytest(  # noqa: C901 # pylint: disable=too-many-branches,too-many-s
     if procs == -1:
         threading_switches = ["-n", "auto"]
 
+    verbose_switches: typing.List[str] = []
+    if "verbose" in kwargs and kwargs["verbose"]:
+        verbose_switches = ["-vvv"]
+
     profile_switches: typing.List[str] = []
     cmd_pytest = [
         "python3",
@@ -173,6 +177,7 @@ def _job_py_pytest(  # noqa: C901 # pylint: disable=too-many-branches,too-many-s
         "--failed-first",
         "--exitfirst",
         *profile_switches,
+        *verbose_switches,
         str(pytest_path),
     ]
 

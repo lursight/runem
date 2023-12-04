@@ -6,6 +6,7 @@ import typing
 
 from runem.config_metadata import ConfigMetadata
 from runem.types import JobNames, OptionConfig, Options
+from runem.utils import printable_set
 
 
 def parse_args(
@@ -29,7 +30,7 @@ def parse_args(
         default=sorted(list(all_job_names)),
         help=(
             "List of job-names to run the given jobs. Other filters will modify this list. "
-            f"Defaults to '{sorted(list(all_job_names))}'"
+            f"Defaults to {printable_set(all_job_names)}"
         ),
         required=False,
     )
@@ -40,7 +41,7 @@ def parse_args(
         default=[],
         help=(
             "List of job-names to NOT run. Defaults to empty. "
-            f"Available options are: '{sorted(list(all_job_names))}'"
+            f"Available options are: {printable_set((all_job_names))}"
         ),
         required=False,
     )
@@ -54,7 +55,7 @@ def parse_args(
         help=(
             "Run only the phases passed in, and can be used to "
             "change the phase order. Phases are run in the order given. "
-            f"Defaults to '{config_metadata.all_job_phases}'. "
+            f"Defaults to {printable_set(config_metadata.all_job_phases)}. "
         ),
         required=False,
     )
@@ -248,6 +249,9 @@ def _define_option_args(
                 _alias_to_switch(switch_name_alias, negatise=True)
                 for switch_name_alias in option["aliases"]
             ]
+        if "alias" in option and option["alias"]:
+            aliases.append(_alias_to_switch(option["alias"]))
+            aliases_no.append(_alias_to_switch(option["alias"], negatise=True))
 
         desc: typing.Optional[str] = None
         desc_for_off: typing.Optional[str] = None
@@ -277,7 +281,8 @@ def _define_option_args(
 
 def _alias_to_switch(switch_name_alias: str, negatise: bool = False) -> str:
     """Util function to generate a alias switch for argsparse."""
-    if not negatise and len(switch_name_alias) == 1:
+    single_letter_variant = not negatise and len(switch_name_alias) == 1
+    if single_letter_variant:
         return f"-{switch_name_alias}"
     if negatise:
         return f"--no-{switch_name_alias}"

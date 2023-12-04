@@ -10,6 +10,7 @@ from runem.types import (
     PhaseGroupedJobs,
     PhaseName,
 )
+from runem.utils import printable_set
 
 
 def _get_jobs_matching(
@@ -61,11 +62,6 @@ def _get_jobs_matching(
         filtered_jobs[phase].append(job)
 
 
-def _printable_set(some_set: typing.Set[typing.Any]) -> str:
-    """Get a printable, deterministic string version of a set."""
-    return ", ".join([f"'{set_item}'" for set_item in sorted(list(some_set))])
-
-
 def filter_jobs(
     config_metadata: ConfigMetadata,
 ) -> PhaseGroupedJobs:
@@ -77,9 +73,9 @@ def filter_jobs(
     jobs: PhaseGroupedJobs = config_metadata.jobs
     verbose: bool = config_metadata.args.verbose
     if tags_to_run:
-        print(f"filtering for tags {_printable_set(tags_to_run)}", end="")
+        print(f"filtering for tags {printable_set(tags_to_run)}", end="")
     if tags_to_avoid:
-        print(f"excluding jobs with tags {_printable_set(tags_to_avoid)}", end="")
+        print(f"excluding jobs with tags {printable_set(tags_to_avoid)}", end="")
     if tags_to_run or tags_to_avoid:
         print()
     filtered_jobs: PhaseGroupedJobs = defaultdict(list)
