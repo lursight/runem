@@ -202,7 +202,7 @@ def test_parse_config() -> None:
     expected_config_metadata: ConfigMetadata = ConfigMetadata(
         cfg_filepath=config_file_path,
         phases=("dummy phase 1",),
-        options=tuple(),
+        options_config=tuple(),
         file_filters={
             # "dummy tag": {
             #     "tag": "dummy tag",
@@ -210,9 +210,9 @@ def test_parse_config() -> None:
             # }
         },
         jobs=expected_jobs,
-        job_names=set(("dummy job label",)),
-        job_phases=set(("dummy phase 1",)),
-        job_tags=set(
+        all_job_names=set(("dummy job label",)),
+        all_job_phases=set(("dummy phase 1",)),
+        all_job_tags=set(
             (
                 "dummy tag 2",
                 "dummy tag 1",
@@ -222,12 +222,12 @@ def test_parse_config() -> None:
 
     result: ConfigMetadata = parse_config(full_config, config_file_path)
     assert result.phases == expected_config_metadata.phases
-    assert result.options == expected_config_metadata.options
+    assert result.options_config == expected_config_metadata.options_config
     assert result.file_filters == expected_config_metadata.file_filters
     assert result.jobs == expected_config_metadata.jobs
-    assert result.job_names == expected_config_metadata.job_names
-    assert result.job_phases == expected_config_metadata.job_phases
-    assert result.job_tags == expected_config_metadata.job_tags
+    assert result.all_job_names == expected_config_metadata.all_job_names
+    assert result.all_job_phases == expected_config_metadata.all_job_phases
+    assert result.all_job_tags == expected_config_metadata.all_job_tags
 
 
 def test_parse_config_raises_on_invalid() -> None:

@@ -1,7 +1,7 @@
 import typing
 
 from runem.run_command import run_command
-from runem.runem import Options
+from runem.types import Options
 
 
 def _job_spellcheck(

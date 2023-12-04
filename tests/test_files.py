@@ -14,7 +14,7 @@ def test_find_files_basic(mock_subprocess_check_output: Mock) -> None:
     config_metadata: ConfigMetadata = ConfigMetadata(
         cfg_filepath=pathlib.Path(__file__),
         phases=("dummy phase 1",),
-        options=tuple(),
+        options_config=tuple(),
         file_filters={
             "dummy tag": {
                 "tag": "dummy tag",
@@ -22,9 +22,9 @@ def test_find_files_basic(mock_subprocess_check_output: Mock) -> None:
             }
         },
         jobs=defaultdict(list),
-        job_names=set(),
-        job_phases=set(),
-        job_tags=set(),
+        all_job_names=set(),
+        all_job_phases=set(),
+        all_job_tags=set(),
     )
     results: FilePathListLookup = find_files(config_metadata)
     assert results == {

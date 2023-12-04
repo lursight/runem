@@ -68,14 +68,14 @@ def _printable_set(some_set: typing.Set[typing.Any]) -> str:
 
 def filter_jobs(
     config_metadata: ConfigMetadata,
-    jobs_to_run: JobNames,
-    phases_to_run: JobPhases,
-    tags_to_run: JobTags,
-    tags_to_avoid: JobTags,
-    jobs: PhaseGroupedJobs,
-    verbose: bool,
 ) -> PhaseGroupedJobs:
     """Filters the jobs to match requested tags."""
+    jobs_to_run: JobNames = config_metadata.jobs_to_run
+    phases_to_run: JobPhases = config_metadata.phases_to_run
+    tags_to_run: JobTags = config_metadata.tags_to_run
+    tags_to_avoid: JobTags = config_metadata.tags_to_avoid
+    jobs: PhaseGroupedJobs = config_metadata.jobs
+    verbose: bool = config_metadata.args.verbose
     if tags_to_run:
         print(f"filtering for tags {_printable_set(tags_to_run)}", end="")
     if tags_to_avoid:

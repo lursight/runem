@@ -4,19 +4,12 @@ import pathlib
 import sys
 import typing
 
-from runem.types import (
-    ConfigMetadata,
-    JobNames,
-    JobPhases,
-    JobTags,
-    OptionConfig,
-    Options,
-)
+from runem.types import ConfigMetadata, JobNames, OptionConfig, Options
 
 
 def parse_args(
     config_metadata: ConfigMetadata, argv: typing.List[str]
-) -> typing.Tuple[argparse.Namespace, JobNames, JobPhases, JobTags, JobTags, Options]:
+) -> ConfigMetadata:
     """Parses the args and defines the filter inputs.
 
     Generates args based upon the config, parsing the cli args and return the filters to
@@ -27,7 +20,7 @@ def parse_args(
     parser = argparse.ArgumentParser(description="Runs the Lursight Lang test-suite")
 
     job_group = parser.add_argument_group("jobs")
-    all_job_names: JobNames = set(name for name in config_metadata.job_names)
+    all_job_names: JobNames = set(name for name in config_metadata.all_job_names)
     job_group.add_argument(
         "--jobs",
         dest="jobs",
@@ -56,11 +49,11 @@ def parse_args(
         "--phases",
         dest="phases",
         nargs="+",
-        default=config_metadata.job_phases,
+        default=config_metadata.all_job_phases,
         help=(
             "Run only the phases passed in, and can be used to "
             "change the phase order. Phases are run in the order given. "
-            f"Defaults to '{config_metadata.job_phases}'. "
+            f"Defaults to '{config_metadata.all_job_phases}'. "
         ),
         required=False,
     )
@@ -72,7 +65,7 @@ def parse_args(
         help=(
             "List of phases to NOT run. "
             "This option does not change the phase run order. "
-            f"Options are '{sorted(config_metadata.job_phases)}'. "
+            f"Options are '{sorted(config_metadata.all_job_phases)}'. "
         ),
         required=False,
     )
@@ -82,10 +75,10 @@ def parse_args(
         "--tags",
         dest="tags",
         nargs="+",
-        default=config_metadata.job_tags,
+        default=config_metadata.all_job_tags,
         help=(
             "Only jobs with the given tags. "
-            f"Defaults to '{sorted(config_metadata.job_tags)}'."
+            f"Defaults to '{sorted(config_metadata.all_job_tags)}'."
         ),
         required=False,
     )
@@ -96,7 +89,7 @@ def parse_args(
         default=[],
         help=(
             "Removes one or more tags from the list of job tags to be run. "
-            f"Options are '{sorted(config_metadata.job_tags)}'."
+            f"Options are '{sorted(config_metadata.all_job_tags)}'."
         ),
         required=False,
     )
@@ -163,7 +156,10 @@ def parse_args(
     tags_to_avoid = set(args.tags_excluded)
     phases_to_run = set(args.phases).difference(args.phases_excluded)
 
-    return args, jobs_to_run, phases_to_run, tags_to_run, tags_to_avoid, options
+    config_metadata.set_cli_data(
+        args, jobs_to_run, phases_to_run, tags_to_run, tags_to_avoid, options
+    )
+    return config_metadata
 
 
 def _validate_filters(
@@ -177,11 +173,11 @@ def _validate_filters(
     # validate the job-names passed in
     for name, name_list in (("only", args.jobs), ("exclude", args.jobs_excluded)):
         for job_name in name_list:
-            if job_name not in config_metadata.job_names:
+            if job_name not in config_metadata.all_job_names:
                 print(
                     (
                         f"ERROR: invalid {name}-job-name '{job_name}', "
-                        f"choose from one of {config_metadata.job_names}"
+                        f"choose from one of {config_metadata.all_job_names}"
                     )
                 )
                 return False
@@ -189,11 +185,11 @@ def _validate_filters(
     # validate the tags passed in
     for name, tag_list in (("only", args.tags), ("exclude", args.tags_excluded)):
         for tag in tag_list:
-            if tag not in config_metadata.job_tags:
+            if tag not in config_metadata.all_job_tags:
                 print(
                     (
                         f"ERROR: invalid {name}-tag '{tag}', "
-                        f"choose from one of {config_metadata.job_tags}"
+                        f"choose from one of {config_metadata.all_job_tags}"
                     )
                 )
                 return False
@@ -201,11 +197,11 @@ def _validate_filters(
     # validate the phases passed in
     for name, phase_list in (("only", args.phases), ("exclude", args.phases_excluded)):
         for phase in phase_list:
-            if phase not in config_metadata.job_phases:
+            if phase not in config_metadata.all_job_phases:
                 print(
                     (
                         f"ERROR: invalid {name}-phase '{phase}', "
-                        f"choose from one of {config_metadata.job_phases}"
+                        f"choose from one of {config_metadata.all_job_phases}"
                     )
                 )
                 return False
@@ -222,12 +218,12 @@ def _initialise_options(
     """
 
     options: Options = {
-        option["name"]: option["default"] for option in config_metadata.options
+        option["name"]: option["default"] for option in config_metadata.options_config
     }
-    if config_metadata.options and args.overrides_on:
+    if config_metadata.options_config and args.overrides_on:
         for option_name in args.overrides_on:
             options[option_name] = True
-    if config_metadata.options and args.overrides_off:
+    if config_metadata.options_config and args.overrides_off:
         for option_name in args.overrides_off:
             options[option_name] = False
     return options
@@ -237,7 +233,7 @@ def _define_option_args(
     config_metadata: ConfigMetadata, job_param_overrides_group: argparse._ArgumentGroup
 ) -> None:
     option: OptionConfig
-    for option in config_metadata.options:
+    for option in config_metadata.options_config:
         switch_name = option["name"].replace("_", "-").replace(" ", "-")
 
         aliases: typing.List[str] = []

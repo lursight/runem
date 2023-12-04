@@ -19,7 +19,6 @@ We do:
 - time tests and tell you what used the most time, and how much time run-tests saved
   you
 """
-import argparse
 import multiprocessing
 import os
 import pathlib
@@ -44,40 +43,44 @@ from runem.types import (
     JobReturn,
     JobRunMetadata,
     JobRunMetadatasByPhase,
-    JobTags,
     JobTiming,
-    Options,
     OrderedPhases,
     PhaseGroupedJobs,
 )
 
 
-def _main(  # noqa: C901 # pylint: disable=too-many-branches,too-many-statements
-    argv: typing.List[str],
-) -> typing.Tuple[OrderedPhases, JobRunMetadatasByPhase]:
-    job_run_metadatas: JobRunMetadatasByPhase = defaultdict(list)
-    start = timer()
+def _determine_run_parameters(argv) -> ConfigMetadata:
+    """Loads config, parsing cli input and produces the run config.
+
+    This is where the power of run'em resides. We match a declarative config with useful
+    command-line switches to make choosing which jobs to run fast and intuitive.
+
+    Return a ConfigMetadata object with all the required information.
+    """
     config: Config
     cfg_filepath: pathlib.Path
     config, cfg_filepath = load_config()
     config_metadata: ConfigMetadata = parse_config(config, cfg_filepath)
-    args: argparse.Namespace
-    tags_to_run: JobTags
-    options: Options
-    (
-        args,
-        jobs_to_run,
-        phases_to_run,
-        tags_to_run,
-        tags_to_avoid,
-        options,
-    ) = parse_args(config_metadata, argv)
 
-    if args.verbose:
+    # Now we parse the cli arguments extending them with information from the
+    # .runem.yml config.
+    config_metadata = parse_args(config_metadata, argv)
+
+    if config_metadata.args.verbose:
         print(f"loaded config from {cfg_filepath}")
 
+    return config_metadata
+
+
+def _main(  # noqa: C901 # pylint: disable=too-many-branches,too-many-statements
+    argv: typing.List[str],
+) -> typing.Tuple[OrderedPhases, JobRunMetadatasByPhase]:
+    start = timer()
+
+    config_metadata: ConfigMetadata = _determine_run_parameters(argv)
+
     # first anchor the cwd to the config-file, so that git ls-files works
-    os.chdir(cfg_filepath.parent)
+    os.chdir(config_metadata.cfg_filepath.parent)
 
     file_lists: FilePathListLookup = find_files(config_metadata)
     assert file_lists
@@ -89,15 +92,10 @@ def _main(  # noqa: C901 # pylint: disable=too-many-branches,too-many-statements
 
     filtered_jobs_by_phase: PhaseGroupedJobs = filter_jobs(
         config_metadata=config_metadata,
-        jobs_to_run=jobs_to_run,
-        phases_to_run=phases_to_run,
-        tags_to_run=tags_to_run,
-        tags_to_avoid=tags_to_avoid,
-        jobs=config_metadata.jobs,
-        verbose=args.verbose,
     )
     end = timer()
 
+    job_run_metadatas: JobRunMetadatasByPhase = defaultdict(list)
     job_run_metadatas["_app"].append(
         (("pre-build", (timedelta(seconds=end - start))), None)
     )
@@ -110,16 +108,18 @@ def _main(  # noqa: C901 # pylint: disable=too-many-branches,too-many-statements
             # As previously reported, no jobs for this phase
             continue
 
-        if phase not in phases_to_run:
-            if args.verbose:
+        if phase not in config_metadata.phases_to_run:
+            if config_metadata.args.verbose:
                 print(f"Skipping Phase {phase}")
             continue
 
-        if args.verbose:
+        if config_metadata.args.verbose:
             print(f"Running Phase {phase}")
 
         num_concurrent_procs: int = (
-            args.procs if args.procs != -1 else multiprocessing.cpu_count()
+            config_metadata.args.procs
+            if config_metadata.args.procs != -1
+            else multiprocessing.cpu_count()
         )
         num_concurrent_procs = min(num_concurrent_procs, len(jobs))
         print(
@@ -135,10 +135,8 @@ def _main(  # noqa: C901 # pylint: disable=too-many-branches,too-many-statements
                 job_runner,
                 zip(
                     jobs,
-                    repeat(cfg_filepath),
-                    repeat(args),
+                    repeat(config_metadata),
                     repeat(file_lists),
-                    repeat(options),
                 ),
             )
 
@@ -152,8 +150,14 @@ def _main(  # noqa: C901 # pylint: disable=too-many-branches,too-many-statements
 
 
 def timed_main(argv: typing.List[str]) -> None:
+    """A main-entry point that runs the application reports on it.
+
+    IMPORTANT: this should remain a lightweight wrapper around _main() so that timings
+               are representative.
+    """
     start = timer()
     phase_run_oder: OrderedPhases
+    job_run_metadatas: JobRunMetadatasByPhase
     phase_run_oder, job_run_metadatas = _main(argv)
     end = timer()
     time_taken: timedelta = timedelta(seconds=end - start)
