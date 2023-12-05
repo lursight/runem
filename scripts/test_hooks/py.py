@@ -2,6 +2,7 @@ import pathlib
 import shutil
 import typing
 
+from runem.log import log
 from runem.run_command import run_command
 from runem.types import FilePathList, JobName, JobReturnData, Options
 
@@ -202,7 +203,7 @@ def _job_py_pytest(  # noqa: C901 # pylint: disable=too-many-branches,too-many-s
             shutil.rmtree(coverage_output_dir)
         coverage_output_dir.mkdir(exist_ok=True)
         if kwargs["verbose"]:
-            print("COVERAGE: Collating coverage")
+            log("COVERAGE: Collating coverage")
         # first generate the coverage report for our gitlab cicd
         gen_cobertura_coverage_report_cmd = [
             "python3",
@@ -246,7 +247,7 @@ def _job_py_pytest(  # noqa: C901 # pylint: disable=too-many-branches,too-many-s
         reports["reportUrls"].append(("coverage html", report_html))
         reports["reportUrls"].append(("coverage cobertura", report_cobertura))
         if kwargs["verbose"]:
-            print("COVERAGE: cli output done")
+            log("COVERAGE: cli output done")
     return reports
 
 

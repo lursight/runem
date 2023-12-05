@@ -36,6 +36,7 @@ from runem.config_parse import parse_config
 from runem.files import find_files
 from runem.job_filter import filter_jobs
 from runem.job_runner import job_runner
+from runem.log import log
 from runem.report import report_on_run
 from runem.types import (
     Config,
@@ -69,7 +70,7 @@ def _determine_run_parameters(argv: typing.List[str]) -> ConfigMetadata:
     config_metadata = parse_args(config_metadata, argv)
 
     if config_metadata.args.verbose:
-        print(f"loaded config from {cfg_filepath}")
+        log(f"loaded config from {cfg_filepath}")
 
     return config_metadata
 
@@ -96,7 +97,7 @@ def _process_jobs(
         else multiprocessing.cpu_count()
     )
     num_concurrent_procs = min(num_concurrent_procs, len(jobs))
-    print(
+    log(
         (
             f"Running '{phase}' with {num_concurrent_procs} workers "
             f"processing {len(jobs)} jobs"
@@ -139,7 +140,7 @@ def _process_jobs_by_phase(
             continue
 
         if config_metadata.args.verbose:
-            print(f"Running Phase {phase}")
+            log(f"Running Phase {phase}")
 
         _process_jobs(
             config_metadata, file_lists, in_out_job_run_metadatas, phase, jobs
@@ -158,11 +159,11 @@ def _main(
 
     file_lists: FilePathListLookup = find_files(config_metadata)
     assert file_lists
-    print(f"found {len(file_lists)} batches, ", end="")
+    log(f"found {len(file_lists)} batches, ", end="")
     for tag in sorted(file_lists.keys()):
         file_list = file_lists[tag]
-        print(f"{len(file_list)} '{tag}' files, ", end="")
-    print()  # new line
+        log(f"{len(file_list)} '{tag}' files, ", decorate=False, end="")
+    log(decorate=False)  # new line
 
     filtered_jobs_by_phase: PhaseGroupedJobs = filter_jobs(
         config_metadata=config_metadata,
@@ -202,7 +203,7 @@ def timed_main(argv: typing.List[str]) -> None:
     end = timer()
     time_taken: timedelta = timedelta(seconds=end - start)
     time_saved = report_on_run(phase_run_oder, job_run_metadatas, time_taken)
-    print(
+    log(
         (
             f"DONE: runem took: {time_taken.total_seconds()}s, "
             f"saving you {time_saved.total_seconds()}s"

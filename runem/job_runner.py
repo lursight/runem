@@ -7,6 +7,7 @@ from timeit import default_timer as timer
 
 from runem.config_metadata import ConfigMetadata
 from runem.job_function_python import get_job_function
+from runem.log import log
 from runem.types import FilePathList, FilePathListLookup, JobConfig, JobReturn, JobTags
 
 
@@ -21,7 +22,7 @@ def job_runner_inner(
     """
     label = job_config["label"]
     if config_metadata.args.verbose:
-        print(f"START: {label}")
+        log(f"START: {label}")
     root_path: pathlib.Path = config_metadata.cfg_filepath.parent
     function: typing.Callable
     job_tags: JobTags = set(job_config["when"]["tags"])
@@ -36,7 +37,7 @@ def job_runner_inner(
 
     if not file_list:
         # no files to work on
-        print(f"WARNING: skipping job '{label}', no files for job")
+        log(f"WARNING: skipping job '{label}', no files for job")
         return (f"{label}: no files!", timedelta(0)), None
 
     if (
@@ -52,7 +53,7 @@ def job_runner_inner(
     start = timer()
     func_signature = inspect.signature(function)
     if config_metadata.args.verbose:
-        print(f"job: running {job_config['label']}")
+        log(f"job: running {job_config['label']}")
     reports: JobReturn
     if "args" in func_signature.parameters:
         reports = function(config_metadata.args, config_metadata.options, file_list)
@@ -68,7 +69,7 @@ def job_runner_inner(
     end = timer()
     time_taken: timedelta = timedelta(seconds=end - start)
     if config_metadata.args.verbose:
-        print(f"DONE: {label}: {time_taken}")
+        log(f"DONE: {label}: {time_taken}")
     timing_data = (label, time_taken)
     return (timing_data, reports)
 

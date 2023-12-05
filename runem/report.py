@@ -2,6 +2,7 @@ import typing
 from collections import defaultdict
 from datetime import timedelta
 
+from runem.log import log
 from runem.types import (
     JobReturn,
     JobRunMetadatasByPhase,
@@ -30,7 +31,7 @@ def _plot_times(
     times: typing.List[float] = []
     job_time_sum: timedelta = timedelta()  # init to 0
     for phase in phase_run_oder:
-        # print(f"Phase '{phase}' jobs took:")
+        # log(f"Phase '{phase}' jobs took:")
         phase_total_time: float = 0.0
         phase_start_idx = len(labels)
         for label, job_time in timing_data[phase]:
@@ -59,7 +60,7 @@ def _plot_times(
         fig.show()
     else:  # pragma: FIXME: add code coverage
         for label, time in zip(labels, times):
-            print(f"{label}: {time}s")
+            log(f"{label}: {time}s")
 
     time_saved: timedelta = job_time_sum - overall_run_time
     return time_saved
@@ -70,7 +71,7 @@ def report_on_run(
     job_run_metadatas: JobRunMetadatasByPhase,
     overall_runtime: timedelta,
 ):
-    print("runem: reports:")
+    log("reports:")
     timing_data: JobRunTimesByPhase = defaultdict(list)
     report_data: JobRunReportByPhase = defaultdict(list)
     phase: PhaseName
@@ -92,7 +93,5 @@ def report_on_run(
         for job_report_url_info in report_urls:
             if not job_report_url_info:
                 continue
-            print(
-                f"report: {str(job_report_url_info[0])}: {str(job_report_url_info[1])}"
-            )
+            log(f"report: {str(job_report_url_info[0])}: {str(job_report_url_info[1])}")
     return time_saved

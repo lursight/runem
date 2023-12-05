@@ -63,6 +63,6 @@ def test_report_on_run_reports() -> None:
         "runem                  [0.0]",
         "├phase 1 (total)       [1.0]  ████████████████████████████████████████",
         "│├phase 1.job label 2  [1.0]  ████████████████████████████████████████",
-        "report: dummy report label: /dummy/report/url",
+        "runem: report: dummy report label: /dummy/report/url",
         "",
     ]
