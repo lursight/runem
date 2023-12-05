@@ -10,7 +10,7 @@ from runem.job_function_python import get_job_function
 from runem.types import FilePathList, FilePathListLookup, JobConfig, JobReturn, JobTags
 
 
-def job_runner(
+def job_runner_inner(
     job_config: JobConfig,
     config_metadata: ConfigMetadata,
     file_lists: FilePathListLookup,
@@ -70,3 +70,15 @@ def job_runner(
         print(f"DONE: {label}: {time_taken}")
     timing_data = (label, time_taken)
     return (timing_data, reports)
+
+
+def job_runner(
+    job_config: JobConfig,
+    config_metadata: ConfigMetadata,
+    file_lists: FilePathListLookup,
+) -> typing.Tuple[typing.Tuple[str, timedelta], JobReturn]:
+    """Thing wrapper around job_runner_inner needed fro mocking in tests.
+
+    Needed for faster tests.
+    """
+    return job_runner_inner(job_config, config_metadata, file_lists)

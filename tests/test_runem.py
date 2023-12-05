@@ -3,6 +3,7 @@ import pathlib
 import typing
 from collections import defaultdict
 from contextlib import redirect_stdout
+from datetime import timedelta
 from unittest.mock import Mock, patch
 
 import pytest
@@ -63,7 +64,13 @@ def test_runem_basic_with_config(
 @patch(
     "runem.runem.find_files",
 )
+@patch(
+    # patch the inner call that is NOT serialised by multiprocessing
+    "runem.job_runner.job_runner_inner",
+    return_value=(("mocked job run", timedelta(0)), None),
+)
 def _run_full_config_runem(
+    job_runner_mock: Mock,
     find_files_mock: Mock,
     load_config_mock: Mock,
     runem_cli_switches: typing.List[str],
@@ -158,7 +165,7 @@ def _run_full_config_runem(
         runem_stdout = (
             buf.getvalue().replace(str(mocked_config_path), "[CONFIG PATH]").split("\n")
         )
-
+    # job_runner_mock.assert_called()
     got_to_reports: typing.Optional[int] = None
     try:
         got_to_reports = runem_stdout.index("runem: reports:")
