@@ -4,6 +4,109 @@ Changelog
 
 (unreleased)
 ------------
+- Merge branch 'chore/get_release_running_tests' [Frank Harrison]
+- Chore(test-on-release): prints existing tags on make release. [Frank
+  Harrison]
+- Chore(test-on-release): run tests after choosing tag. [Frank Harrison]
+- Merge branch 'chore/test' [Frank Harrison]
+- Chore(test-and-cov): fails tests if not 100% [Frank Harrison]
+- Chore(test-and-cov): gets reports to 100% coverage. [Frank Harrison]
+- Chore(test-and-cov): gets job_runner to 100% coverage. [Frank
+  Harrison]
+
+  ... TODO: actually test returns and side-effects of calls
+- Chore(test-and-cov): adds test for runner to read job-context. [Frank
+  Harrison]
+- Chore(test-and-cov): adds test for run_command with empty files.
+  [Frank Harrison]
+
+  ... should cause an early return
+- Chore(test-and-cov): adds basic tests for the job-runner. [Frank
+  Harrison]
+- Chore(test-and-cov): test missing options. [Frank Harrison]
+- Chore(test-and-cov): mocks the actuall threaded runner, not saving any
+  real time, but it is something I will consider again and again. [Frank
+  Harrison]
+- Chore(test-and-cov): adds test to test filter in/out jobs --phases,
+  --jobs, --tags. [Frank Harrison]
+- Chore(test-and-cov): moves help-text into separate file for easier
+  updating. [Frank Harrison]
+- Chore(test-and-cov): adds end-to-end test for bad --jobs, --tags,
+  --phases switches. [Frank Harrison]
+- Chore(test-and-cov): puts --help under test. [Frank Harrison]
+
+  ... fixing non deterministic output
+- Chore(test-and-cov): puts the end-2-end upder more test. [Frank
+  Harrison]
+- Chore(test-and-cov): documents and splits out those but where we do
+  the heavy lifting in terms of job-running. [Frank Harrison]
+- Chore(test-and-cov): moves ConfigMetadata to own file. [Frank
+  Harrison]
+- Chore(test-and-cov): unifies many disperate control vars under
+  ConfigMetadata. [Frank Harrison]
+
+  This reduces the amount of code, simplifies concepts and overall makes
+  it easier to reason about what is going on.
+- Chore(test-and-cov): splits out the remaining uncovered code from
+  runem.py. [Frank Harrison]
+- Chore(test-and-cov): attempts to add a full config end-to-end test.
+  [Frank Harrison]
+- Chore(test-and-cov): gets config_parse to 100% coverage. [Frank
+  Harrison]
+- Chore(test-and-cov): puts find_files() under test. [Frank Harrison]
+- Chore(test-and-cov): adds more test-coverage and splits up code to
+  support it. [Frank Harrison]
+- Chore(test-and-cov): adds test for end-to-end running of runem. [Frank
+  Harrison]
+- Chore(test-and-cov): splits load_config out so it can be mocked.
+  [Frank Harrison]
+- Chore(test-and-cov): removes the setup.py from code-coverage. [Frank
+  Harrison]
+- Chore(test-and-cov): tests that run_command handles runs failing to
+  start the process and other errors. [Frank Harrison]
+- Chore(test-and-cov): adds test to run_command covering 'ignore_fails'
+  [Frank Harrison]
+- Chore(test-and-cov): adds test to run_command covering env-overrides.
+  [Frank Harrison]
+- Chore(test-and-cov): puts run_command under-test. [Frank Harrison]
+
+  ... mainly the normal success and failure routes in verbose and non
+  verbose modes, along side the allowed_exit codes
+- Chore(test-and-cov): tests and annotates 'get_std_out' [Frank
+  Harrison]
+- Chore(test-and-cov): puts cli.py under test. [Frank Harrison]
+- Chore(test-and-cov): adds basic test for _parse_job_config. [Frank
+  Harrison]
+
+  ... not a great test, but it's a start
+- Feat(better-config-error): preints the missing key on job loading.
+  [Frank Harrison]
+- Feat(reports): adds methods for return reports to be reported at the
+  end of runs. [Frank Harrison]
+- Chore(pytest): configures coverage properly. [Frank Harrison]
+- Chore(pytest): adds a pytest job. [Frank Harrison]
+
+  Gets the test passing also
+- Chore(pytest): fixes the typing of the go_to_tmp_path fixture. [Frank
+  Harrison]
+- Chore(test-hooks-package): fixes the .runem config references to
+  test_hooks. [Frank Harrison]
+- Chore(test-hooks-package): adds a py.typed to the test-hooks package
+  fixing a mypy issue. [Frank Harrison]
+- Chore(test-hooks-package): makes test_hooks a package instead of the
+  parent scripts/ [Frank Harrison]
+- Chore(test-hooks-package): renames test-hooks -> test_hooks making it
+  a valid python package. [Frank Harrison]
+- Chore(lint): fixes line-to-long issue. [Frank Harrison]
+- Merge branch 'chore/spell' [Frank Harrison]
+- Chore(spell): fixes spelling. [Frank Harrison]
+- Chore(spell): deletes call-graph code that was lursight-specific.
+  [Frank Harrison]
+
+
+0.0.15 (2023-12-02)
+-------------------
+- Release: version 0.0.15 🚀 [Frank Harrison]
 - Merge branch 'feat/add_optional_ctx_config' [Frank Harrison]
 - Chore(json-check): adds validation for if a file exists in json-
   validate. [Frank Harrison]
@@ -52,11 +155,11 @@ Changelog
 - Chore(format-yml): adds yml files to the prettier command. [Frank
   Harrison]
 
-  This means that runem's own runem config is reformatted
+  This means that runems own runem config is reformatted
 - Merge branch 'feat/warn_on_bad_names' [Frank Harrison]
 - Feat(bad-label): errors on bad labels. [Frank Harrison]
 
-  .. not a massive improvement but really helps clarify what you SHOULD be looking at when things go wrong, which is nice
+  .. not a massive improvment but really helps clarify what you SHOULD be looking at when things go wrong, which is nice
 - Feat(bad-func-ref-message): gives a better error message on bad
   function references. [Frank Harrison]
 
@@ -70,7 +173,7 @@ Changelog
   ... currently this only targets json files
 - Merge branch 'chore/kwargs' [Frank Harrison]
 - Chore(kwargs): makes run_command 'cmd' the first thing as it cannot be
-  inferred from the runem kwargs. [Frank Harrison]
+  infered from the runem kwargs. [Frank Harrison]
 - Feat(kwargs): moves to using kwargs by preference when calling jobs.
   [Frank Harrison]
 
@@ -152,7 +255,7 @@ Changelog
 ------------------
 - Release: version 0.0.5 🚀 [Frank Harrison]
 - Merge branch 'feat/time_saved' [Frank Harrison]
-- Docs: fixes the ambiguous language on the number of jobs/core being
+- Docs: fixes the ambiguos language on the number of jobs/core being
   used. [Frank Harrison]
 - Feat(time-saved): shows the time saved vs linear runs on DONE. [Frank
   Harrison]
@@ -185,10 +288,10 @@ Changelog
 - Release: version 0.0.1 🚀 [Frank Harrison]
 - Chore(release): moves release to script. [Frank Harrison]
 
-  It wasn't working because read -p wasn't setting the TAG variable for
+  It wasn't working because read -p wasn't setting the TAG variabl for
   some reason, I suspect because of the makefile.
 - Merge branch 'chore/update_ci_cd_black' [Frank Harrison]
-- Chore(black-ci-cd): removes line-limit sizes for py-black runs in
+- Chore(black-ci-cd): removes line-limit sizes for pyblack runs in
   actions. [Frank Harrison]
 - Merge branch 'chore/fix_sponsorship_link' [Frank Harrison]
 - Chore(sponsorship): fixes a link to sponsorship. [Frank Harrison]
