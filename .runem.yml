@@ -81,6 +81,7 @@
       tags:
         - py
         - format
+        - py format
 - job:
     addr:
       file: scripts/test_hooks/py.py

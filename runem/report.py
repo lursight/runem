@@ -3,15 +3,20 @@ from collections import defaultdict
 from datetime import timedelta
 
 from runem.types import (
+    JobReturn,
     JobRunMetadatasByPhase,
     JobRunReportByPhase,
     JobRunTimesByPhase,
+    JobTiming,
     OrderedPhases,
+    PhaseName,
+    ReportUrlInfo,
+    ReportUrls,
 )
 
 try:
     import termplotlib
-except ImportError:
+except ImportError:  # pragma: FIXME: add code coverage
     termplotlib = None
 
 
@@ -52,7 +57,7 @@ def _plot_times(
             force_ascii=False,
         )
         fig.show()
-    else:
+    else:  # pragma: FIXME: add code coverage
         for label, time in zip(labels, times):
             print(f"{label}: {time}s")
 
@@ -68,7 +73,10 @@ def report_on_run(
     print("runem: reports:")
     timing_data: JobRunTimesByPhase = defaultdict(list)
     report_data: JobRunReportByPhase = defaultdict(list)
+    phase: PhaseName
     for phase in job_run_metadatas:
+        timing: JobTiming
+        reports: JobReturn
         for timing, reports in job_run_metadatas[phase]:
             timing_data[phase].append(timing)
             if reports:
@@ -79,7 +87,9 @@ def report_on_run(
         timing_data=timing_data,
     )
     for phase in phase_run_oder:
-        for job_report_url_info in report_data[phase]:
+        report_urls: ReportUrls = report_data[phase]
+        job_report_url_info: ReportUrlInfo
+        for job_report_url_info in report_urls:
             if not job_report_url_info:
                 continue
             print(
