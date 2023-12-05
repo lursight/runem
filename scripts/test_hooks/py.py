@@ -233,7 +233,7 @@ def _job_py_pytest(  # noqa: C901 # pylint: disable=too-many-branches,too-many-s
             "-m",
             "coverage",
             "report",
-            "--fail-under=20",
+            "--fail-under=100",
             f"--rcfile={str(coverage_cfg)}",
         ]
         kwargs["label"] = f"{label} coverage cli"
