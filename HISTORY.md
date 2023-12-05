@@ -1,3 +1,6 @@
+---
+/* cSpell:disable */
+---
 Changelog
 =========
 
