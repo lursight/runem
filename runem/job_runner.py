@@ -38,6 +38,7 @@ def job_runner_inner(
         # no files to work on
         print(f"WARNING: skipping job '{label}', no files for job")
         return (f"{label}: no files!", timedelta(0)), None
+
     if (
         "ctx" in job_config
         and job_config["ctx"] is not None
