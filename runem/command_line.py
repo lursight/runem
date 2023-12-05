@@ -225,10 +225,10 @@ def _initialise_options(
     options: Options = {
         option["name"]: option["default"] for option in config_metadata.options_config
     }
-    if config_metadata.options_config and args.overrides_on:
+    if config_metadata.options_config and args.overrides_on:  # pragma: no branch
         for option_name in args.overrides_on:
             options[option_name] = True
-    if config_metadata.options_config and args.overrides_off:
+    if config_metadata.options_config and args.overrides_off:  # pragma: no branch
         for option_name in args.overrides_off:
             options[option_name] = False
     return options

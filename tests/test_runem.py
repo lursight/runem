@@ -64,6 +64,40 @@ def test_runem_basic_with_config(
 @patch(
     "runem.runem.find_files",
 )
+def test_runem_basic_with_config_no_options(
+    find_files_mock: Mock,
+    load_config_mock: Mock,
+) -> None:
+    global_config: GlobalSerialisedConfig = {
+        "config": {  # type: ignore[typeddict-item]
+            "phases": ("mock phase",),
+            "files": [],
+            # "options": [],
+        }
+    }
+    empty_config: Config = [
+        global_config,
+    ]
+    minimal_file_lists = defaultdict(list)
+    minimal_file_lists["mock phase"].append(pathlib.Path("/test") / "dummy" / "path")
+    load_config_mock.return_value = (empty_config, pathlib.Path())
+    find_files_mock.return_value = minimal_file_lists
+    with io.StringIO() as buf, redirect_stdout(buf):
+        # with pytest.raises(SystemExit):
+        timed_main(["--help"])
+        runem_stdout = buf.getvalue().split("\n")
+        assert [
+            "found 1 batches, 1 'mock phase' files, ",
+            "skipping phase 'mock phase'",
+        ] == runem_stdout[:2]
+
+
+@patch(
+    "runem.runem.load_config",
+)
+@patch(
+    "runem.runem.find_files",
+)
 @patch(
     # patch the inner call that is NOT serialised by multiprocessing
     "runem.job_runner.job_runner_inner",
