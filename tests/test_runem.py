@@ -358,3 +358,93 @@ def test_runem_help() -> None:
     # we have to strip all whitespace as help adapts to the terminal width
     stripped_actual_help_output = "".join(runem_stdout[1:]).replace(" ", "")
     assert stripped_expected_help_output == stripped_actual_help_output
+
+
+@pytest.mark.parametrize(
+    "switch_to_test",
+    [
+        "--jobs",
+        "--not-jobs",
+    ],
+)
+def test_runem_bad_validate_switch_jobs(switch_to_test: str) -> None:
+    """End-2-end test failing validation on non existent job-names."""
+    runem_cli_switches: typing.List[str] = [
+        switch_to_test,
+        "non existent job name",
+    ]
+    runem_stdout: typing.List[str]
+    error_raised: typing.Optional[BaseException]
+    (
+        runem_stdout,
+        error_raised,
+    ) = _run_full_config_runem(  # pylint: disable=no-value-for-parameter
+        runem_cli_switches=runem_cli_switches
+    )
+    assert error_raised is not None
+    assert isinstance(error_raised, SystemExit)
+    assert runem_stdout == [
+        f"ERROR: invalid job-name 'non existent job name' for {switch_to_test}, "
+        "choose from one of 'dummy job label 1', 'dummy job label 2'",
+        "",
+    ]
+
+
+@pytest.mark.parametrize(
+    "switch_to_test",
+    [
+        "--tags",
+        "--not-tags",
+    ],
+)
+def test_runem_bad_validate_switch_tags(switch_to_test: str) -> None:
+    """End-2-end test failing validation on non existent job-names."""
+    runem_cli_switches: typing.List[str] = [
+        switch_to_test,
+        "non existent tag",
+    ]
+    runem_stdout: typing.List[str]
+    error_raised: typing.Optional[BaseException]
+    (
+        runem_stdout,
+        error_raised,
+    ) = _run_full_config_runem(  # pylint: disable=no-value-for-parameter
+        runem_cli_switches=runem_cli_switches
+    )
+    assert error_raised is not None
+    assert isinstance(error_raised, SystemExit)
+    assert runem_stdout == [
+        f"ERROR: invalid tag 'non existent tag' for {switch_to_test}, "
+        "choose from one of 'dummy tag 1', 'dummy tag 2'",
+        "",
+    ]
+
+
+@pytest.mark.parametrize(
+    "switch_to_test",
+    [
+        "--phases",
+        "--not-phases",
+    ],
+)
+def test_runem_bad_validate_switch_phases(switch_to_test: str) -> None:
+    """End-2-end test failing validation on non existent job-names."""
+    runem_cli_switches: typing.List[str] = [
+        switch_to_test,
+        "non existent phase",
+    ]
+    runem_stdout: typing.List[str]
+    error_raised: typing.Optional[BaseException]
+    (
+        runem_stdout,
+        error_raised,
+    ) = _run_full_config_runem(  # pylint: disable=no-value-for-parameter
+        runem_cli_switches=runem_cli_switches
+    )
+    assert error_raised is not None
+    assert isinstance(error_raised, SystemExit)
+    assert runem_stdout == [
+        f"ERROR: invalid phase 'non existent phase' for {switch_to_test}, "
+        "choose from one of 'dummy phase 1', 'dummy phase 2'",
+        "",
+    ]

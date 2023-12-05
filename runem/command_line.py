@@ -173,37 +173,40 @@ def _validate_filters(
     returns True of success and False on failure
     """
     # validate the job-names passed in
-    for name, name_list in (("only", args.jobs), ("exclude", args.jobs_excluded)):
+    for name, name_list in (("--jobs", args.jobs), ("--not-jobs", args.jobs_excluded)):
         for job_name in name_list:
             if job_name not in config_metadata.all_job_names:
                 print(
                     (
-                        f"ERROR: invalid {name}-job-name '{job_name}', "
-                        f"choose from one of {config_metadata.all_job_names}"
+                        f"ERROR: invalid job-name '{job_name}' for {name}, "
+                        f"choose from one of {printable_set(config_metadata.all_job_names)}"
                     )
                 )
                 return False
 
     # validate the tags passed in
-    for name, tag_list in (("only", args.tags), ("exclude", args.tags_excluded)):
+    for name, tag_list in (("--tags", args.tags), ("--not-tags", args.tags_excluded)):
         for tag in tag_list:
             if tag not in config_metadata.all_job_tags:
                 print(
                     (
-                        f"ERROR: invalid {name}-tag '{tag}', "
-                        f"choose from one of {config_metadata.all_job_tags}"
+                        f"ERROR: invalid tag '{tag}' for {name}, "
+                        f"choose from one of {printable_set(config_metadata.all_job_tags)}"
                     )
                 )
                 return False
 
     # validate the phases passed in
-    for name, phase_list in (("only", args.phases), ("exclude", args.phases_excluded)):
+    for name, phase_list in (
+        ("--phases", args.phases),
+        ("--not-phases", args.phases_excluded),
+    ):
         for phase in phase_list:
             if phase not in config_metadata.all_job_phases:
                 print(
                     (
-                        f"ERROR: invalid {name}-phase '{phase}', "
-                        f"choose from one of {config_metadata.all_job_phases}"
+                        f"ERROR: invalid phase '{phase}' for {name}, "
+                        f"choose from one of {printable_set(config_metadata.all_job_phases)}"
                     )
                 )
                 return False
