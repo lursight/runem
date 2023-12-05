@@ -87,7 +87,7 @@ class JobAddressConfig(typing.TypedDict):
     function: str  # the 'function' in module to run
 
 
-class JobContextConfig(typing.TypedDict):
+class JobContextConfig(typing.TypedDict, total=False):
     params: typing.Optional[JobParamConfig]  # what parameters the job needs
     cwd: typing.Optional[str]  # the path to run the command in
 
