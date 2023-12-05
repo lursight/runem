@@ -117,6 +117,7 @@ def _run_full_config_runem(
                     (
                         "dummy tag 1",
                         "dummy tag 2",
+                        "tag only on job 1",
                     )
                 ),
             },
@@ -135,6 +136,7 @@ def _run_full_config_runem(
                     (
                         "dummy tag 1",
                         "dummy tag 2",
+                        "tag only on job 2",
                     )
                 ),
             },
@@ -183,7 +185,10 @@ def test_runem_with_full_config() -> None:
     assert error_raised is None
     assert [
         "found 1 batches, 1 'mock phase' files, ",
-        "filtering for tags 'dummy tag 1', 'dummy tag 2'",
+        (
+            "filtering for tags 'dummy tag 1', 'dummy tag 2', "
+            "'tag only on job 1', 'tag only on job 2'"
+        ),
         "will run 1 jobs for phase 'dummy phase 1'",
         "\t['dummy job label 1']",
         "will run 1 jobs for phase 'dummy phase 2'",
@@ -208,7 +213,10 @@ def test_runem_with_full_config_verbose() -> None:
     assert [
         "loaded config from [CONFIG PATH]",
         "found 1 batches, 1 'mock phase' files, ",
-        "filtering for tags 'dummy tag 1', 'dummy tag 2'",
+        (
+            "filtering for tags 'dummy tag 1', 'dummy tag 2', "
+            "'tag only on job 1', 'tag only on job 2'"
+        ),
         "will run 1 jobs for phase 'dummy phase 1'",
         "\t['dummy job label 1']",
         "will run 1 jobs for phase 'dummy phase 2'",
@@ -234,7 +242,10 @@ def test_runem_with_single_phase() -> None:
     assert error_raised is None
     assert [
         "found 1 batches, 1 'mock phase' files, ",
-        "filtering for tags 'dummy tag 1', 'dummy tag 2'",
+        (
+            "filtering for tags 'dummy tag 1', 'dummy tag 2', "
+            "'tag only on job 1', 'tag only on job 2'"
+        ),
         "will run 1 jobs for phase 'dummy phase 1'",
         "\t['dummy job label 1']",
         "skipping phase 'dummy phase 2'",
@@ -257,7 +268,10 @@ def test_runem_with_single_phase_verbose() -> None:
     assert runem_stdout == [
         "loaded config from [CONFIG PATH]",
         "found 1 batches, 1 'mock phase' files, ",
-        "filtering for tags 'dummy tag 1', 'dummy tag 2'",
+        (
+            "filtering for tags 'dummy tag 1', 'dummy tag 2', "
+            "'tag only on job 1', 'tag only on job 2'"
+        ),
         "will run 1 jobs for phase 'dummy phase 1'",
         "\t['dummy job label 1']",
         "skipping phase 'dummy phase 2'",
@@ -345,8 +359,11 @@ def test_runem_bad_validate_switch_tags(switch_to_test: str) -> None:
     assert error_raised is not None
     assert isinstance(error_raised, SystemExit)
     assert runem_stdout == [
-        f"ERROR: invalid tag 'non existent tag' for {switch_to_test}, "
-        "choose from one of 'dummy tag 1', 'dummy tag 2'",
+        (
+            f"ERROR: invalid tag 'non existent tag' for {switch_to_test}, "
+            "choose from one of 'dummy tag 1', 'dummy tag 2', "
+            "'tag only on job 1', 'tag only on job 2'"
+        ),
         "",
     ]
 
@@ -379,3 +396,289 @@ def test_runem_bad_validate_switch_phases(switch_to_test: str) -> None:
         "choose from one of 'dummy phase 1', 'dummy phase 2'",
         "",
     ]
+
+
+@pytest.mark.parametrize(
+    "verbosity",
+    [
+        True,
+        False,
+    ],
+)
+def test_runem_job_filters_work(verbosity: bool) -> None:
+    """End-2-end test failing validation on non existent job-names."""
+    runem_cli_switches: typing.List[str] = [
+        "--jobs",
+        "dummy job label 1",
+    ]
+    if verbosity:
+        runem_cli_switches.append("--verbose")
+    runem_stdout: typing.List[str]
+    error_raised: typing.Optional[BaseException]
+    (
+        runem_stdout,
+        error_raised,
+    ) = _run_full_config_runem(  # pylint: disable=no-value-for-parameter
+        runem_cli_switches=runem_cli_switches
+    )
+    assert error_raised is None
+    if verbosity:
+        assert runem_stdout == [
+            "loaded config from [CONFIG PATH]",
+            "found 1 batches, 1 'mock phase' files, ",
+            (
+                "filtering for tags 'dummy tag 1', 'dummy tag 2', "
+                "'tag only on job 1', 'tag only on job 2'"
+            ),
+            "will run 1 jobs for phase 'dummy phase 1'",
+            "\t['dummy job label 1']",
+            (
+                "not running job 'dummy job label 2' because it isn't in the list "
+                "of job names. See --jobs and --not-jobs"
+            ),
+            (
+                "No jobs for phase 'dummy phase 2' tags 'dummy tag 1', "
+                "'dummy tag 2', 'tag only on job 1', "
+                "'tag only on job 2'"
+            ),
+            "Running Phase dummy phase 1",
+            "Running 'dummy phase 1' with 1 workers processing 1 jobs",
+        ]
+    else:
+        assert runem_stdout == [
+            "found 1 batches, 1 'mock phase' files, ",
+            (
+                "filtering for tags 'dummy tag 1', 'dummy tag 2', "
+                "'tag only on job 1', 'tag only on job 2'"
+            ),
+            "will run 1 jobs for phase 'dummy phase 1'",
+            "\t['dummy job label 1']",
+            (
+                "No jobs for phase 'dummy phase 2' tags 'dummy tag 1', "
+                "'dummy tag 2', 'tag only on job 1', "
+                "'tag only on job 2'"
+            ),
+            "Running 'dummy phase 1' with 1 workers processing 1 jobs",
+        ]
+
+
+@pytest.mark.parametrize(
+    "verbosity",
+    [
+        True,
+        False,
+    ],
+)
+def test_runem_tag_filters_work(verbosity: bool) -> None:
+    """End-2-end test failing validation on non existent job-names."""
+    runem_cli_switches: typing.List[str] = [
+        "--tags",
+        "tag only on job 1",
+    ]
+    if verbosity:
+        runem_cli_switches.append("--verbose")
+    runem_stdout: typing.List[str]
+    error_raised: typing.Optional[BaseException]
+    (
+        runem_stdout,
+        error_raised,
+    ) = _run_full_config_runem(  # pylint: disable=no-value-for-parameter
+        runem_cli_switches=runem_cli_switches
+    )
+    assert error_raised is None
+    if verbosity:
+        assert runem_stdout == [
+            "loaded config from [CONFIG PATH]",
+            "found 1 batches, 1 'mock phase' files, ",
+            "filtering for tags 'tag only on job 1'",
+            "will run 1 jobs for phase 'dummy phase 1'",
+            "\t['dummy job label 1']",
+            (
+                "not running job 'dummy job label 2' because it doesn't have any of the "
+                "following tags: 'tag only on job 1'"
+            ),
+            "No jobs for phase 'dummy phase 2' tags 'tag only on job 1'",
+            "Running Phase dummy phase 1",
+            "Running 'dummy phase 1' with 1 workers processing 1 jobs",
+        ]
+    else:
+        assert runem_stdout == [
+            "found 1 batches, 1 'mock phase' files, ",
+            "filtering for tags 'tag only on job 1'",
+            "will run 1 jobs for phase 'dummy phase 1'",
+            "\t['dummy job label 1']",
+            "No jobs for phase 'dummy phase 2' tags 'tag only on job 1'",
+            "Running 'dummy phase 1' with 1 workers processing 1 jobs",
+        ]
+
+
+@pytest.mark.parametrize(
+    "verbosity",
+    [
+        True,
+        False,
+    ],
+)
+def test_runem_tag_out_filters_work(verbosity: bool) -> None:
+    """End-2-end test failing validation on non existent job-names."""
+    runem_cli_switches: typing.List[str] = [
+        "--not-tags",
+        "tag only on job 1",
+    ]
+    if verbosity:
+        runem_cli_switches.append("--verbose")
+    runem_stdout: typing.List[str]
+    error_raised: typing.Optional[BaseException]
+    (
+        runem_stdout,
+        error_raised,
+    ) = _run_full_config_runem(  # pylint: disable=no-value-for-parameter
+        runem_cli_switches=runem_cli_switches
+    )
+    assert error_raised is None
+    if verbosity:
+        assert runem_stdout == [
+            "loaded config from [CONFIG PATH]",
+            "found 1 batches, 1 'mock phase' files, ",
+            (
+                "filtering for tags 'dummy tag 1', 'dummy tag 2', "
+                "'tag only on job 2', excluding jobs with tags 'tag only on job 1'"
+            ),
+            (
+                "not running job 'dummy job label 1' because it contains "
+                "the following tags: 'tag only on job 1'"
+            ),
+            (
+                "No jobs for phase 'dummy phase 1' tags 'dummy tag 1', 'dummy tag 2', "
+                "'tag only on job 2'"
+            ),
+            "will run 1 jobs for phase 'dummy phase 2'",
+            "\t['dummy job label 2']",
+            "Running Phase dummy phase 2",
+            "Running 'dummy phase 2' with 1 workers processing 1 jobs",
+        ]
+    else:
+        assert runem_stdout == [
+            "found 1 batches, 1 'mock phase' files, ",
+            (
+                "filtering for tags 'dummy tag 1', 'dummy tag 2', 'tag only on job 2', "
+                "excluding jobs with tags 'tag only on job 1'"
+            ),
+            (
+                "No jobs for phase 'dummy phase 1' tags 'dummy tag 1', 'dummy tag 2', 'tag "
+                "only on job 2'"
+            ),
+            "will run 1 jobs for phase 'dummy phase 2'",
+            "\t['dummy job label 2']",
+            "Running 'dummy phase 2' with 1 workers processing 1 jobs",
+        ]
+
+
+@pytest.mark.parametrize(
+    "verbosity",
+    [
+        True,
+        False,
+    ],
+)
+def test_runem_tag_out_filters_work_all_tags(verbosity: bool) -> None:
+    """End-2-end test failing validation on non existent job-names."""
+    runem_cli_switches: typing.List[str] = [
+        "--not-tags",
+        "tag only on job 1",
+        "tag only on job 2",
+        "dummy tag 1",
+        "dummy tag 2",
+    ]
+    if verbosity:
+        runem_cli_switches.append("--verbose")
+    runem_stdout: typing.List[str]
+    error_raised: typing.Optional[BaseException]
+    (
+        runem_stdout,
+        error_raised,
+    ) = _run_full_config_runem(  # pylint: disable=no-value-for-parameter
+        runem_cli_switches=runem_cli_switches
+    )
+    assert error_raised is None
+    if verbosity:
+        assert runem_stdout == [
+            "loaded config from [CONFIG PATH]",
+            "found 1 batches, 1 'mock phase' files, ",
+            (
+                "excluding jobs with tags 'dummy tag 1', 'dummy tag 2', "
+                "'tag only on job 1', 'tag only on job 2'"
+            ),
+            (
+                "not running job 'dummy job label 1' because it doesn't have any of "
+                "the following tags: "
+            ),
+            "No jobs for phase 'dummy phase 1' tags ",
+            (
+                "not running job 'dummy job label 2' because it doesn't have any of "
+                "the following tags: "
+            ),
+            "No jobs for phase 'dummy phase 2' tags ",
+        ]
+    else:
+        assert runem_stdout == [
+            "found 1 batches, 1 'mock phase' files, ",
+            (
+                "excluding jobs with tags 'dummy tag 1', 'dummy tag 2', "
+                "'tag only on job 1', 'tag only on job 2'"
+            ),
+            "No jobs for phase 'dummy phase 1' tags ",
+            "No jobs for phase 'dummy phase 2' tags ",
+        ]
+
+
+@pytest.mark.parametrize(
+    "verbosity",
+    [
+        True,
+        False,
+    ],
+)
+def test_runem_phase_filters_work(verbosity: bool) -> None:
+    """End-2-end test failing validation on non existent job-names."""
+    runem_cli_switches: typing.List[str] = [
+        "--phases",
+        "dummy phase 1",
+    ]
+    if verbosity:
+        runem_cli_switches.append("--verbose")
+    runem_stdout: typing.List[str]
+    error_raised: typing.Optional[BaseException]
+    (
+        runem_stdout,
+        error_raised,
+    ) = _run_full_config_runem(  # pylint: disable=no-value-for-parameter
+        runem_cli_switches=runem_cli_switches
+    )
+    assert error_raised is None
+    if verbosity:
+        assert runem_stdout == [
+            "loaded config from [CONFIG PATH]",
+            "found 1 batches, 1 'mock phase' files, ",
+            (
+                "filtering for tags 'dummy tag 1', 'dummy tag 2', 'tag only on job 1', "
+                "'tag only on job 2'"
+            ),
+            "will run 1 jobs for phase 'dummy phase 1'",
+            "\t['dummy job label 1']",
+            "skipping phase 'dummy phase 2'",
+            "Running Phase dummy phase 1",
+            "Running 'dummy phase 1' with 1 workers processing 1 jobs",
+        ]
+    else:
+        assert runem_stdout == [
+            "found 1 batches, 1 'mock phase' files, ",
+            (
+                "filtering for tags 'dummy tag 1', 'dummy tag 2', 'tag only on job 1', "
+                "'tag only on job 2'"
+            ),
+            "will run 1 jobs for phase 'dummy phase 1'",
+            "\t['dummy job label 1']",
+            "skipping phase 'dummy phase 2'",
+            "Running 'dummy phase 1' with 1 workers processing 1 jobs",
+        ]

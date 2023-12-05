@@ -33,7 +33,7 @@ def _get_jobs_matching(
                 print(
                     (
                         f"not running job '{job['label']}' because it doesn't have "
-                        f"any of the following tags: {tags}"
+                        f"any of the following tags: {printable_set(tags)}"
                     )
                 )
             continue
@@ -54,7 +54,7 @@ def _get_jobs_matching(
                 print(
                     (
                         f"not running job '{job['label']}' because it contains the "
-                        f"following tags: {has_tags_to_avoid}"
+                        f"following tags: {printable_set(has_tags_to_avoid)}"
                     )
                 )
             continue
@@ -75,6 +75,8 @@ def filter_jobs(
     if tags_to_run:
         print(f"filtering for tags {printable_set(tags_to_run)}", end="")
     if tags_to_avoid:
+        if tags_to_run:
+            print(", ", end="")
         print(f"excluding jobs with tags {printable_set(tags_to_avoid)}", end="")
     if tags_to_run or tags_to_avoid:
         print()
@@ -93,7 +95,7 @@ def filter_jobs(
             verbose=verbose,
         )
         if len(filtered_jobs[phase]) == 0:
-            print(f"No jobs for phase '{phase}' tags '{tags_to_run}'")
+            print(f"No jobs for phase '{phase}' tags {printable_set(tags_to_run)}")
             continue
 
         print((f"will run {len(filtered_jobs[phase])} jobs for phase '{phase}'"))
