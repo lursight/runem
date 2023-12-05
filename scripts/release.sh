@@ -5,7 +5,8 @@ if [[ -z "${TAG}" ]]; then
     printf "ERROR: failed to read valid version got '%s'\\m" "$TAG"
     exit 5
 fi
-echo "${TAG}"
+echo "Will tag to version ${TAG} after tests"
+python3 -m runem.runem
 echo "${TAG}" > runem/VERSION
 ${ENV_PREFIX}gitchangelog > HISTORY.md
 git add runem/VERSION HISTORY.md
