@@ -3,7 +3,7 @@ import shutil
 import typing
 
 from runem.run_command import run_command
-from runem.runem import FilePathList, JobName, Options
+from runem.types import FilePathList, JobName, JobReturnData, Options
 
 
 def _job_py_code_reformat(
@@ -125,14 +125,15 @@ def _job_py_mypy(
     run_command(cmd=mypy_cmd, **kwargs)
 
 
-def _job_py_pytest(
+def _job_py_pytest(  # noqa: C901 # pylint: disable=too-many-branches,too-many-statements
     **kwargs: typing.Any,
-) -> None:
+) -> JobReturnData:
     label: JobName = kwargs["label"]
     options: Options = kwargs["options"]
     procs: int = kwargs["procs"]
     root_path: pathlib.Path = kwargs["root_path"]
 
+    reports: JobReturnData = {"reportUrls": []}
     # TODO: use pytest.ini config pytest
     # pytest_cfg = root_path / ".pytest.ini"
     # assert pytest_cfg.exists()
@@ -140,7 +141,7 @@ def _job_py_pytest(
     if "profile" in options and options["profile"]:
         raise RuntimeError("not implemented - see run_test.sh for how to implement")
 
-    pytest_path = root_path / "test" / "unit"
+    pytest_path = root_path / "tests"
     assert pytest_path.exists()
 
     coverage_switches: typing.List[str] = []
@@ -160,6 +161,10 @@ def _job_py_pytest(
     if procs == -1:
         threading_switches = ["-n", "auto"]
 
+    verbose_switches: typing.List[str] = []
+    if "verbose" in kwargs and kwargs["verbose"]:
+        verbose_switches = ["-vvv"]
+
     profile_switches: typing.List[str] = []
     cmd_pytest = [
         "python3",
@@ -172,6 +177,7 @@ def _job_py_pytest(
         "--failed-first",
         "--exitfirst",
         *profile_switches,
+        *verbose_switches,
         str(pytest_path),
     ]
 
@@ -189,11 +195,14 @@ def _job_py_pytest(
     )
 
     if "coverage" in options and options["coverage"]:
-        coverage_output_dir = root_path / "docs" / "coverage_python"
+        reports_dir: pathlib.Path = root_path / "reports"
+        reports_dir.mkdir(parents=False, exist_ok=True)
+        coverage_output_dir: pathlib.Path = reports_dir / "coverage_python"
         if coverage_output_dir.exists():
             shutil.rmtree(coverage_output_dir)
         coverage_output_dir.mkdir(exist_ok=True)
-        print("COVERAGE: Collating coverage")
+        if kwargs["verbose"]:
+            print("COVERAGE: Collating coverage")
         # first generate the coverage report for our gitlab cicd
         gen_cobertura_coverage_report_cmd = [
             "python3",
@@ -230,13 +239,15 @@ def _job_py_pytest(
         kwargs["label"] = f"{label} coverage cli"
         run_command(cmd=gen_cli_coverage_report_cmd, **kwargs)
         assert coverage_output_dir.exists(), coverage_output_dir
-        assert (coverage_output_dir / "index.html").exists(), (
-            coverage_output_dir / "index.html"
-        )
-        assert (coverage_output_dir / "cobertura.xml").exists(), (
-            coverage_output_dir / "cobertura.xml"
-        )
-        print("COVERAGE: cli output done")
+        report_html = coverage_output_dir / "index.html"
+        assert report_html.exists(), report_html
+        report_cobertura = coverage_output_dir / "cobertura.xml"
+        assert report_cobertura.exists(), report_cobertura
+        reports["reportUrls"].append(("coverage html", report_html))
+        reports["reportUrls"].append(("coverage cobertura", report_cobertura))
+        if kwargs["verbose"]:
+            print("COVERAGE: cli output done")
+    return reports
 
 
 def _install_python_requirements(

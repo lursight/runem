@@ -28,6 +28,7 @@
     "kwargs", // key-word args shorthand
     "linters", // collection of linting tools
     "lursight", // creator
+    "metadatas", // can't think of a better word
     "MDGM",
     "mkdocs", // python module for building docs from .md files
     "mypy", // python module
@@ -39,6 +40,7 @@
     "pytest", // the python module for testing
     "rcfile", // name of a type of config file
     "refs", // git references
+    "ronseal", // ronseal, does what it says on the tin
     "runem", // this product
     "setuptools", // python module
     "stefanzweifel", // the author of the temnplate used for runem's github

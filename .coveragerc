@@ -1,22 +1,31 @@
 # .coveragerc to control coverage.py
 [run]
 branch = True
-source = python/clients
-         python/server
-         python/common
+source = runem
+         tests
+         scripts/test-hooks
 disable_warnings=include-ignored
 # store files in an easy-to-ignore or -delete file
 data_file=.coverage_report
 
 # Exclude any pyenvs
 omit =
+    */setup.py
     *env*/*
 
 [report]
+# Exclude any pyenvs
+omit =
+    */setup.py
+    *env*/*
+
 # Regexes for lines to exclude from consideration
 exclude_lines =
     # Have to re-enable the standard pragma
     pragma: no cover
+
+    # Add a tech-debt collecting pragma NOTE: this is not intended to be easy to type
+    pragma: FIXME: add code coverage
 
     # Don't compain on input capture
     ret_msg = input(msg) 
@@ -46,5 +55,10 @@ exclude_lines =
 ignore_errors = True
 
 [html]
+# Exclude any pyenvs
+omit =
+    */setup.py
+    *env*/*
+
 # Assume we run this from the root dir
-directory=docs/coverage_python
+directory=reports/coverage_python
