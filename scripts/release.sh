@@ -7,7 +7,7 @@ if [[ -z "${TAG}" ]]; then
     exit 5
 fi
 echo "Will tag to version ${TAG} after tests"
-python3 -m runem.runem
+python3 -m runem.runem --check
 echo "${TAG}" > runem/VERSION
 ${ENV_PREFIX}gitchangelog > HISTORY.md
 git add runem/VERSION HISTORY.md
