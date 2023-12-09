@@ -2,6 +2,7 @@ import typing
 from collections import defaultdict
 
 from runem.config_metadata import ConfigMetadata
+from runem.log import log
 from runem.types import (
     JobConfig,
     JobNames,
@@ -30,7 +31,7 @@ def _get_jobs_matching(
         matching_tags = job_tags.intersection(tags)
         if not matching_tags:
             if verbose:
-                print(
+                log(
                     (
                         f"not running job '{job['label']}' because it doesn't have "
                         f"any of the following tags: {printable_set(tags)}"
@@ -40,7 +41,7 @@ def _get_jobs_matching(
 
         if job["label"] not in job_names:
             if verbose:
-                print(
+                log(
                     (
                         f"not running job '{job['label']}' because it isn't in the "
                         f"list of job names. See --jobs and --not-jobs"
@@ -51,7 +52,7 @@ def _get_jobs_matching(
         has_tags_to_avoid = job_tags.intersection(tags_to_avoid)
         if has_tags_to_avoid:
             if verbose:
-                print(
+                log(
                     (
                         f"not running job '{job['label']}' because it contains the "
                         f"following tags: {printable_set(has_tags_to_avoid)}"
@@ -73,17 +74,23 @@ def filter_jobs(
     jobs: PhaseGroupedJobs = config_metadata.jobs
     verbose: bool = config_metadata.args.verbose
     if tags_to_run:
-        print(f"filtering for tags {printable_set(tags_to_run)}", end="")
+        log(f"filtering for tags {printable_set(tags_to_run)}", decorate=True, end="")
     if tags_to_avoid:
         if tags_to_run:
-            print(", ", end="")
-        print(f"excluding jobs with tags {printable_set(tags_to_avoid)}", end="")
+            log(", ", decorate=False, end="")
+        else:
+            log(decorate=True, end="")
+        log(
+            f"excluding jobs with tags {printable_set(tags_to_avoid)}",
+            decorate=False,
+            end="",
+        )
     if tags_to_run or tags_to_avoid:
-        print()
+        log(decorate=False)
     filtered_jobs: PhaseGroupedJobs = defaultdict(list)
     for phase in config_metadata.phases:
         if phase not in phases_to_run:
-            print(f"skipping phase '{phase}'")
+            log(f"skipping phase '{phase}'")
             continue
         _get_jobs_matching(
             phase=phase,
@@ -95,10 +102,10 @@ def filter_jobs(
             verbose=verbose,
         )
         if len(filtered_jobs[phase]) == 0:
-            print(f"No jobs for phase '{phase}' tags {printable_set(tags_to_run)}")
+            log(f"No jobs for phase '{phase}' tags {printable_set(tags_to_run)}")
             continue
 
-        print((f"will run {len(filtered_jobs[phase])} jobs for phase '{phase}'"))
-        print(f"\t{[job['label'] for job in filtered_jobs[phase]]}")
+        log((f"will run {len(filtered_jobs[phase])} jobs for phase '{phase}'"))
+        log(f"\t{[job['label'] for job in filtered_jobs[phase]]}")
 
     return filtered_jobs

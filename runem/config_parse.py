@@ -5,6 +5,7 @@ from collections import defaultdict
 
 from runem.config_metadata import ConfigMetadata
 from runem.job_function_python import get_job_function
+from runem.log import log
 from runem.types import (
     Config,
     ConfigNodes,
@@ -73,8 +74,8 @@ def parse_job_config(
     try:
         job_names_used = job["label"] in in_out_job_names
         if job_names_used:
-            print("ERROR: duplicate job label!")
-            print(f"\t'{job['label']}' is used twice or more in {str(cfg_filepath)}")
+            log("ERROR: duplicate job label!")
+            log(f"\t'{job['label']}' is used twice or more in {str(cfg_filepath)}")
             sys.exit(1)
 
         # try and load the function _before_ we schedule it's execution
@@ -138,7 +139,7 @@ def parse_config(config: Config, cfg_filepath: pathlib.Path) -> ConfigMetadata:
         )
 
     if not phase_order:
-        print("WARNING: phase ordering not configured! Runs will be non-deterministic!")
+        log("WARNING: phase ordering not configured! Runs will be non-deterministic!")
         phase_order = tuple(job_phases)
 
     # tags = tags.union(("python", "es", "firebase_funcs"))

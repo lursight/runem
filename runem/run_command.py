@@ -5,6 +5,8 @@ from subprocess import STDOUT as SUBPROCESS_STDOUT
 from subprocess import CompletedProcess
 from subprocess import run as subprocess_run
 
+from runem.log import log
+
 TERMINAL_WIDTH = 86
 
 
@@ -42,10 +44,10 @@ def run_command(  # noqa: C901 # pylint: disable=too-many-branches
     """Runs the given command, returning stdout or throwing on any error."""
     cmd_string: str = " ".join(cmd)
     if verbose:
-        print(f"runem: running: start: {label}: {cmd_string}")
+        log(f"running: start: {label}: {cmd_string}")
         if valid_exit_ids is not None:
             valid_exit_strs = ",".join([str(exit_code) for exit_code in valid_exit_ids])
-            print(f"runem:\tallowed return ids are: {valid_exit_strs}")
+            log(f"\tallowed return ids are: {valid_exit_strs}")
 
     if valid_exit_ids is None:
         valid_exit_ids = (0,)
@@ -60,13 +62,13 @@ def run_command(  # noqa: C901 # pylint: disable=too-many-branches
         run_env_as_string = " ".join(
             [f"{key}='{value}'" for key, value in run_env.items()]
         )
-        print(f"RUN ENV OVERRIDES: {run_env_as_string } {cmd_string}")
+        log(f"RUN ENV OVERRIDES: {run_env_as_string } {cmd_string}")
 
         if env_overrides:
             env_overrides_as_string = " ".join(
                 [f"{key}='{value}'" for key, value in env_overrides.items()]
             )
-            print(f"ENV OVERRIDES: {env_overrides_as_string} {cmd_string}")
+            log(f"ENV OVERRIDES: {env_overrides_as_string} {cmd_string}")
 
     env_overrides_dict = {}
     if env_overrides:
@@ -127,6 +129,6 @@ def run_command(  # noqa: C901 # pylint: disable=too-many-branches
     assert process is not None
     cmd_stdout: str = get_stdout(process, prefix=label)
     if verbose:
-        print(cmd_stdout)
-        print(f"runem: running: done: {label}: {cmd_string}")
+        log(cmd_stdout)
+        log(f"running: done: {label}: {cmd_string}")
     return cmd_stdout

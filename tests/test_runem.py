@@ -53,8 +53,8 @@ def test_runem_basic_with_config(
         timed_main(["--help"])
         runem_stdout = buf.getvalue().split("\n")
         assert [
-            "found 1 batches, 1 'mock phase' files, ",
-            "skipping phase 'mock phase'",
+            "runem: found 1 batches, 1 'mock phase' files, ",
+            "runem: skipping phase 'mock phase'",
         ] == runem_stdout[:2]
 
 
@@ -87,8 +87,8 @@ def test_runem_basic_with_config_no_options(
         timed_main(["--help"])
         runem_stdout = buf.getvalue().split("\n")
         assert [
-            "found 1 batches, 1 'mock phase' files, ",
-            "skipping phase 'mock phase'",
+            "runem: found 1 batches, 1 'mock phase' files, ",
+            "runem: skipping phase 'mock phase'",
         ] == runem_stdout[:2]
 
 
@@ -225,17 +225,17 @@ def test_runem_with_full_config() -> None:
     )
     assert error_raised is None
     assert [
-        "found 1 batches, 1 'mock phase' files, ",
+        "runem: found 1 batches, 1 'mock phase' files, ",
         (
-            "filtering for tags 'dummy tag 1', 'dummy tag 2', "
+            "runem: filtering for tags 'dummy tag 1', 'dummy tag 2', "
             "'tag only on job 1', 'tag only on job 2'"
         ),
-        "will run 1 jobs for phase 'dummy phase 1'",
-        "\t['dummy job label 1']",
-        "will run 1 jobs for phase 'dummy phase 2'",
-        "\t['dummy job label 2']",
-        "Running 'dummy phase 1' with 1 workers processing 1 jobs",
-        "Running 'dummy phase 2' with 1 workers processing 1 jobs",
+        "runem: will run 1 jobs for phase 'dummy phase 1'",
+        "runem: \t['dummy job label 1']",
+        "runem: will run 1 jobs for phase 'dummy phase 2'",
+        "runem: \t['dummy job label 2']",
+        "runem: Running 'dummy phase 1' with 1 workers processing 1 jobs",
+        "runem: Running 'dummy phase 2' with 1 workers processing 1 jobs",
     ] == runem_stdout
 
 
@@ -252,20 +252,20 @@ def test_runem_with_full_config_verbose() -> None:
     )
     assert error_raised is None
     assert [
-        "loaded config from [CONFIG PATH]",
-        "found 1 batches, 1 'mock phase' files, ",
+        "runem: loaded config from [CONFIG PATH]",
+        "runem: found 1 batches, 1 'mock phase' files, ",
         (
-            "filtering for tags 'dummy tag 1', 'dummy tag 2', "
+            "runem: filtering for tags 'dummy tag 1', 'dummy tag 2', "
             "'tag only on job 1', 'tag only on job 2'"
         ),
-        "will run 1 jobs for phase 'dummy phase 1'",
-        "\t['dummy job label 1']",
-        "will run 1 jobs for phase 'dummy phase 2'",
-        "\t['dummy job label 2']",
-        "Running Phase dummy phase 1",
-        "Running 'dummy phase 1' with 1 workers processing 1 jobs",
-        "Running Phase dummy phase 2",
-        "Running 'dummy phase 2' with 1 workers processing 1 jobs",
+        "runem: will run 1 jobs for phase 'dummy phase 1'",
+        "runem: \t['dummy job label 1']",
+        "runem: will run 1 jobs for phase 'dummy phase 2'",
+        "runem: \t['dummy job label 2']",
+        "runem: Running Phase dummy phase 1",
+        "runem: Running 'dummy phase 1' with 1 workers processing 1 jobs",
+        "runem: Running Phase dummy phase 2",
+        "runem: Running 'dummy phase 2' with 1 workers processing 1 jobs",
     ] == runem_stdout
 
 
@@ -282,15 +282,15 @@ def test_runem_with_single_phase() -> None:
     )
     assert error_raised is None
     assert [
-        "found 1 batches, 1 'mock phase' files, ",
+        "runem: found 1 batches, 1 'mock phase' files, ",
         (
-            "filtering for tags 'dummy tag 1', 'dummy tag 2', "
+            "runem: filtering for tags 'dummy tag 1', 'dummy tag 2', "
             "'tag only on job 1', 'tag only on job 2'"
         ),
-        "will run 1 jobs for phase 'dummy phase 1'",
-        "\t['dummy job label 1']",
-        "skipping phase 'dummy phase 2'",
-        "Running 'dummy phase 1' with 1 workers processing 1 jobs",
+        "runem: will run 1 jobs for phase 'dummy phase 1'",
+        "runem: \t['dummy job label 1']",
+        "runem: skipping phase 'dummy phase 2'",
+        "runem: Running 'dummy phase 1' with 1 workers processing 1 jobs",
     ] == runem_stdout
 
 
@@ -307,17 +307,17 @@ def test_runem_with_single_phase_verbose() -> None:
     )
     assert error_raised is None
     assert runem_stdout == [
-        "loaded config from [CONFIG PATH]",
-        "found 1 batches, 1 'mock phase' files, ",
+        "runem: loaded config from [CONFIG PATH]",
+        "runem: found 1 batches, 1 'mock phase' files, ",
         (
-            "filtering for tags 'dummy tag 1', 'dummy tag 2', "
+            "runem: filtering for tags 'dummy tag 1', 'dummy tag 2', "
             "'tag only on job 1', 'tag only on job 2'"
         ),
-        "will run 1 jobs for phase 'dummy phase 1'",
-        "\t['dummy job label 1']",
-        "skipping phase 'dummy phase 2'",
-        "Running Phase dummy phase 1",
-        "Running 'dummy phase 1' with 1 workers processing 1 jobs",
+        "runem: will run 1 jobs for phase 'dummy phase 1'",
+        "runem: \t['dummy job label 1']",
+        "runem: skipping phase 'dummy phase 2'",
+        "runem: Running Phase dummy phase 1",
+        "runem: Running 'dummy phase 1' with 1 workers processing 1 jobs",
     ]
 
 
@@ -370,7 +370,7 @@ def test_runem_bad_validate_switch_jobs(switch_to_test: str) -> None:
     assert error_raised is not None
     assert isinstance(error_raised, SystemExit)
     assert runem_stdout == [
-        f"ERROR: invalid job-name 'non existent job name' for {switch_to_test}, "
+        f"runem: ERROR: invalid job-name 'non existent job name' for {switch_to_test}, "
         "choose from one of 'dummy job label 1', 'dummy job label 2'",
         "",
     ]
@@ -401,7 +401,7 @@ def test_runem_bad_validate_switch_tags(switch_to_test: str) -> None:
     assert isinstance(error_raised, SystemExit)
     assert runem_stdout == [
         (
-            f"ERROR: invalid tag 'non existent tag' for {switch_to_test}, "
+            f"runem: ERROR: invalid tag 'non existent tag' for {switch_to_test}, "
             "choose from one of 'dummy tag 1', 'dummy tag 2', "
             "'tag only on job 1', 'tag only on job 2'"
         ),
@@ -433,7 +433,7 @@ def test_runem_bad_validate_switch_phases(switch_to_test: str) -> None:
     assert error_raised is not None
     assert isinstance(error_raised, SystemExit)
     assert runem_stdout == [
-        f"ERROR: invalid phase 'non existent phase' for {switch_to_test}, "
+        f"runem: ERROR: invalid phase 'non existent phase' for {switch_to_test}, "
         "choose from one of 'dummy phase 1', 'dummy phase 2'",
         "",
     ]
@@ -465,41 +465,41 @@ def test_runem_job_filters_work(verbosity: bool) -> None:
     assert error_raised is None
     if verbosity:
         assert runem_stdout == [
-            "loaded config from [CONFIG PATH]",
-            "found 1 batches, 1 'mock phase' files, ",
+            "runem: loaded config from [CONFIG PATH]",
+            "runem: found 1 batches, 1 'mock phase' files, ",
             (
-                "filtering for tags 'dummy tag 1', 'dummy tag 2', "
+                "runem: filtering for tags 'dummy tag 1', 'dummy tag 2', "
                 "'tag only on job 1', 'tag only on job 2'"
             ),
-            "will run 1 jobs for phase 'dummy phase 1'",
-            "\t['dummy job label 1']",
+            "runem: will run 1 jobs for phase 'dummy phase 1'",
+            "runem: \t['dummy job label 1']",
             (
-                "not running job 'dummy job label 2' because it isn't in the list "
+                "runem: not running job 'dummy job label 2' because it isn't in the list "
                 "of job names. See --jobs and --not-jobs"
             ),
             (
-                "No jobs for phase 'dummy phase 2' tags 'dummy tag 1', "
+                "runem: No jobs for phase 'dummy phase 2' tags 'dummy tag 1', "
                 "'dummy tag 2', 'tag only on job 1', "
                 "'tag only on job 2'"
             ),
-            "Running Phase dummy phase 1",
-            "Running 'dummy phase 1' with 1 workers processing 1 jobs",
+            "runem: Running Phase dummy phase 1",
+            "runem: Running 'dummy phase 1' with 1 workers processing 1 jobs",
         ]
     else:
         assert runem_stdout == [
-            "found 1 batches, 1 'mock phase' files, ",
+            "runem: found 1 batches, 1 'mock phase' files, ",
             (
-                "filtering for tags 'dummy tag 1', 'dummy tag 2', "
+                "runem: filtering for tags 'dummy tag 1', 'dummy tag 2', "
                 "'tag only on job 1', 'tag only on job 2'"
             ),
-            "will run 1 jobs for phase 'dummy phase 1'",
-            "\t['dummy job label 1']",
+            "runem: will run 1 jobs for phase 'dummy phase 1'",
+            "runem: \t['dummy job label 1']",
             (
-                "No jobs for phase 'dummy phase 2' tags 'dummy tag 1', "
+                "runem: No jobs for phase 'dummy phase 2' tags 'dummy tag 1', "
                 "'dummy tag 2', 'tag only on job 1', "
                 "'tag only on job 2'"
             ),
-            "Running 'dummy phase 1' with 1 workers processing 1 jobs",
+            "runem: Running 'dummy phase 1' with 1 workers processing 1 jobs",
         ]
 
 
@@ -529,27 +529,27 @@ def test_runem_tag_filters_work(verbosity: bool) -> None:
     assert error_raised is None
     if verbosity:
         assert runem_stdout == [
-            "loaded config from [CONFIG PATH]",
-            "found 1 batches, 1 'mock phase' files, ",
-            "filtering for tags 'tag only on job 1'",
-            "will run 1 jobs for phase 'dummy phase 1'",
-            "\t['dummy job label 1']",
+            "runem: loaded config from [CONFIG PATH]",
+            "runem: found 1 batches, 1 'mock phase' files, ",
+            "runem: filtering for tags 'tag only on job 1'",
+            "runem: will run 1 jobs for phase 'dummy phase 1'",
+            "runem: \t['dummy job label 1']",
             (
-                "not running job 'dummy job label 2' because it doesn't have any of the "
+                "runem: not running job 'dummy job label 2' because it doesn't have any of the "
                 "following tags: 'tag only on job 1'"
             ),
-            "No jobs for phase 'dummy phase 2' tags 'tag only on job 1'",
-            "Running Phase dummy phase 1",
-            "Running 'dummy phase 1' with 1 workers processing 1 jobs",
+            "runem: No jobs for phase 'dummy phase 2' tags 'tag only on job 1'",
+            "runem: Running Phase dummy phase 1",
+            "runem: Running 'dummy phase 1' with 1 workers processing 1 jobs",
         ]
     else:
         assert runem_stdout == [
-            "found 1 batches, 1 'mock phase' files, ",
-            "filtering for tags 'tag only on job 1'",
-            "will run 1 jobs for phase 'dummy phase 1'",
-            "\t['dummy job label 1']",
-            "No jobs for phase 'dummy phase 2' tags 'tag only on job 1'",
-            "Running 'dummy phase 1' with 1 workers processing 1 jobs",
+            "runem: found 1 batches, 1 'mock phase' files, ",
+            "runem: filtering for tags 'tag only on job 1'",
+            "runem: will run 1 jobs for phase 'dummy phase 1'",
+            "runem: \t['dummy job label 1']",
+            "runem: No jobs for phase 'dummy phase 2' tags 'tag only on job 1'",
+            "runem: Running 'dummy phase 1' with 1 workers processing 1 jobs",
         ]
 
 
@@ -579,39 +579,39 @@ def test_runem_tag_out_filters_work(verbosity: bool) -> None:
     assert error_raised is None
     if verbosity:
         assert runem_stdout == [
-            "loaded config from [CONFIG PATH]",
-            "found 1 batches, 1 'mock phase' files, ",
+            "runem: loaded config from [CONFIG PATH]",
+            "runem: found 1 batches, 1 'mock phase' files, ",
             (
-                "filtering for tags 'dummy tag 1', 'dummy tag 2', "
+                "runem: filtering for tags 'dummy tag 1', 'dummy tag 2', "
                 "'tag only on job 2', excluding jobs with tags 'tag only on job 1'"
             ),
             (
-                "not running job 'dummy job label 1' because it contains "
+                "runem: not running job 'dummy job label 1' because it contains "
                 "the following tags: 'tag only on job 1'"
             ),
             (
-                "No jobs for phase 'dummy phase 1' tags 'dummy tag 1', 'dummy tag 2', "
+                "runem: No jobs for phase 'dummy phase 1' tags 'dummy tag 1', 'dummy tag 2', "
                 "'tag only on job 2'"
             ),
-            "will run 1 jobs for phase 'dummy phase 2'",
-            "\t['dummy job label 2']",
-            "Running Phase dummy phase 2",
-            "Running 'dummy phase 2' with 1 workers processing 1 jobs",
+            "runem: will run 1 jobs for phase 'dummy phase 2'",
+            "runem: \t['dummy job label 2']",
+            "runem: Running Phase dummy phase 2",
+            "runem: Running 'dummy phase 2' with 1 workers processing 1 jobs",
         ]
     else:
         assert runem_stdout == [
-            "found 1 batches, 1 'mock phase' files, ",
+            "runem: found 1 batches, 1 'mock phase' files, ",
             (
-                "filtering for tags 'dummy tag 1', 'dummy tag 2', 'tag only on job 2', "
+                "runem: filtering for tags 'dummy tag 1', 'dummy tag 2', 'tag only on job 2', "
                 "excluding jobs with tags 'tag only on job 1'"
             ),
             (
-                "No jobs for phase 'dummy phase 1' tags 'dummy tag 1', 'dummy tag 2', 'tag "
-                "only on job 2'"
+                "runem: No jobs for phase 'dummy phase 1' tags 'dummy tag 1', 'dummy tag 2', "
+                "'tag only on job 2'"
             ),
-            "will run 1 jobs for phase 'dummy phase 2'",
-            "\t['dummy job label 2']",
-            "Running 'dummy phase 2' with 1 workers processing 1 jobs",
+            "runem: will run 1 jobs for phase 'dummy phase 2'",
+            "runem: \t['dummy job label 2']",
+            "runem: Running 'dummy phase 2' with 1 workers processing 1 jobs",
         ]
 
 
@@ -644,32 +644,32 @@ def test_runem_tag_out_filters_work_all_tags(verbosity: bool) -> None:
     assert error_raised is None
     if verbosity:
         assert runem_stdout == [
-            "loaded config from [CONFIG PATH]",
-            "found 1 batches, 1 'mock phase' files, ",
+            "runem: loaded config from [CONFIG PATH]",
+            "runem: found 1 batches, 1 'mock phase' files, ",
             (
-                "excluding jobs with tags 'dummy tag 1', 'dummy tag 2', "
+                "runem: excluding jobs with tags 'dummy tag 1', 'dummy tag 2', "
                 "'tag only on job 1', 'tag only on job 2'"
             ),
             (
-                "not running job 'dummy job label 1' because it doesn't have any of "
+                "runem: not running job 'dummy job label 1' because it doesn't have any of "
                 "the following tags: "
             ),
-            "No jobs for phase 'dummy phase 1' tags ",
+            "runem: No jobs for phase 'dummy phase 1' tags ",
             (
-                "not running job 'dummy job label 2' because it doesn't have any of "
+                "runem: not running job 'dummy job label 2' because it doesn't have any of "
                 "the following tags: "
             ),
-            "No jobs for phase 'dummy phase 2' tags ",
+            "runem: No jobs for phase 'dummy phase 2' tags ",
         ]
     else:
         assert runem_stdout == [
-            "found 1 batches, 1 'mock phase' files, ",
+            "runem: found 1 batches, 1 'mock phase' files, ",
             (
-                "excluding jobs with tags 'dummy tag 1', 'dummy tag 2', "
+                "runem: excluding jobs with tags 'dummy tag 1', 'dummy tag 2', "
                 "'tag only on job 1', 'tag only on job 2'"
             ),
-            "No jobs for phase 'dummy phase 1' tags ",
-            "No jobs for phase 'dummy phase 2' tags ",
+            "runem: No jobs for phase 'dummy phase 1' tags ",
+            "runem: No jobs for phase 'dummy phase 2' tags ",
         ]
 
 
@@ -699,27 +699,27 @@ def test_runem_phase_filters_work(verbosity: bool) -> None:
     assert error_raised is None
     if verbosity:
         assert runem_stdout == [
-            "loaded config from [CONFIG PATH]",
-            "found 1 batches, 1 'mock phase' files, ",
+            "runem: loaded config from [CONFIG PATH]",
+            "runem: found 1 batches, 1 'mock phase' files, ",
             (
-                "filtering for tags 'dummy tag 1', 'dummy tag 2', 'tag only on job 1', "
+                "runem: filtering for tags 'dummy tag 1', 'dummy tag 2', 'tag only on job 1', "
                 "'tag only on job 2'"
             ),
-            "will run 1 jobs for phase 'dummy phase 1'",
-            "\t['dummy job label 1']",
-            "skipping phase 'dummy phase 2'",
-            "Running Phase dummy phase 1",
-            "Running 'dummy phase 1' with 1 workers processing 1 jobs",
+            "runem: will run 1 jobs for phase 'dummy phase 1'",
+            "runem: \t['dummy job label 1']",
+            "runem: skipping phase 'dummy phase 2'",
+            "runem: Running Phase dummy phase 1",
+            "runem: Running 'dummy phase 1' with 1 workers processing 1 jobs",
         ]
     else:
         assert runem_stdout == [
-            "found 1 batches, 1 'mock phase' files, ",
+            "runem: found 1 batches, 1 'mock phase' files, ",
             (
-                "filtering for tags 'dummy tag 1', 'dummy tag 2', 'tag only on job 1', "
+                "runem: filtering for tags 'dummy tag 1', 'dummy tag 2', 'tag only on job 1', "
                 "'tag only on job 2'"
             ),
-            "will run 1 jobs for phase 'dummy phase 1'",
-            "\t['dummy job label 1']",
-            "skipping phase 'dummy phase 2'",
-            "Running 'dummy phase 1' with 1 workers processing 1 jobs",
+            "runem: will run 1 jobs for phase 'dummy phase 1'",
+            "runem: \t['dummy job label 1']",
+            "runem: skipping phase 'dummy phase 2'",
+            "runem: Running 'dummy phase 1' with 1 workers processing 1 jobs",
         ]

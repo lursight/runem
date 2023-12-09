@@ -4,6 +4,7 @@ import typing
 
 import yaml
 
+from runem.log import log
 from runem.types import Config
 
 CFG_FILE_YAML = pathlib.Path(".runem.yml")
@@ -47,7 +48,7 @@ def _find_cfg() -> pathlib.Path:
         return cfg_candidate
 
     # error out and exit as we currently require the cfg file as it lists jobs.
-    print(f"ERROR: Config not found! Looked from {start_dirs}")
+    log(f"ERROR: Config not found! Looked from {start_dirs}")
     sys.exit(1)
 
 
