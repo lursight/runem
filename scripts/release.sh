@@ -1,3 +1,7 @@
+#!/usr/bin/env bash
+set -o pipefail
+set -e
+
 ENV_PREFIX=$1
 git tag
 echo "WARNING: This operation will create s version tag and push to github"
@@ -7,7 +11,7 @@ if [[ -z "${TAG}" ]]; then
     exit 5
 fi
 echo "Will tag to version ${TAG} after tests"
-python3 -m runem.runem
+python3 -m runem.runem --check
 echo "${TAG}" > runem/VERSION
 ${ENV_PREFIX}gitchangelog > HISTORY.md
 git add runem/VERSION HISTORY.md
