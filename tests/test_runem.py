@@ -603,11 +603,11 @@ def test_runem_tag_out_filters_work(verbosity: bool) -> None:
             "runem: found 1 batches, 1 'mock phase' files, ",
             (
                 "runem: filtering for tags 'dummy tag 1', 'dummy tag 2', 'tag only on job 2', "
-                "runem: excluding jobs with tags 'tag only on job 1'"
+                "excluding jobs with tags 'tag only on job 1'"
             ),
             (
-                "runem: No jobs for phase 'dummy phase 1' tags 'dummy tag 1', 'dummy tag 2', 'tag "
-                "runem: only on job 2'"
+                "runem: No jobs for phase 'dummy phase 1' tags 'dummy tag 1', 'dummy tag 2', "
+                "'tag only on job 2'"
             ),
             "runem: will run 1 jobs for phase 'dummy phase 2'",
             "runem: \t['dummy job label 2']",
@@ -656,7 +656,7 @@ def test_runem_tag_out_filters_work_all_tags(verbosity: bool) -> None:
             ),
             "runem: No jobs for phase 'dummy phase 1' tags ",
             (
-                "not running job 'dummy job label 2' because it doesn't have any of "
+                "runem: not running job 'dummy job label 2' because it doesn't have any of "
                 "the following tags: "
             ),
             "runem: No jobs for phase 'dummy phase 2' tags ",
@@ -669,7 +669,7 @@ def test_runem_tag_out_filters_work_all_tags(verbosity: bool) -> None:
                 "'tag only on job 1', 'tag only on job 2'"
             ),
             "runem: No jobs for phase 'dummy phase 1' tags ",
-            "No jobs for phase 'dummy phase 2' tags ",
+            "runem: No jobs for phase 'dummy phase 2' tags ",
         ]
 
 

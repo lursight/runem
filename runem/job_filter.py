@@ -77,10 +77,14 @@ def filter_jobs(
         log(f"filtering for tags {printable_set(tags_to_run)}", decorate=True, end="")
     if tags_to_avoid:
         if tags_to_run:
-            log(", ", end="")
+            log(", ", decorate=False, end="")
         else:
-            log(decorate=True)
-        log(f"excluding jobs with tags {printable_set(tags_to_avoid)}", end="")
+            log(decorate=True, end="")
+        log(
+            f"excluding jobs with tags {printable_set(tags_to_avoid)}",
+            decorate=False,
+            end="",
+        )
     if tags_to_run or tags_to_avoid:
         log(decorate=False)
     filtered_jobs: PhaseGroupedJobs = defaultdict(list)
