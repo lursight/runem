@@ -1,12 +1,34 @@
----
-/* cSpell:disable */
----
 Changelog
 =========
 
 
 (unreleased)
 ------------
+- Merge branch 'chore/run_in_check_mode_on_release' [Frank Harrison]
+- Chore(release-checks): makes each command fail on 'make release'
+  [Frank Harrison]
+- Chore(release-checks): run runem in check mode on 'make release'
+  [Frank Harrison]
+- Merge branch 'fix/pyyaml_dep' [Frank Harrison]
+- Fix(deps): adds the py-yaml dep to release requirements. [Frank
+  Harrison]
+- Merge branch 'chore/log_output' [Frank Harrison]
+- Chore(coverage): fixes up coverage, for now. [Frank Harrison]
+- Fixup: logs. [Frank Harrison]
+- Chore(black): formats log.py. [Frank Harrison]
+- Chore(log-format): replaces print() with log. [Frank Harrison]
+
+  ... also adds a prefix to the logging
+- Merge branch 'chore/skip_spell_check_history' [Frank Harrison]
+- Chore(spell-history): add cSpell:disable to HISTORY.md's frontmatter.
+  [Frank Harrison]
+
+  ... because some of the commit messages contain spelling typos
+
+
+0.0.16 (2023-12-05)
+-------------------
+- Release: version 0.0.16 🚀 [Frank Harrison]
 - Merge branch 'chore/get_release_running_tests' [Frank Harrison]
 - Chore(test-on-release): prints existing tags on make release. [Frank
   Harrison]
