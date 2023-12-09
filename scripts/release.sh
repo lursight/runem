@@ -1,3 +1,7 @@
+#!/usr/bin/env bash
+set -o pipefail
+set -e
+
 ENV_PREFIX=$1
 git tag
 echo "WARNING: This operation will create s version tag and push to github"
