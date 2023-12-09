@@ -111,16 +111,16 @@ def _process_jobs(
           it and, for instance, run the longest-running job first with quicker
           jobs completing around it, then we would work out that schedule here.
     """
-    num_concurrent_procs: int = (
+    max_num_concurrent_procs: int = (
         config_metadata.args.procs
         if config_metadata.args.procs != -1
         else multiprocessing.cpu_count()
     )
-    num_concurrent_procs = min(num_concurrent_procs, len(jobs))
+    num_concurrent_procs: int = min(max_num_concurrent_procs, len(jobs))
     log(
         (
-            f"Running '{phase}' with {num_concurrent_procs} workers "
-            f"processing {len(jobs)} jobs"
+            f"Running '{phase}' with {num_concurrent_procs} workers (of "
+            f"{max_num_concurrent_procs} max) processing {len(jobs)} jobs"
         )
     )
 
