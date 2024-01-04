@@ -38,8 +38,8 @@ from runem.config import load_config
 from runem.config_metadata import ConfigMetadata
 from runem.config_parse import parse_config
 from runem.files import find_files
+from runem.job_execute import job_execute
 from runem.job_filter import filter_jobs
-from runem.job_runner import job_runner
 from runem.log import log
 from runem.report import report_on_run
 from runem.types import (
@@ -137,7 +137,7 @@ def _process_jobs(
             with multiprocessing.Pool(processes=num_concurrent_procs) as pool:
                 # use starmap so we can pass down the job-configs and the args and the files
                 in_out_job_run_metadatas[phase] = pool.starmap(
-                    job_runner,
+                    job_execute,
                     zip(
                         jobs,
                         repeat(running_jobs),

@@ -7,12 +7,12 @@ from datetime import timedelta
 from timeit import default_timer as timer
 
 from runem.config_metadata import ConfigMetadata
-from runem.job_function_python import get_job_function
+from runem.job_wrapper_python import get_job_wrapper
 from runem.log import log
 from runem.types import FilePathList, FilePathListLookup, JobConfig, JobReturn, JobTags
 
 
-def job_runner_inner(
+def job_execute_inner(
     job_config: JobConfig,
     config_metadata: ConfigMetadata,
     file_lists: FilePathListLookup,
@@ -28,7 +28,7 @@ def job_runner_inner(
     function: typing.Callable
     job_tags: JobTags = set(job_config["when"]["tags"])
     os.chdir(root_path)
-    function = get_job_function(job_config, config_metadata.cfg_filepath)
+    function = get_job_wrapper(job_config, config_metadata.cfg_filepath)
 
     # get the files for all files found for this job's tags
     file_list: FilePathList = []
@@ -75,18 +75,18 @@ def job_runner_inner(
     return (timing_data, reports)
 
 
-def job_runner(
+def job_execute(
     job_config: JobConfig,
     running_jobs: typing.Dict[str, str],
     config_metadata: ConfigMetadata,
     file_lists: FilePathListLookup,
 ) -> typing.Tuple[typing.Tuple[str, timedelta], JobReturn]:
-    """Thing wrapper around job_runner_inner needed fro mocking in tests.
+    """Thin-wrapper around job_execute_inner needed for mocking in tests.
 
     Needed for faster tests.
     """
     this_id: str = str(uuid.uuid4())
     running_jobs[this_id] = job_config["label"]
-    results = job_runner_inner(job_config, config_metadata, file_lists)
+    results = job_execute_inner(job_config, config_metadata, file_lists)
     del running_jobs[this_id]
     return results

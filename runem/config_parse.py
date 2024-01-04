@@ -4,7 +4,7 @@ import typing
 from collections import defaultdict
 
 from runem.config_metadata import ConfigMetadata
-from runem.job_function_python import get_job_function
+from runem.job_wrapper_python import get_job_wrapper
 from runem.log import log
 from runem.types import (
     Config,
@@ -79,7 +79,7 @@ def parse_job_config(
             sys.exit(1)
 
         # try and load the function _before_ we schedule it's execution
-        get_job_function(job, cfg_filepath)
+        get_job_wrapper(job, cfg_filepath)
         phase_id: PhaseName = job["when"]["phase"]
         in_out_jobs_by_phase[phase_id].append(job)
 
