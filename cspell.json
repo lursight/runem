@@ -4,7 +4,7 @@
   "version": "0.2",
   // language - current active spelling language
   "language": "en-gb",
-  "ignorePaths": ["**/.pyenv/**", "./build", "*.egg-info/"],
+  "ignorePaths": ["**/.pyenv/**", "./build", "*.egg-info/", "HISTORY.md"],
   // words - list of words to be always considered correct
   "words": [
     "argsparse", // python module
