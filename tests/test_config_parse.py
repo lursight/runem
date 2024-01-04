@@ -1,5 +1,8 @@
+import io
 import pathlib
 from collections import defaultdict
+from contextlib import redirect_stdout
+from unittest.mock import patch
 
 import pytest
 
@@ -325,3 +328,42 @@ def test_parse_config_missing_phases_raises() -> None:
     config_file_path = pathlib.Path(__file__).parent / ".runem.yml"
     with pytest.raises(ValueError):
         parse_config(invalid_config, config_file_path)
+
+
+@patch(
+    "runem.config_parse._parse_global_config",
+    return_value=(None, (), {}),
+)
+def test_parse_config_warning_if_missing_phase_order(mock_parse_global_config) -> None:
+    """Test the global config raises if the phases are missing."""
+    dummy_global_config: GlobalSerialisedConfig = {
+        "config": {  # type: ignore
+            "options": [
+                {
+                    "option": {
+                        "name": "dummy option",
+                        "aliases": None,
+                        "default": False,
+                        "type": "bool",
+                        "desc": "dummy description",
+                    }
+                }
+            ],
+            "files": [{"filter": {"tag": "dummy tag", "regex": ".*"}}],
+        }
+    }
+    valid_config: Config = [
+        dummy_global_config,
+    ]
+    config_file_path = pathlib.Path(__file__).parent / ".runem.yml"
+
+    # run the command and capture output
+    with io.StringIO() as buf, redirect_stdout(buf):
+        parse_config(valid_config, config_file_path)
+        run_command_stdout = buf.getvalue()
+
+    assert run_command_stdout.split("\n") == [
+        "runem: WARNING: phase ordering not configured! Runs will be non-deterministic!",
+        "",
+    ]
+    mock_parse_global_config.assert_called()
