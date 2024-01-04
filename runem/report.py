@@ -69,6 +69,19 @@ def _plot_times(
     return time_saved
 
 
+def _print_reports_by_phase(
+    phase_run_oder: OrderedPhases, report_data: JobRunReportByPhase
+) -> None:
+    """Logs out the reports by grouped by phase."""
+    for phase in phase_run_oder:
+        report_urls: ReportUrls = report_data[phase]
+        job_report_url_info: ReportUrlInfo
+        for job_report_url_info in report_urls:
+            if not job_report_url_info:
+                continue
+            log(f"report: {str(job_report_url_info[0])}: {str(job_report_url_info[1])}")
+
+
 def report_on_run(
     phase_run_oder: OrderedPhases,
     job_run_metadatas: JobRunMetadatasByPhase,
@@ -103,13 +116,7 @@ def report_on_run(
     )
 
     # Penultimate-ly print out the available reports grouped by run-phase.
-    for phase in phase_run_oder:
-        report_urls: ReportUrls = report_data[phase]
-        job_report_url_info: ReportUrlInfo
-        for job_report_url_info in report_urls:
-            if not job_report_url_info:
-                continue
-            log(f"report: {str(job_report_url_info[0])}: {str(job_report_url_info[1])}")
+    _print_reports_by_phase(phase_run_oder, report_data)
 
     # Return the key metric for runem, the wall-clock time saved to the user
     # TODO: write this to disk
