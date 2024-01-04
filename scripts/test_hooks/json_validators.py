@@ -10,7 +10,7 @@ def _json_validate(
 ) -> None:
     label = kwargs["label"]
     json_files: FilePathList = kwargs["file_list"]
-    json_with_comments = ("cspell.json", "tsconfig.spec.json")
+    json_with_comments = ("cspell.json", "tsconfig.spec.json", "launch.json")
     for json_file in json_files:
         json_path = pathlib.Path(json_file)
         if not json_path.exists():
