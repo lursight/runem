@@ -120,7 +120,7 @@ def test_load_python_function_from_module_handles_module_spec_loading(
     base_path = file_path.parent
     with pytest.raises(FunctionNotFound) as err_info:
         _load_python_function_from_module(
-            base_path / ".rune.no_exist.yml",
+            base_path / ".runem.no_exist.yml",
             "test_module_name",
             file_path,
             "test_load_python_function_from_module_handles_module_spec_loading",
@@ -132,3 +132,60 @@ def test_load_python_function_from_module_handles_module_spec_loading(
         )
     )
     mock_spec_from_file_location.assert_called()
+
+
+def test_load_python_function_success(tmp_path):
+    # Create a temporary Python module file
+    p = tmp_path / "hello.py"
+    p.write_text('def hello():\n    return "Hello, World!"')
+
+    # Use the function to load the module and retrieve the function
+    hello_func = _load_python_function_from_module(
+        p, "hello_module", pathlib.Path("hello.py"), "hello"
+    )
+
+    # True if the function can be called and returns expected result
+    assert callable(hello_func)
+    assert hello_func() == "Hello, World!"
+
+
+def test_load_python_function_module_not_found(tmp_path):
+    # Use the function to load a non-existing module
+    with pytest.raises(FunctionNotFound):
+        _load_python_function_from_module(
+            tmp_path, "not_found_module", pathlib.Path("not_found.py"), "not_found"
+        )
+
+
+def test_load_python_function_not_found(tmp_path):
+    # Create a temporary Python module file
+    p = tmp_path / "hello.py"
+    p.write_text(
+        """
+    def hello():
+        return "Hello, World!"
+    """
+    )
+
+    # Use the function to load the module but try to retrieve a non-existent function
+    with pytest.raises(FunctionNotFound):
+        _load_python_function_from_module(
+            tmp_path, "hello_module", pathlib.Path("hello.py"), "not_found"
+        )
+
+
+def test_load_python_function_invalid_module(tmp_path):
+    # Create an invalid Python module file
+    p = tmp_path / "invalid.py"
+    p.write_text(
+        """
+    def 123invalid():
+        return "Invalid!"
+    """
+    )
+
+    # Use the function to load the invalid module and expect a FunctionNotFound exception
+    with pytest.raises(FunctionNotFound):
+        _load_python_function_from_module(
+            tmp_path, "invalid_module", pathlib.Path("invalid.py"), "123invalid"
+        )
