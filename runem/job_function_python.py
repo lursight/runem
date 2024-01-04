@@ -20,20 +20,33 @@ def _load_python_function_from_module(
     ).absolute()
 
     # load the function
-    module_spec = module_spec_from_file_location(function_to_load, abs_module_file_path)
-    if not module_spec:
+    try:
+        module_spec = module_spec_from_file_location(
+            function_to_load, abs_module_file_path
+        )
+        if not module_spec:
+            raise FileNotFoundError()
+    except FileNotFoundError as err:
         raise FunctionNotFound(
             (
                 f"unable to load '{function_to_load}' from '{str(module_file_path)} "
                 f"relative to '{str(cfg_filepath)}"
             )
-        )
+        ) from err
 
     module = module_from_spec(module_spec)
     sys.modules[module_name] = module
     if not module_spec.loader:
         raise FunctionNotFound("unable to load module")
-    module_spec.loader.exec_module(module)
+    try:
+        module_spec.loader.exec_module(module)
+    except FileNotFoundError as err:
+        raise FunctionNotFound(
+            (
+                f"unable to load '{function_to_load}' from '{str(module_file_path)} "
+                f"relative to '{str(cfg_filepath)}"
+            )
+        ) from err
     try:
         function: JobFunction = getattr(module, function_to_load)
     except AttributeError as err:

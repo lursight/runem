@@ -147,7 +147,7 @@ def parse_args(
 
     args = parser.parse_args(argv[1:])
 
-    options: Options = _initialise_options(config_metadata, args)
+    options: Options = initialise_options(config_metadata, args)
 
     if not _validate_filters(config_metadata, args):
         sys.exit(1)
@@ -214,7 +214,7 @@ def _validate_filters(
     return True
 
 
-def _initialise_options(
+def initialise_options(
     config_metadata: ConfigMetadata,
     args: argparse.Namespace,
 ) -> Options:

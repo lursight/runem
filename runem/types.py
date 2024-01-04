@@ -18,8 +18,9 @@ JobPhases = typing.Set[str]
 JobTags = typing.Set[JobTag]
 PhaseName = str
 OrderedPhases = typing.Tuple[PhaseName, ...]
+ReportName = str
 ReportUrl = str | pathlib.Path
-ReportUrlInfo = typing.Tuple[str, ReportUrl]
+ReportUrlInfo = typing.Tuple[ReportName, ReportUrl]
 ReportUrls = typing.List[ReportUrlInfo]
 
 
