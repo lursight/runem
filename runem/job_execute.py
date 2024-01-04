@@ -7,16 +7,10 @@ from datetime import timedelta
 from timeit import default_timer as timer
 
 from runem.config_metadata import ConfigMetadata
+from runem.job import Job
 from runem.job_wrapper import get_job_wrapper
 from runem.log import log
-from runem.types import (
-    FilePathList,
-    FilePathListLookup,
-    JobConfig,
-    JobFunction,
-    JobReturn,
-    JobTags,
-)
+from runem.types import FilePathListLookup, JobConfig, JobFunction, JobReturn, JobTags
 
 
 def job_execute_inner(
@@ -28,20 +22,17 @@ def job_execute_inner(
 
     Returns the time information and any reports the job generated
     """
-    label = job_config["label"]
+    label = Job.get_job_name(job_config)
     if config_metadata.args.verbose:
         log(f"START: {label}")
     root_path: pathlib.Path = config_metadata.cfg_filepath.parent
     function: JobFunction
-    job_tags: JobTags = set(job_config["when"]["tags"])
+    job_tags: typing.Optional[JobTags] = Job.get_job_tags(job_config)
     os.chdir(root_path)
     function = get_job_wrapper(job_config, config_metadata.cfg_filepath)
 
     # get the files for all files found for this job's tags
-    file_list: FilePathList = []
-    for tag in job_tags:
-        if tag in file_lists:
-            file_list.extend(file_lists[tag])
+    file_list = Job.get_job_files(file_lists, job_tags)
 
     if not file_list:
         # no files to work on
@@ -62,7 +53,7 @@ def job_execute_inner(
     start = timer()
     func_signature = inspect.signature(function)
     if config_metadata.args.verbose:
-        log(f"job: running {job_config['label']}")
+        log(f"job: running {Job.get_job_name(job_config)}")
     reports: JobReturn
     if "args" in func_signature.parameters:
         reports = function(  # type: ignore  # FIXME: which function do we have?
@@ -75,7 +66,9 @@ def job_execute_inner(
             procs=config_metadata.args.procs,
             root_path=root_path,
             verbose=config_metadata.args.verbose,
-            **job_config,
+            # unpack useful data points from the job_config
+            label=Job.get_job_name(job_config),
+            job=job_config,
         )
     end = timer()
     time_taken: timedelta = timedelta(seconds=end - start)
@@ -96,7 +89,7 @@ def job_execute(
     Needed for faster tests.
     """
     this_id: str = str(uuid.uuid4())
-    running_jobs[this_id] = job_config["label"]
+    running_jobs[this_id] = Job.get_job_name(job_config)
     results = job_execute_inner(job_config, config_metadata, file_lists)
     del running_jobs[this_id]
     return results

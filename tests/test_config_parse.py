@@ -3,12 +3,17 @@ import pathlib
 import unittest
 from collections import defaultdict
 from contextlib import redirect_stdout
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import pytest
 
 from runem.config_metadata import ConfigMetadata
-from runem.config_parse import _parse_global_config, parse_config, parse_job_config
+from runem.config_parse import (
+    _parse_global_config,
+    _parse_job,
+    parse_config,
+    parse_job_config,
+)
 from runem.types import (
     Config,
     GlobalConfig,
@@ -18,6 +23,7 @@ from runem.types import (
     JobPhases,
     JobSerialisedConfig,
     JobTags,
+    OrderedPhases,
     PhaseGroupedJobs,
 )
 
@@ -44,6 +50,7 @@ def test_parse_job_config() -> None:
     jobs_by_phase: PhaseGroupedJobs = defaultdict(list)
     job_names: JobNames = set()
     phases: JobPhases = set()
+    phase_order: OrderedPhases = ()
     parse_job_config(
         cfg_filepath=pathlib.Path(__file__),
         job=job_config,
@@ -51,6 +58,7 @@ def test_parse_job_config() -> None:
         in_out_jobs_by_phase=jobs_by_phase,
         in_out_job_names=job_names,
         in_out_phases=phases,
+        phase_order=phase_order,
     )
     assert tags == {"format", "py"}
     assert jobs_by_phase == {
@@ -92,6 +100,7 @@ def test_parse_job_config_handles_multiple_cwd() -> None:
     jobs_by_phase: PhaseGroupedJobs = defaultdict(list)
     job_names: JobNames = set()
     phases: JobPhases = set()
+    phase_order: OrderedPhases = ()
     parse_job_config(
         cfg_filepath=pathlib.Path(__file__),
         job=job_config,
@@ -99,6 +108,7 @@ def test_parse_job_config_handles_multiple_cwd() -> None:
         in_out_jobs_by_phase=jobs_by_phase,
         in_out_job_names=job_names,
         in_out_phases=phases,
+        phase_order=phase_order,
     )
     assert tags == {"format", "py"}
     assert jobs_by_phase == {
@@ -149,6 +159,7 @@ def test_parse_job_config_throws_on_dupe_name() -> None:
     jobs_by_phase: PhaseGroupedJobs = defaultdict(list)
     job_names: JobNames = set(("reformat py",))
     phases: JobPhases = set()
+    phase_order: OrderedPhases = ()
     with pytest.raises(SystemExit):
         parse_job_config(
             cfg_filepath=pathlib.Path(__file__),
@@ -157,18 +168,19 @@ def test_parse_job_config_throws_on_dupe_name() -> None:
             in_out_jobs_by_phase=jobs_by_phase,
             in_out_job_names=job_names,
             in_out_phases=phases,
+            phase_order=phase_order,
         )
 
 
 def test_parse_job_config_throws_on_missing_key() -> None:
     """Tests for expected keys are reported if missing."""
     job_config: JobConfig = {
-        "addr": {
+        "addr": {  # type: ignore[typeddict-item]
             "file": __file__,
-            "function": "test_parse_job_config",
+            # intentionally removed:
+            # "function": "test_parse_job_config",
         },
-        # intentionally removed:
-        # "label": "reformat py",
+        "label": "reformat py",
         "when": {
             "phase": "edit",
             "tags": set(
@@ -181,8 +193,9 @@ def test_parse_job_config_throws_on_missing_key() -> None:
     }
     tags: JobTags = set(["py"])
     jobs_by_phase: PhaseGroupedJobs = defaultdict(list)
-    job_names: JobNames = set(("reformat py",))
+    job_names: JobNames = set()
     phases: JobPhases = set()
+    phase_order: OrderedPhases = ()
     with pytest.raises(ValueError) as err_info:
         parse_job_config(
             cfg_filepath=pathlib.Path(__file__),
@@ -191,8 +204,11 @@ def test_parse_job_config_throws_on_missing_key() -> None:
             in_out_jobs_by_phase=jobs_by_phase,
             in_out_job_names=job_names,
             in_out_phases=phases,
+            phase_order=phase_order,
         )
-    assert str(err_info.value).startswith(("job config entry is missing 'label' data"))
+    assert str(err_info.value).startswith(
+        ("job config entry is missing 'function' data")
+    )
 
 
 def test_parse_global_config_empty() -> None:
@@ -463,3 +479,83 @@ def test_parse_config_warning_if_missing_phase_order(
         "",
     ]
     mock_parse_global_config.assert_called()
+
+
+@patch(
+    "runem.config_parse.get_job_wrapper",
+    return_value=None,
+)
+def test_parse_job_with_tags(mock_get_job_wrapper: Mock) -> None:
+    """Test case where job_tags is not empty."""
+    cfg_filepath = pathlib.Path(__file__)
+    job_config: JobConfig = {
+        "label": "Job1",  # a
+        "when": {  # type: ignore[typeddict-item]
+            "tags": [
+                "tag1",  # t1
+                "tag2",
+            ]
+        },
+    }
+    in_out_tags: JobTags = set()
+    in_out_jobs_by_phase: PhaseGroupedJobs = defaultdict(list)
+    in_out_job_names: JobNames = set()
+    in_out_phases: JobPhases = set()
+    phase_order: OrderedPhases = ("phase1", "phase2")
+
+    with io.StringIO() as buf, redirect_stdout(buf):
+        _parse_job(
+            cfg_filepath,
+            job_config,
+            in_out_tags,
+            in_out_jobs_by_phase,
+            in_out_job_names,
+            in_out_phases,
+            phase_order,
+        )
+        run_command_stdout = buf.getvalue().split("\n")
+
+    mock_get_job_wrapper.assert_called_once()
+
+    assert run_command_stdout == [
+        "runem: WARNING: no phase found for 'Job1', using 'phase1'",
+        "",
+    ]
+    assert in_out_tags == {"tag1", "tag2"}
+
+
+@patch(
+    "runem.config_parse.get_job_wrapper",
+    return_value=None,
+)
+def test_parse_job_without_tags(mock_get_job_wrapper: Mock) -> None:
+    """Test case where job_tags is empty or None."""
+    cfg_filepath = pathlib.Path(__file__)
+    job_config: JobConfig = {
+        "label": "Job2",
+        "when": {  # type: ignore[typeddict-item]
+            "phase": "phase1",  # phase
+        },
+    }
+    in_out_tags: JobTags = set()
+    in_out_jobs_by_phase: PhaseGroupedJobs = defaultdict(list)
+    in_out_job_names: JobNames = set()
+    in_out_phases: JobPhases = set()
+    phase_order: OrderedPhases = ("phase1", "phase2")
+
+    with io.StringIO() as buf, redirect_stdout(buf):
+        _parse_job(
+            cfg_filepath,
+            job_config,
+            in_out_tags,
+            in_out_jobs_by_phase,
+            in_out_job_names,
+            in_out_phases,
+            phase_order,
+        )
+        run_command_stdout = buf.getvalue().split("\n")
+
+    mock_get_job_wrapper.assert_called_once()
+
+    assert run_command_stdout == [""]
+    assert not in_out_tags

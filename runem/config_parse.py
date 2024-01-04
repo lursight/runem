@@ -6,6 +6,7 @@ from collections import defaultdict
 from collections.abc import Iterable
 
 from runem.config_metadata import ConfigMetadata
+from runem.job import Job
 from runem.job_wrapper import get_job_wrapper
 from runem.log import log
 from runem.types import (
@@ -66,25 +67,31 @@ def _parse_job(
     in_out_jobs_by_phase: PhaseGroupedJobs,
     in_out_job_names: JobNames,
     in_out_phases: JobPhases,
+    phase_order: OrderedPhases,
 ) -> None:
     """Parse an individual job."""
-    job_name_used = job["label"] in in_out_job_names
-    if job_name_used:
+    job_name: str = Job.get_job_name(job)
+    job_names_used = job_name in in_out_job_names
+    if job_names_used:
         log("ERROR: duplicate job label!")
         log(f"\t'{job['label']}' is used twice or more in {str(cfg_filepath)}")
         sys.exit(1)
 
-        # try and load the function _before_ we schedule it's execution
+    # try and load the function _before_ we schedule it's execution
     get_job_wrapper(job, cfg_filepath)
-    phase_id: PhaseName = job["when"]["phase"]
-
-    # add the job to the list of jobs
+    try:
+        phase_id: PhaseName = job["when"]["phase"]
+    except KeyError:
+        fallback_phase = phase_order[0]
+        log(f"WARNING: no phase found for '{job_name}', using '{fallback_phase}'")
+        phase_id = fallback_phase
     in_out_jobs_by_phase[phase_id].append(job)
 
-    in_out_job_names.add(job["label"])
-    in_out_phases.add(job["when"]["phase"])
-    for tag in job["when"]["tags"]:
-        in_out_tags.add(tag)
+    in_out_job_names.add(job_name)
+    in_out_phases.add(phase_id)
+    job_tags: typing.Optional[JobTags] = Job.get_job_tags(job)
+    if job_tags:
+        in_out_tags.update(job_tags)
 
 
 def parse_job_config(
@@ -94,6 +101,7 @@ def parse_job_config(
     in_out_jobs_by_phase: PhaseGroupedJobs,
     in_out_job_names: JobNames,
     in_out_phases: JobPhases,
+    phase_order: OrderedPhases,
 ) -> None:
     """Parses and validates a job-entry read in from disk.
 
@@ -142,6 +150,7 @@ def parse_job_config(
                 in_out_jobs_by_phase,
                 in_out_job_names,
                 in_out_phases,
+                phase_order,
             )
     except KeyError as err:
         raise ValueError(
@@ -160,28 +169,42 @@ def parse_config(config: Config, cfg_filepath: pathlib.Path) -> ConfigMetadata:
     phase_order: OrderedPhases = ()
     options: OptionConfigs = ()
     file_filters: TagFileFilters = {}
+
+    # first search for the global config
     for entry in config:
         # we apply a type-ignore here as we know (for now) that jobs have "job"
         # keys and global configs have "global" keys
         isinstance_job: bool = "job" in entry
-        if not isinstance_job:
-            # we apply a type-ignore here as we know (for now) that jobs have "job"
-            # keys and global configs have "global" keys
-            isinstance_global: bool = "config" in entry
-            if isinstance_global:
-                if seen_global:
-                    raise ValueError(
-                        "Found two global config entries, expected only one 'config' section. "
-                        f"second one is {entry}"
-                    )
-                seen_global = True
-                global_entry: GlobalSerialisedConfig = entry  # type: ignore  # see above
-                global_config: GlobalConfig = global_entry["config"]
-                phase_order, options, file_filters = _parse_global_config(global_config)
-                continue
+        if isinstance_job:
+            continue
 
-            # not a global or a job entry, what is it
-            raise RuntimeError(f"invalid 'job' or 'global' config entry, {entry}")
+        # we apply a type-ignore here as we know (for now) that jobs have "job"
+        # keys and global configs have "global" keys
+        isinstance_global: bool = "config" in entry
+        if isinstance_global:
+            if seen_global:
+                raise ValueError(
+                    "Found two global config entries, expected only one 'config' section. "
+                    f"second one is {entry}"
+                )
+            seen_global = True
+            global_entry: GlobalSerialisedConfig = entry  # type: ignore  # see above
+            global_config: GlobalConfig = global_entry["config"]
+            phase_order, options, file_filters = _parse_global_config(global_config)
+            continue
+
+        # not a global or a job entry, what is it
+        raise RuntimeError(f"invalid 'job' or 'global' config entry, {entry}")
+
+    if not phase_order:
+        log("WARNING: phase ordering not configured! Runs will be non-deterministic!")
+        phase_order = tuple(job_phases)
+
+    # now parse out the job_configs
+    for entry in config:
+        isinstance_job_2: bool = "job" in entry
+        if not isinstance_job_2:
+            continue
 
         job_entry: JobSerialisedConfig = entry  # type: ignore  # see above
         job: JobConfig = job_entry["job"]
@@ -192,11 +215,8 @@ def parse_config(config: Config, cfg_filepath: pathlib.Path) -> ConfigMetadata:
             in_out_jobs_by_phase=jobs_by_phase,
             in_out_job_names=job_names,
             in_out_phases=job_phases,
+            phase_order=phase_order,
         )
-
-    if not phase_order:
-        log("WARNING: phase ordering not configured! Runs will be non-deterministic!")
-        phase_order = tuple(job_phases)
 
     # tags = tags.union(("python", "es", "firebase_funcs"))
     return ConfigMetadata(

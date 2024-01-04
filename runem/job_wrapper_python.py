@@ -88,7 +88,7 @@ def _find_job_module(cfg_filepath: pathlib.Path, module_file_path: str) -> pathl
 def get_job_wrapper_py_func(
     job_config: JobConfig, cfg_filepath: pathlib.Path
 ) -> JobFunction:
-    """Given a job-description dynamically loads the job-function so we can call it.
+    """For a job, dynamically loads the associated python job-function.
 
     Side-effects: also re-addressed the job-config.
     """

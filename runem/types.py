@@ -111,10 +111,13 @@ class JobConfig(typing.TypedDict, total=False):
     """A dict that defines a job to be run.
 
     It consists of the label, address, context and filter information
+
+    TODO: make a class variant of this
     """
 
     label: JobName  # the name of the job
     addr: JobAddressConfig  # which callable to call
+    command: str  # a one-liner command to be run
     ctx: typing.Optional[JobContextConfig]  # how to call the callable
     when: JobWhen  # when to call the job
 
@@ -183,3 +186,5 @@ class JobSerialisedConfig(typing.TypedDict):
 ConfigNodes = typing.Union[GlobalSerialisedConfig, JobSerialisedConfig]
 # The config format as it is serialised to/from disk
 Config = typing.List[ConfigNodes]
+
+UNTAGGED_TAG: JobTag = "no_tag"

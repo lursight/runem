@@ -38,6 +38,7 @@ from runem.config import load_config
 from runem.config_metadata import ConfigMetadata
 from runem.config_parse import parse_config
 from runem.files import find_files
+from runem.job import Job
 from runem.job_execute import job_execute
 from runem.job_filter import filter_jobs
 from runem.log import log
@@ -105,7 +106,7 @@ def _update_progress(
         spinner.start()
 
     # The set of all job labels, and the set of completed jobs
-    all_job_names: typing.Set[str] = {job["label"] for job in all_jobs}
+    all_job_names: typing.Set[str] = {Job.get_job_name(job) for job in all_jobs}
     completed_jobs: typing.Set[str] = set()
 
     # This dataset is used to track changes between iterations

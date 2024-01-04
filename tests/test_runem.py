@@ -251,7 +251,14 @@ def _run_full_config_runem(
     return runem_stdout, error_raised
 
 
-def test_runem_with_full_config() -> None:
+@pytest.mark.parametrize(
+    "verbosity",
+    [
+        True,
+        False,
+    ],
+)
+def test_runem_with_full_config(verbosity: bool) -> None:
     """End-2-end test with a full config."""
     runem_cli_switches: typing.List[str] = []  # default switches/behaviour
     runem_stdout: typing.List[str]
@@ -260,28 +267,32 @@ def test_runem_with_full_config() -> None:
         runem_stdout,
         error_raised,
     ) = _run_full_config_runem(  # pylint: disable=no-value-for-parameter
-        runem_cli_switches=runem_cli_switches
+        runem_cli_switches=runem_cli_switches,
+        add_verbose_switch=verbosity,
     )
     assert error_raised is None
     _remove_x_of_y_workers_log(runem_stdout, phase="dummy phase 1")
     _remove_x_of_y_workers_log(runem_stdout, phase="dummy phase 2")
 
-    assert [
-        "runem: loaded config from [CONFIG PATH]",
-        "runem: found 1 batches, 1 'mock phase' files, ",
-        (
-            "runem: filtering for tags 'dummy tag 1', 'dummy tag 2', "
-            "'tag only on job 1', 'tag only on job 2'"
-        ),
-        "runem: will run 1 jobs for phase 'dummy phase 1'",
-        "runem: \t'dummy job label 1'",
-        "runem: will run 1 jobs for phase 'dummy phase 2'",
-        "runem: \t'dummy job label 2'",
-        "runem: Running Phase dummy phase 1",
-        "runem: Running Phase dummy phase 2",
-        # "runem: Running 'dummy phase 1' with 1 workers processing 1 jobs",
-        # "runem: Running 'dummy phase 2' with 1 workers processing 1 jobs",
-    ] == runem_stdout
+    if not verbosity:
+        assert [] == runem_stdout
+    else:
+        assert [
+            "runem: loaded config from [CONFIG PATH]",
+            "runem: found 1 batches, 1 'mock phase' files, ",
+            (
+                "runem: filtering for tags 'dummy tag 1', 'dummy tag 2', "
+                "'tag only on job 1', 'tag only on job 2'"
+            ),
+            "runem: will run 1 jobs for phase 'dummy phase 1'",
+            "runem: \t'dummy job label 1'",
+            "runem: will run 1 jobs for phase 'dummy phase 2'",
+            "runem: \t'dummy job label 2'",
+            "runem: Running Phase dummy phase 1",
+            "runem: Running Phase dummy phase 2",
+            # "runem: Running 'dummy phase 1' with 1 workers processing 1 jobs",
+            # "runem: Running 'dummy phase 2' with 1 workers processing 1 jobs",
+        ] == runem_stdout
 
 
 def test_runem_with_full_config_verbose() -> None:
