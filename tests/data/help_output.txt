@@ -1,27 +1,25 @@
-usage: __main__.py [-h] [--jobs JOBS [JOBS ...]]
-                   [--not-jobs JOBS_EXCLUDED [JOBS_EXCLUDED ...]]
-                   [--phases PHASES [PHASES ...]]
-                   [--not-phases PHASES_EXCLUDED [PHASES_EXCLUDED ...]]
-                   [--tags TAGS [TAGS ...]]
-                   [--not-tags TAGS_EXCLUDED [TAGS_EXCLUDED ...]]
-                   [--dummy-option-1---complete-option]
-                   [--no-dummy-option-1---complete-option]
-                   [--dummy-option-2---minimal]
-                   [--no-dummy-option-2---minimal]
-                   [--call-graphs | --no-call-graphs] [--procs PROCS]
-                   [--root ROOT_DIR] [--verbose | --no-verbose | -v]
+usage: -c [-h] [--jobs JOBS [JOBS ...]]
+          [--not-jobs JOBS_EXCLUDED [JOBS_EXCLUDED ...]]
+          [--phases PHASES [PHASES ...]]
+          [--not-phases PHASES_EXCLUDED [PHASES_EXCLUDED ...]]
+          [--tags TAGS [TAGS ...]]
+          [--not-tags TAGS_EXCLUDED [TAGS_EXCLUDED ...]]
+          [--dummy-option-1---complete-option]
+          [--no-dummy-option-1---complete-option] [--dummy-option-2---minimal]
+          [--no-dummy-option-2---minimal] [--call-graphs | --no-call-graphs]
+          [--procs PROCS] [--root ROOT_DIR] [--verbose | --no-verbose | -v]
 
 Runs the Lursight Lang test-suite
 
-options:
+[TEST_REPLACED_OPTION_HEADER]
   -h, --help            show this help message and exit
   --call-graphs, --no-call-graphs
   --procs PROCS, -j PROCS
                         the number of concurrent test jobs to run, -1 runs all
-                        test jobs at the same time (8 cores available)
+                        test jobs at the same time ([TEST_REPLACED_CORES] cores available)
   --root ROOT_DIR       which dir to use as the base-dir for testing, defaults
                         to directory containing the config
-                        '/Users/frank/Development/fah_products/runem/tests'
+                        '[TEST_REPLACED_DIR]'
   --verbose, --no-verbose, -v
 
 jobs:
