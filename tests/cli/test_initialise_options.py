@@ -13,7 +13,7 @@ Options = Dict[str, bool]
 
 
 @pytest.fixture(name="config_metadata")
-def config_metadata_fixture():
+def config_metadata_fixture() -> ConfigMetadata:
     config_file_path = pathlib.Path(__file__).parent / ".runem.yml"
     expected_job: JobConfig = {
         "addr": {

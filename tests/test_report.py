@@ -75,7 +75,7 @@ def test_report_on_run_reports() -> None:
     ]
 
 
-def test_print_reports_by_phase():
+def test_print_reports_by_phase() -> None:
     # Test data
     phase_run_order: OrderedPhases = ("phase1", "phase2", "phase3", "phase4")
 
@@ -87,7 +87,7 @@ def test_print_reports_by_phase():
         "phase2": [("report3", "path/to/report3")],
         "phase3": [],  # Empty list to test handling of empty reports
         "phase4": [
-            (),
+            (),  # type: ignore
         ],  # Empty tuple to test handling of empty report data
     }
 
