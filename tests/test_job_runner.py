@@ -75,7 +75,7 @@ def test_job_runner_basic_call() -> None:
 
     file_lists: FilePathListLookup = defaultdict(list)
     file_lists["dummy tag"] = [__file__]
-    job_runner(job_config, config_metadata, file_lists)
+    job_runner(job_config, {}, config_metadata, file_lists)
 
 
 def test_job_runner_basic_call_verbose() -> None:
@@ -127,7 +127,7 @@ def test_job_runner_basic_call_verbose() -> None:
 
     file_lists: FilePathListLookup = defaultdict(list)
     file_lists["dummy tag"] = [__file__]
-    job_runner(job_config, config_metadata, file_lists)
+    job_runner(job_config, {}, config_metadata, file_lists)
 
 
 def test_job_runner_empty_files() -> None:
@@ -179,7 +179,7 @@ def test_job_runner_empty_files() -> None:
 
     file_lists: FilePathListLookup = defaultdict(list)
     # file_lists["dummy tag"] = [__file__]
-    job_runner(job_config, config_metadata, file_lists)
+    job_runner(job_config, {}, config_metadata, file_lists)
 
 
 def test_job_runner_with_ctx_cwd() -> None:
@@ -235,7 +235,7 @@ def test_job_runner_with_ctx_cwd() -> None:
 
     file_lists: FilePathListLookup = defaultdict(list)
     file_lists["dummy tag"] = [__file__]
-    job_runner(job_config, config_metadata, file_lists)
+    job_runner(job_config, {}, config_metadata, file_lists)
 
 
 def test_job_runner_with_old_style_func() -> None:
@@ -291,4 +291,4 @@ def test_job_runner_with_old_style_func() -> None:
 
     file_lists: FilePathListLookup = defaultdict(list)
     file_lists["dummy tag"] = [__file__]
-    job_runner(job_config, config_metadata, file_lists)
+    job_runner(job_config, {}, config_metadata, file_lists)

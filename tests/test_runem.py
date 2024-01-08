@@ -6,11 +6,12 @@ import typing
 from collections import defaultdict
 from contextlib import redirect_stdout
 from datetime import timedelta
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, call, patch
 
+# Assuming that the modified _progress_updater function is in a module named runem
 import pytest
 
-from runem.runem import timed_main
+from runem.runem import _progress_updater, timed_main
 from runem.types import Config, GlobalSerialisedConfig, JobSerialisedConfig
 
 
@@ -767,3 +768,57 @@ def test_runem_phase_filters_work(verbosity: bool) -> None:
             "runem: skipping phase 'dummy phase 2'",
             "runem: Running 'dummy phase 1' with 1 workers processing 1 jobs",
         ]
+
+
+class SleepCalledError(ValueError):
+    """Thrown when the sleep function is called to stop the infinite loop."""
+
+
+@pytest.fixture(name="mock_print_sleep")
+def create_mock_print_sleep() -> typing.Generator[typing.Tuple[Mock, Mock], None, None]:
+    call_count = 0
+
+    def custom_side_effect(*args, **kwargs):
+        nonlocal call_count
+        if call_count < 1:
+            call_count += 1
+            return 0.1  # Return a valid value for the first call
+        raise SleepCalledError("Mocked sleep error on the second call")
+
+    with patch("builtins.print") as mock_print, patch(
+        "time.sleep", side_effect=custom_side_effect
+    ) as mock_sleep:
+        yield mock_print, mock_sleep
+
+
+def test_progress_updater_with_running_jobs(
+    mock_print_sleep: typing.Tuple[Mock, Mock]
+) -> None:
+    mock_print, _ = mock_print_sleep
+    running_jobs: typing.Dict[str, str] = {"job1": "running", "job2": "pending"}
+    with pytest.raises(SleepCalledError):
+        _progress_updater(running_jobs)
+    called = call(sorted(list(running_jobs.values())))
+    mock_print.assert_has_calls(calls=[called, called])
+
+
+def test_progress_updater_without_running_jobs(
+    mock_print_sleep: typing.Tuple[Mock, Mock]
+) -> None:
+    mock_print, _ = mock_print_sleep
+    running_jobs: typing.Dict[str, str] = {}
+    with pytest.raises(SleepCalledError):
+        _progress_updater(running_jobs)
+    mock_print.assert_not_called()
+
+
+def test_progress_updater_with_empty_running_jobs(
+    mock_print_sleep: typing.Tuple[Mock, Mock]
+) -> None:
+    mock_print, mock_sleep = mock_print_sleep
+    running_jobs: typing.Dict[str, str] = {"job1": ""}
+    with pytest.raises(SleepCalledError):
+        _progress_updater(running_jobs)
+    called = call(sorted(list(running_jobs.values())))
+    mock_print.assert_has_calls(calls=[called, called])
+    mock_sleep.assert_has_calls(calls=[call(0.1), call(0.1)])

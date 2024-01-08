@@ -2,6 +2,7 @@ import inspect
 import os
 import pathlib
 import typing
+import uuid
 from datetime import timedelta
 from timeit import default_timer as timer
 
@@ -76,6 +77,7 @@ def job_runner_inner(
 
 def job_runner(
     job_config: JobConfig,
+    running_jobs: typing.Dict[str, str],
     config_metadata: ConfigMetadata,
     file_lists: FilePathListLookup,
 ) -> typing.Tuple[typing.Tuple[str, timedelta], JobReturn]:
@@ -83,4 +85,8 @@ def job_runner(
 
     Needed for faster tests.
     """
-    return job_runner_inner(job_config, config_metadata, file_lists)
+    this_id: str = str(uuid.uuid4())
+    running_jobs[this_id] = job_config["label"]
+    results = job_runner_inner(job_config, config_metadata, file_lists)
+    del running_jobs[this_id]
+    return results
