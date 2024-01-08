@@ -153,6 +153,7 @@ def _job_py_pytest(  # noqa: C901 # pylint: disable=too-many-branches,too-many-s
             "--cov=.",
             f"--cov-config={str(coverage_cfg)}",
             "--cov-append",
+            "--cov-fail-under=0",  # we do coverage filing later
         ]
 
     # TODO: do we want to disable logs on pytest runs?
