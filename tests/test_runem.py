@@ -1,4 +1,5 @@
 import io
+import multiprocessing
 import os
 import pathlib
 import re
@@ -6,7 +7,7 @@ import typing
 from collections import defaultdict
 from contextlib import redirect_stdout
 from datetime import timedelta
-from unittest.mock import Mock, call, patch
+from unittest.mock import Mock, patch
 
 # Assuming that the modified _progress_updater function is in a module named runem
 import pytest
@@ -774,7 +775,7 @@ class SleepCalledError(ValueError):
     """Thrown when the sleep function is called to stop the infinite loop."""
 
 
-@pytest.fixture(name="mock_print_sleep")
+@pytest.fixture(name="mock_sleep")
 def create_mock_print_sleep() -> typing.Generator[typing.Tuple[Mock, Mock], None, None]:
     call_count = 0
 
@@ -785,40 +786,32 @@ def create_mock_print_sleep() -> typing.Generator[typing.Tuple[Mock, Mock], None
             return 0.1  # Return a valid value for the first call
         raise SleepCalledError("Mocked sleep error on the second call")
 
-    with patch("builtins.print") as mock_print, patch(
-        "time.sleep", side_effect=custom_side_effect
-    ) as mock_sleep:
-        yield mock_print, mock_sleep
+    with patch("time.sleep", side_effect=custom_side_effect) as mock_sleep:
+        yield mock_sleep
 
 
-def test_progress_updater_with_running_jobs(
-    mock_print_sleep: typing.Tuple[Mock, Mock]
-) -> None:
-    mock_print, _ = mock_print_sleep
+def test_progress_updater_with_running_jobs(mock_sleep: Mock) -> None:
     running_jobs: typing.Dict[str, str] = {"job1": "running", "job2": "pending"}
-    with pytest.raises(SleepCalledError):
-        _progress_updater(running_jobs)
-    called = call(sorted(list(running_jobs.values())))
-    mock_print.assert_has_calls(calls=[called, called])
+    with pytest.raises(SleepCalledError), multiprocessing.Manager() as manager:
+        _progress_updater("dummy label", running_jobs, manager.Value("b", True))
+    mock_sleep.assert_called()
 
 
-def test_progress_updater_without_running_jobs(
-    mock_print_sleep: typing.Tuple[Mock, Mock]
-) -> None:
-    mock_print, _ = mock_print_sleep
+def test_progress_updater_without_running_jobs(mock_sleep: Mock) -> None:
     running_jobs: typing.Dict[str, str] = {}
-    with pytest.raises(SleepCalledError):
-        _progress_updater(running_jobs)
-    mock_print.assert_not_called()
+    with pytest.raises(SleepCalledError), multiprocessing.Manager() as manager:
+        _progress_updater("dummy label", running_jobs, manager.Value("b", True))
+    mock_sleep.assert_called()
 
 
-def test_progress_updater_with_empty_running_jobs(
-    mock_print_sleep: typing.Tuple[Mock, Mock]
-) -> None:
-    mock_print, mock_sleep = mock_print_sleep
+def test_progress_updater_with_empty_running_jobs(mock_sleep: Mock) -> None:
     running_jobs: typing.Dict[str, str] = {"job1": ""}
-    with pytest.raises(SleepCalledError):
-        _progress_updater(running_jobs)
-    called = call(sorted(list(running_jobs.values())))
-    mock_print.assert_has_calls(calls=[called, called])
-    mock_sleep.assert_has_calls(calls=[call(0.1), call(0.1)])
+    with pytest.raises(SleepCalledError), multiprocessing.Manager() as manager:
+        _progress_updater("dummy label", running_jobs, manager.Value("b", True))
+    mock_sleep.assert_called()
+
+
+def test_progress_updater_with_false() -> None:
+    running_jobs: typing.Dict[str, str] = {"job1": ""}
+    with multiprocessing.Manager() as manager:
+        _progress_updater("dummy label", running_jobs, manager.Value("b", False))

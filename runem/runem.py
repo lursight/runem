@@ -28,8 +28,10 @@ import typing
 from collections import defaultdict
 from datetime import timedelta
 from itertools import repeat
-from multiprocessing.managers import DictProxy
+from multiprocessing.managers import DictProxy, ValueProxy
 from timeit import default_timer as timer
+
+from halo import Halo
 
 from runem.command_line import parse_args
 from runem.config import load_config
@@ -77,11 +79,20 @@ def _determine_run_parameters(argv: typing.List[str]) -> ConfigMetadata:
     return config_metadata
 
 
-def _progress_updater(running_jobs: typing.Dict[str, str]) -> None:
-    while True:
-        if running_jobs:
-            print(sorted(list(running_jobs.values())))
+def _progress_updater(
+    label: str, running_jobs: typing.Dict[str, str], is_running: ValueProxy
+) -> None:
+    spinner = Halo(text="", spinner="dots")
+    spinner.start()
+
+    while is_running.value:
+        running_job_names: typing.List[str] = [
+            f"'{job}'" for job in sorted(list(running_jobs.values()))
+        ]
+        printable_jobs: str = ", ".join(running_job_names)
+        spinner.text = f"{label}: {printable_jobs}"
         time.sleep(0.1)
+    spinner.stop()
 
 
 def _process_jobs(
@@ -115,27 +126,29 @@ def _process_jobs(
 
     with multiprocessing.Manager() as manager:
         running_jobs: DictProxy[typing.Any, typing.Any] = manager.dict()
+        is_running: ValueProxy = manager.Value("b", True)
 
         terminal_writer_process = multiprocessing.Process(
-            target=_progress_updater, args=(running_jobs,)
+            target=_progress_updater, args=(phase, running_jobs, is_running)
         )
         terminal_writer_process.start()
 
-        with multiprocessing.Pool(processes=num_concurrent_procs) as pool:
-            # use starmap so we can pass down the job-configs and the args and the files
-            in_out_job_run_metadatas[phase] = pool.starmap(
-                job_runner,
-                zip(
-                    jobs,
-                    repeat(running_jobs),
-                    repeat(config_metadata),
-                    repeat(file_lists),
-                ),
-            )
-
-        # Signal the terminal_writer process to exit
-        terminal_writer_process.terminate()
-        terminal_writer_process.join()
+        try:
+            with multiprocessing.Pool(processes=num_concurrent_procs) as pool:
+                # use starmap so we can pass down the job-configs and the args and the files
+                in_out_job_run_metadatas[phase] = pool.starmap(
+                    job_runner,
+                    zip(
+                        jobs,
+                        repeat(running_jobs),
+                        repeat(config_metadata),
+                        repeat(file_lists),
+                    ),
+                )
+        finally:
+            # Signal the terminal_writer process to exit
+            is_running.value = False
+            terminal_writer_process.join()
 
 
 def _process_jobs_by_phase(
