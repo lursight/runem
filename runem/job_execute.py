@@ -9,7 +9,14 @@ from timeit import default_timer as timer
 from runem.config_metadata import ConfigMetadata
 from runem.job_wrapper_python import get_job_wrapper
 from runem.log import log
-from runem.types import FilePathList, FilePathListLookup, JobConfig, JobReturn, JobTags
+from runem.types import (
+    FilePathList,
+    FilePathListLookup,
+    JobConfig,
+    JobFunction,
+    JobReturn,
+    JobTags,
+)
 
 
 def job_execute_inner(
@@ -25,7 +32,7 @@ def job_execute_inner(
     if config_metadata.args.verbose:
         log(f"START: {label}")
     root_path: pathlib.Path = config_metadata.cfg_filepath.parent
-    function: typing.Callable
+    function: JobFunction
     job_tags: JobTags = set(job_config["when"]["tags"])
     os.chdir(root_path)
     function = get_job_wrapper(job_config, config_metadata.cfg_filepath)
@@ -57,11 +64,13 @@ def job_execute_inner(
         log(f"job: running {job_config['label']}")
     reports: JobReturn
     if "args" in func_signature.parameters:
-        reports = function(config_metadata.args, config_metadata.options, file_list)
+        reports = function(  # type: ignore  # FIXME: which function do we have?
+            config_metadata.args, config_metadata.options, file_list
+        )
     else:
         reports = function(
             options=config_metadata.options,  # type: ignore
-            file_list=file_list,  # type: ignore
+            file_list=file_list,
             procs=config_metadata.args.procs,
             root_path=root_path,
             verbose=config_metadata.args.verbose,

@@ -5,7 +5,7 @@ import typing
 import yaml
 
 from runem.log import log
-from runem.types import Config
+from runem.types import Config, GlobalSerialisedConfig
 
 CFG_FILE_YAML = pathlib.Path(".runem.yml")
 
@@ -52,9 +52,29 @@ def _find_cfg() -> pathlib.Path:
     sys.exit(1)
 
 
+def _conform_global_config_types(all_config: Config) -> Config:
+    """Ensure that the types match the type-spec."""
+    assert isinstance(all_config, list)
+    # NOTE: A note of performance. This extra loop over the config should have
+    #       minimal impact as the global config should _normally_ be first in
+    #       the file.
+    for idx, config in enumerate(all_config):
+        # Notice the 'continue' statement.
+        g_config: GlobalSerialisedConfig = config  # type: ignore
+        if "config" not in g_config:
+            # keep searching
+            continue
+        if "phases" in g_config["config"]:
+            all_config[idx]["config"]["phases"] = tuple(  # type: ignore
+                g_config["config"]["phases"]
+            )
+    return all_config
+
+
 def load_config() -> typing.Tuple[Config, pathlib.Path]:
     """Finds and loads the .runem.yml file."""
     cfg_filepath: pathlib.Path = _find_cfg()
     with cfg_filepath.open("r+", encoding="utf-8") as config_file_handle:
         all_config = yaml.full_load(config_file_handle)
-    return all_config, cfg_filepath
+
+    return _conform_global_config_types(all_config), cfg_filepath
