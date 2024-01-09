@@ -1,15 +1,8 @@
 ### Summary :memo:
-_Write an overview about it._
+
+<!-- One or two line, terse overview. -->
+<!-- Fixes #000 -->
 
 ### Details
-_Describe more what you did on changes._
-1. (...)
-2. (...)
 
-### Bugfixes :bug: (delete if dind't have any)
--
-
-### Checks
-- [ ] Closed #798
-- [ ] Tested Changes
-- [ ] Stakeholder Approval
+<!-- A detailed as possible description -->
