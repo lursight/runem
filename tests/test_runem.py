@@ -1,5 +1,7 @@
 import io
+import os
 import pathlib
+import re
 import typing
 from collections import defaultdict
 from contextlib import redirect_stdout
@@ -321,6 +323,41 @@ def test_runem_with_single_phase_verbose() -> None:
     ]
 
 
+def _replace_whitespace_with_new_line(input_string: str) -> str:
+    """Replaces all whitespace with a single new line."""
+    return re.sub(r"\s+", "\n", input_string)
+
+
+def _remove_first_line_and_split_along_whitespace(
+    input_string: str,
+) -> typing.List[str]:
+    """Because of how argsparse prints help, we need to conform it.
+
+    To conform it we replace all whitespace with a single new-line and then split it
+    into a list of strings
+    """
+    first_line_removed: str = "\n".join(input_string.split("\n")[1:])
+    conformed_whitespace: str = _replace_whitespace_with_new_line(first_line_removed)
+    as_list: typing.List[str] = conformed_whitespace.split("\n")
+    return as_list
+
+
+def _conform_help_output(help_output: typing.List[str]) -> str:
+    # we have to remove the run-dir for root_dir from the output
+    runem_stdout_str: str = (
+        "\n".join(help_output)
+        .replace(str(pathlib.Path(__file__).parent), "[TEST_REPLACED_DIR]")
+        .replace(
+            f"({os.cpu_count()} cores available)",
+            "([TEST_REPLACED_CORES] cores available)",
+        )
+        .replace("options:", "[TEST_REPLACED_OPTION_HEADER]")
+        .replace("optional arguments:", "[TEST_REPLACED_OPTION_HEADER]")
+    )
+    assert runem_stdout_str
+    return runem_stdout_str
+
+
 def test_runem_help() -> None:
     """End-2-end test with a full config choosing only a single phase."""
     runem_cli_switches: typing.List[str] = ["--help"]
@@ -332,17 +369,24 @@ def test_runem_help() -> None:
     ) = _run_full_config_runem(  # pylint: disable=no-value-for-parameter
         runem_cli_switches=runem_cli_switches
     )
+    assert runem_stdout
     assert error_raised
 
-    help_dump = (pathlib.Path(__file__).parent / "data" / "help_output.txt").absolute()
-    # help_dump.write_text("\n".join(runem_stdout))
+    runem_stdout_str: str = _conform_help_output(runem_stdout)
+
+    # grab the expected output
+    help_dump: pathlib.Path = (
+        pathlib.Path(__file__).parent / "data" / "help_output.txt"
+    ).absolute()
+    # help_dump.write_text(runem_stdout_str)
 
     # we have to strip all whitespace as help adapts to the terminal width
-    stripped_expected_help_output: str = "".join(
-        help_dump.read_text().split("\n")[1:]
-    ).replace(" ", "")
-    # we have to strip all whitespace as help adapts to the terminal width
-    stripped_actual_help_output = "".join(runem_stdout[1:]).replace(" ", "")
+    stripped_expected_help_output: typing.List[
+        str
+    ] = _remove_first_line_and_split_along_whitespace(help_dump.read_text())
+    stripped_actual_help_output: typing.List[
+        str
+    ] = _remove_first_line_and_split_along_whitespace(runem_stdout_str)
     assert stripped_expected_help_output == stripped_actual_help_output
 
 
