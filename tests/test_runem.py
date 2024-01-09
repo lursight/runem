@@ -1,3 +1,4 @@
+import copy
 import io
 import multiprocessing
 import os
@@ -13,8 +14,14 @@ from unittest.mock import Mock, patch
 # Assuming that the modified _progress_updater function is in a module named runem
 import pytest
 
-from runem.runem import _progress_updater, timed_main
-from runem.types import Config, GlobalSerialisedConfig, JobSerialisedConfig
+from runem.runem import _update_progress, timed_main
+from runem.types import (
+    Config,
+    GlobalSerialisedConfig,
+    JobConfig,
+    Jobs,
+    JobSerialisedConfig,
+)
 
 
 def _remove_x_of_y_workers_log(
@@ -826,7 +833,7 @@ def create_mock_print_sleep() -> typing.Generator[typing.Tuple[Mock, Mock], None
 
     def custom_side_effect(*args: typing.Any, **kwargs: typing.Any) -> float:
         nonlocal call_count
-        if call_count < 1:
+        if call_count < 3:
             call_count += 1
             return 0.1  # Return a valid value for the first call
         raise SleepCalledError("Mocked sleep error on the second call")
@@ -838,25 +845,84 @@ def create_mock_print_sleep() -> typing.Generator[typing.Tuple[Mock, Mock], None
 def test_progress_updater_with_running_jobs(mock_sleep: Mock) -> None:
     running_jobs: typing.Dict[str, str] = {"job1": "running", "job2": "pending"}
     with pytest.raises(SleepCalledError), multiprocessing.Manager() as manager:
-        _progress_updater("dummy label", running_jobs, manager.Value("b", True))
+        _update_progress(
+            "dummy label",
+            running_jobs,
+            seen_jobs=[],
+            all_jobs=[],
+            is_running=manager.Value("b", True),
+            num_workers=1,
+        )
+    mock_sleep.assert_called()
+
+
+def test_progress_updater_with_running_jobs_and_10_jobs(mock_sleep: Mock) -> None:
+    running_jobs: typing.Dict[str, str] = {"job1": "running", "job2": "pending"}
+    job_config: JobConfig = {
+        "addr": {
+            "file": __file__,
+            "function": "test_parse_job_config",
+        },
+        "label": "reformat py",
+        "when": {
+            "phase": "edit",
+            "tags": set(
+                (
+                    "py",
+                    "format",
+                )
+            ),
+        },
+    }
+    all_jobs: Jobs = []
+    for idx in range(10):
+        job_config = copy.copy(job_config)
+        job_config["label"] = f'{job_config["label"]} {idx}'
+        all_jobs.append(job_config)
+    pprint(all_jobs)
+    with pytest.raises(SleepCalledError), multiprocessing.Manager() as manager:
+        _update_progress(
+            "dummy label",
+            running_jobs,
+            seen_jobs=[],
+            all_jobs=all_jobs,
+            is_running=manager.Value("b", True),
+            num_workers=1,
+        )
     mock_sleep.assert_called()
 
 
 def test_progress_updater_without_running_jobs(mock_sleep: Mock) -> None:
     running_jobs: typing.Dict[str, str] = {}
     with pytest.raises(SleepCalledError), multiprocessing.Manager() as manager:
-        _progress_updater("dummy label", running_jobs, manager.Value("b", True))
+        _update_progress(
+            "dummy label",
+            running_jobs,
+            seen_jobs=[],
+            all_jobs=[],
+            is_running=manager.Value("b", True),
+            num_workers=1,
+        )
     mock_sleep.assert_called()
 
 
 def test_progress_updater_with_empty_running_jobs(mock_sleep: Mock) -> None:
     running_jobs: typing.Dict[str, str] = {"job1": ""}
     with pytest.raises(SleepCalledError), multiprocessing.Manager() as manager:
-        _progress_updater("dummy label", running_jobs, manager.Value("b", True))
+        _update_progress(
+            "dummy label",
+            running_jobs,
+            seen_jobs=[],
+            all_jobs=[],
+            is_running=manager.Value("b", True),
+            num_workers=1,
+        )
     mock_sleep.assert_called()
 
 
 def test_progress_updater_with_false() -> None:
     running_jobs: typing.Dict[str, str] = {"job1": ""}
     with multiprocessing.Manager() as manager:
-        _progress_updater("dummy label", running_jobs, manager.Value("b", False))
+        _update_progress(
+            "dummy label", running_jobs, [], [], manager.Value("b", False), 1
+        )
