@@ -1,4 +1,5 @@
 import pathlib
+import typing
 from argparse import Namespace
 from collections import defaultdict
 
@@ -13,11 +14,13 @@ from runem.types import (
 )
 
 
-def empty_function(**kwargs) -> None:
+def empty_function(**kwargs: typing.Any) -> None:
     """Does nothing, called by runner."""
 
 
-def old_style_function(args: Namespace, options: Options, file_list: FilePathList):
+def old_style_function(
+    args: Namespace, options: Options, file_list: FilePathList
+) -> None:
     """Does nothing called by runner."""
 
 

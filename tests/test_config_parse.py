@@ -1,5 +1,6 @@
 import io
 import pathlib
+import unittest
 from collections import defaultdict
 from contextlib import redirect_stdout
 from unittest.mock import patch
@@ -129,7 +130,7 @@ def test_parse_global_config_missing() -> None:
 
 def test_parse_global_config_full() -> None:
     """Test the global config parse handles missing data."""
-    dummy_global_config: GlobalConfig = {  # type: ignore
+    dummy_global_config: GlobalConfig = {
         "phases": tuple(),
         "options": [
             {
@@ -334,7 +335,9 @@ def test_parse_config_missing_phases_raises() -> None:
     "runem.config_parse._parse_global_config",
     return_value=(None, (), {}),
 )
-def test_parse_config_warning_if_missing_phase_order(mock_parse_global_config) -> None:
+def test_parse_config_warning_if_missing_phase_order(
+    mock_parse_global_config: unittest.mock.Mock,
+) -> None:
     """Test the global config raises if the phases are missing."""
     dummy_global_config: GlobalSerialisedConfig = {
         "config": {  # type: ignore

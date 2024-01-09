@@ -80,7 +80,7 @@ def _determine_run_parameters(argv: typing.List[str]) -> ConfigMetadata:
 
 
 def _progress_updater(
-    label: str, running_jobs: typing.Dict[str, str], is_running: ValueProxy
+    label: str, running_jobs: typing.Dict[str, str], is_running: ValueProxy[bool]
 ) -> None:
     spinner = Halo(text="", spinner="dots")
     spinner.start()
@@ -126,7 +126,7 @@ def _process_jobs(
 
     with multiprocessing.Manager() as manager:
         running_jobs: DictProxy[typing.Any, typing.Any] = manager.dict()
-        is_running: ValueProxy = manager.Value("b", True)
+        is_running: ValueProxy[bool] = manager.Value("b", True)
 
         terminal_writer_process = multiprocessing.Process(
             target=_progress_updater, args=(phase, running_jobs, is_running)

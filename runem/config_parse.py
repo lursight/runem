@@ -107,11 +107,11 @@ def parse_config(config: Config, cfg_filepath: pathlib.Path) -> ConfigMetadata:
     for entry in config:
         # we apply a type-ignore here as we know (for now) that jobs have "job"
         # keys and global configs have "global" keys
-        isinstance_job: bool = "job" in entry  # type: ignore
+        isinstance_job: bool = "job" in entry
         if not isinstance_job:
             # we apply a type-ignore here as we know (for now) that jobs have "job"
             # keys and global configs have "global" keys
-            isinstance_global: bool = "config" in entry  # type: ignore
+            isinstance_global: bool = "config" in entry
             if isinstance_global:
                 if seen_global:
                     raise ValueError(

@@ -1,11 +1,12 @@
 """Python setup.py for runem package."""
 import io
 import os
+import typing
 
 from setuptools import find_packages, setup
 
 
-def read(*paths, **kwargs):
+def read(*paths: str, **kwargs: typing.Any) -> str:
     """Read the contents of a text file safely.
 
     >>> read("runem", "VERSION")
@@ -23,7 +24,7 @@ def read(*paths, **kwargs):
     return content
 
 
-def read_requirements(path):
+def read_requirements(path: str) -> typing.List[str]:
     return [
         line.strip()
         for line in read(path).split("\n")

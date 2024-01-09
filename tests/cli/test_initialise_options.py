@@ -57,7 +57,7 @@ def config_metadata_fixture() -> ConfigMetadata:
     )
 
 
-def test_initialise_options_no_overrides(config_metadata):
+def test_initialise_options_no_overrides(config_metadata: ConfigMetadata) -> None:
     args = Namespace(overrides_on=[], overrides_off=[])
     options = initialise_options(config_metadata, args)
     assert options == {
@@ -68,7 +68,7 @@ def test_initialise_options_no_overrides(config_metadata):
     }
 
 
-def test_initialise_options_overrides_on(config_metadata):
+def test_initialise_options_overrides_on(config_metadata: ConfigMetadata) -> None:
     args = Namespace(overrides_on=["option2", "option4"], overrides_off=[])
     options = initialise_options(config_metadata, args)
     assert options == {
@@ -79,7 +79,7 @@ def test_initialise_options_overrides_on(config_metadata):
     }
 
 
-def test_initialise_options_overrides_off(config_metadata):
+def test_initialise_options_overrides_off(config_metadata: ConfigMetadata) -> None:
     args = Namespace(overrides_on=[], overrides_off=["option1", "option3"])
     options = initialise_options(config_metadata, args)
     assert options == {
@@ -90,7 +90,9 @@ def test_initialise_options_overrides_off(config_metadata):
     }
 
 
-def test_initialise_options_overrides_on_and_off(config_metadata):
+def test_initialise_options_overrides_on_and_off(
+    config_metadata: ConfigMetadata,
+) -> None:
     args = Namespace(overrides_on=["option2"], overrides_off=["option1"])
     options = initialise_options(config_metadata, args)
     assert options == {

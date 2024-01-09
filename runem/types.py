@@ -69,7 +69,10 @@ FilePathList = typing.List[FilePathSerialise]
 FilePathListLookup = typing.DefaultDict[JobTag, FilePathList]
 
 # FIXME: this type is no-longer the actual spec of the test-functions
-JobFunction = typing.Callable[[argparse.Namespace, Options, FilePathList], None]
+JobFunction = typing.Union[
+    typing.Callable[[argparse.Namespace, Options, FilePathList], None],
+    typing.Callable[[typing.Any], None],
+]
 
 
 class JobParamConfig(typing.TypedDict):

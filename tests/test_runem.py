@@ -824,7 +824,7 @@ class SleepCalledError(ValueError):
 def create_mock_print_sleep() -> typing.Generator[typing.Tuple[Mock, Mock], None, None]:
     call_count = 0
 
-    def custom_side_effect(*args, **kwargs):
+    def custom_side_effect(*args: typing.Any, **kwargs: typing.Any) -> float:
         nonlocal call_count
         if call_count < 1:
             call_count += 1
