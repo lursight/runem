@@ -4,6 +4,95 @@ Changelog
 
 (unreleased)
 ------------
+- Merge pull request #9 from lursight/chore/rename_core_functions.
+  [Frank Harrison]
+
+  Chore/rename core functions
+- Chore(core-func-rename): renames functions and fixes imports. [Frank
+  Harrison]
+- Chore(core-func-rename): renames files to better reflect contents.
+  [Frank Harrison]
+- Merge pull request #8 from lursight/chore/more_typing_strictness.
+  [Frank Harrison]
+
+  Chore/more typing strictness
+- Chore(mypy-strict): switches mypy to use strict-mode. [Frank Harrison]
+
+  This should catch more issues down the line
+- Chore(mypy-strict): enable disallow_untyped_calls and annotate it.
+  [Frank Harrison]
+- Chore(mypy-strict): enable disallow_untyped_defs in mypy. [Frank
+  Harrison]
+- Chore(mypy-strict): enables check_untyped_defs in mypy. [Frank
+  Harrison]
+- Chore(mypy-strict): annotates mypy config options. [Frank Harrison]
+- Merge pull request #7 from lursight/chore/project_status. [Frank
+  Harrison]
+
+  chore(project-status): removes the project rename from actions
+- Chore(project-status): removes the project rename from actions. [Frank
+  Harrison]
+- Merge pull request #5 from lursight/feat/job_spinner. [Frank Harrison]
+
+  Feat/job spinner
+- Feat(progress): gets a progress spinner working. [Frank Harrison]
+- Feat(progress): adds way to track running jobs for multip-proc jobs.
+  [Frank Harrison]
+- Merge pull request #3 from
+  lursight/dependabot/github_actions/actions/setup-python-5. [Frank
+  Harrison]
+
+  chore(deps): bump actions/setup-python from 4 to 5
+- Chore(deps): bump actions/setup-python from 4 to 5. [dependabot[bot]]
+
+  Bumps [actions/setup-python](https://github.com/actions/setup-python) from 4 to 5.
+  - [Release notes](https://github.com/actions/setup-python/releases)
+  - [Commits](https://github.com/actions/setup-python/compare/v4...v5)
+
+  ---
+  updated-dependencies:
+  - dependency-name: actions/setup-python
+    dependency-type: direct:production
+    update-type: version-update:semver-major
+  ...
+- Merge pull request #6 from lursight/fix/help_tests. [Frank Harrison]
+
+  Fix/help tests
+- Chore(fix-help-tests): fixing the help-text test in ci/cd. [Frank
+  Harrison]
+- Chore(pytest): stops reporting of coverage on test failures. [Frank
+  Harrison]
+- Chore(pytest): stops failing coverage BEFORE we want to. [Frank
+  Harrison]
+- Chore(type): fixes type errors. [Frank Harrison]
+- Merge pull request #4 from lursight/fix/python3.10_support. [Frank
+  Harrison]
+
+  fix(python3.10): removes another pipe shortcut
+- Fix(python3.10): removes another pipe shortcut. [Frank Harrison]
+- Merge branch 'fix/python3.10_support' [Frank Harrison]
+- Fix(python3.10): removes newer typing syntax. [Frank Harrison]
+- Merge branch 'fix/coverage' [Frank Harrison]
+- Fix(coverage): adds more coverage to parse_config() [Frank Harrison]
+
+  ... specifically the bit that warns if we have to nordered phases
+- Fix(coverage): adds more coverage to
+  _load_python_function_from_module() [Frank Harrison]
+- Fix(coverage): adds more coverage to initialise_options() [Frank
+  Harrison]
+- Fix(coverage): adds more coverage to report.py. [Frank Harrison]
+- Fix(coverage): annotates a file that needs more coverage. [Frank
+  Harrison]
+- Merge branch 'fix/spell_check' [Frank Harrison]
+- Fix(spell-check): fixes the spell-checker by ignoring the history
+  file. [Frank Harrison]
+
+  ... which contains typos in the commit hitsory
+
+
+0.0.17 (2023-12-09)
+-------------------
+- Release: version 0.0.17 🚀 [Frank Harrison]
 - Merge branch 'chore/run_in_check_mode_on_release' [Frank Harrison]
 - Chore(release-checks): makes each command fail on 'make release'
   [Frank Harrison]
