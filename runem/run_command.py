@@ -18,7 +18,7 @@ class RunCommandUnhandledError(RuntimeError):
     pass
 
 
-def get_stdout(process: CompletedProcess, prefix: str) -> str:
+def get_stdout(process: CompletedProcess[bytes], prefix: str) -> str:
     """Gets stdout from the given process, handling badly configured process objects.
 
     Additionally prefixes each line of the output with a label.
@@ -36,7 +36,7 @@ def run_command(  # noqa: C901 # pylint: disable=too-many-branches
     cmd: typing.List[str],  # 'cmd' is the only thing that can't be optionally kwargs
     label: str,
     verbose: bool,
-    env_overrides: typing.Optional[dict] = None,
+    env_overrides: typing.Optional[typing.Dict[str, str]] = None,
     ignore_fails: bool = False,
     valid_exit_ids: typing.Optional[typing.Tuple[int, ...]] = None,
     **kwargs: typing.Any,
@@ -86,7 +86,7 @@ def run_command(  # noqa: C901 # pylint: disable=too-many-branches
 
     # init the process in case it throws for things like not being able to
     # convert the command to a list of strings.
-    process: typing.Optional[CompletedProcess] = None
+    process: typing.Optional[CompletedProcess[bytes]] = None
     try:
         process = subprocess_run(
             cmd,

@@ -69,7 +69,10 @@ FilePathList = typing.List[FilePathSerialise]
 FilePathListLookup = typing.DefaultDict[JobTag, FilePathList]
 
 # FIXME: this type is no-longer the actual spec of the test-functions
-JobFunction = typing.Callable[[argparse.Namespace, Options, FilePathList], None]
+JobFunction = typing.Union[
+    typing.Callable[[argparse.Namespace, Options, FilePathList], None],
+    typing.Callable[[typing.Any], None],
+]
 
 
 class JobParamConfig(typing.TypedDict):
@@ -143,11 +146,11 @@ class GlobalConfig(typing.TypedDict):
     # Options control the extra flags that are optionally consumed by job.
     # Options configured here are used to set command-line-options. All options
     # and their current state are passed to each job.
-    options: typing.List[OptionConfigSerialised]
+    options: typing.Optional[typing.List[OptionConfigSerialised]]
 
     # File filters control which files will be passed to jobs for a given tags.
     # Job will receive the super-set of files for all that job's tags.
-    files: typing.List[TagFileFilterSerialised]
+    files: typing.Optional[typing.List[TagFileFilterSerialised]]
 
 
 class GlobalSerialisedConfig(typing.TypedDict):

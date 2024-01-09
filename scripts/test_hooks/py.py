@@ -3,7 +3,7 @@ import shutil
 import typing
 
 from runem.log import log
-from runem.run_command import run_command
+from runem.run_command import RunCommandUnhandledError, run_command
 from runem.types import FilePathList, JobName, JobReturnData, Options
 
 
@@ -123,7 +123,9 @@ def _job_py_mypy(
 ) -> None:
     python_files: FilePathList = kwargs["file_list"]
     mypy_cmd = ["python3", "-m", "mypy", *python_files]
-    run_command(cmd=mypy_cmd, **kwargs)
+    output = run_command(cmd=mypy_cmd, **kwargs)
+    if "mypy.ini" in output or "Not a boolean:" in output:
+        raise RunCommandUnhandledError(f"runem: mypy mis-config detected: {output}")
 
 
 def _job_py_pytest(  # noqa: C901 # pylint: disable=too-many-branches,too-many-statements
@@ -185,7 +187,7 @@ def _job_py_pytest(  # noqa: C901 # pylint: disable=too-many-branches,too-many-s
     ]
 
     # use sqlite for unit-tests
-    env_overrides: dict = {
+    env_overrides: typing.Dict[str, str] = {
         "LURSIGHT_DB_SCHEMA": "sqlite",
         "PYTHONPATH": str(root_path / "python"),
     }

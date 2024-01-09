@@ -1,5 +1,6 @@
 import io
 import subprocess
+import typing
 from contextlib import redirect_stdout
 from unittest.mock import Mock, patch
 
@@ -11,16 +12,16 @@ import runem.run_command
 def test_get_stdout() -> None:
     """Tests that get_std_out returns a non bytes string."""
 
-    class DummyProcess(subprocess.CompletedProcess):
+    class DummyProcess(subprocess.CompletedProcess[bytes]):
         """A dummy process to mimic a process that ran at all.
 
         ... in this case all we want is to mimic generated stdout
         """
 
-        def __init__(self):  # pylint: disable=super-init-not-called
+        def __init__(self) -> None:  # pylint: disable=super-init-not-called
             self.stdout = str.encode("test string")
 
-    dummy_process: subprocess.CompletedProcess = DummyProcess()
+    dummy_process: subprocess.CompletedProcess[bytes] = DummyProcess()
     assert "test string" == runem.run_command.get_stdout(dummy_process, "test")
 
 
@@ -28,27 +29,27 @@ def test_get_stdout_handles_non_started_processes() -> None:
     """Tests that get_std_out returns a non bytes string, even for partially created
     processes."""
 
-    class DummyProcess(subprocess.CompletedProcess):
+    class DummyString:
+        def decode(self, *args: typing.Any) -> str:
+            """Coerce 'decode' to raise an UnboundLocalError.
+
+            We do this because the command that was attempted to be run contained some
+            sort of bad configuration ahead of actually invoking the command; this
+            leaves the Process object in a bad state with partially define members like
+            stdout.
+            """
+            raise UnboundLocalError()
+
+    class DummyProcess(subprocess.CompletedProcess[bytes]):
         """A dummy process to coerce the error we see in production.
 
         ... in this case a process that failed to start and generate stdout
         """
 
-        def __init__(self):  # pylint: disable=super-init-not-called
-            class DummyString:
-                def decode(self, *args):
-                    """Coerce 'decode' to raise an UnboundLocalError.
+        def __init__(self) -> None:  # pylint: disable=super-init-not-called
+            self.stdout = DummyString()  # type: ignore  # "mocking" bytes string
 
-                    We do this because the command that was attempted to be run
-                    contained some sort of bad configuration ahead of actually invoking
-                    the command; this leaves the Process object in a bad state with
-                    partially define members like stdout.
-                    """
-                    raise UnboundLocalError()
-
-            self.stdout = DummyString()
-
-    dummy_process: subprocess.CompletedProcess = DummyProcess()
+    dummy_process: subprocess.CompletedProcess[bytes] = DummyProcess()
     assert "No process started, does it exist?" == runem.run_command.get_stdout(
         dummy_process, "test"
     )

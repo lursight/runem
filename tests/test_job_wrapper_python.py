@@ -154,7 +154,7 @@ def test_load_python_function_from_module_handles_module_from_spec_failing(
     mock_module_from_spec.assert_called()
 
 
-def test_load_python_function_success(tmp_path):
+def test_load_python_function_success(tmp_path: pathlib.Path) -> None:
     # Create a temporary Python module file
     p = tmp_path / "hello.py"
     p.write_text('def hello():\n    return "Hello, World!"')
@@ -166,10 +166,10 @@ def test_load_python_function_success(tmp_path):
 
     # True if the function can be called and returns expected result
     assert callable(hello_func)
-    assert hello_func() == "Hello, World!"
+    assert hello_func() == "Hello, World!"  # type: ignore
 
 
-def test_load_python_function_module_not_found(tmp_path):
+def test_load_python_function_module_not_found(tmp_path: pathlib.Path) -> None:
     # Use the function to load a non-existing module
     with pytest.raises(FunctionNotFound):
         _load_python_function_from_module(
@@ -177,7 +177,7 @@ def test_load_python_function_module_not_found(tmp_path):
         )
 
 
-def test_load_python_function_not_found(tmp_path):
+def test_load_python_function_not_found(tmp_path: pathlib.Path) -> None:
     # Create a temporary Python module file
     p = tmp_path / "hello.py"
     p.write_text(
@@ -194,7 +194,7 @@ def test_load_python_function_not_found(tmp_path):
         )
 
 
-def test_load_python_function_invalid_module(tmp_path):
+def test_load_python_function_invalid_module(tmp_path: pathlib.Path) -> None:
     # Create an invalid Python module file
     p = tmp_path / "invalid.py"
     p.write_text(
