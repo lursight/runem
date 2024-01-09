@@ -7,6 +7,7 @@ import typing
 from collections import defaultdict
 from contextlib import redirect_stdout
 from datetime import timedelta
+from pprint import pprint
 from unittest.mock import Mock, patch
 
 # Assuming that the modified _progress_updater function is in a module named runem
@@ -14,6 +15,25 @@ import pytest
 
 from runem.runem import _progress_updater, timed_main
 from runem.types import Config, GlobalSerialisedConfig, JobSerialisedConfig
+
+
+def _remove_x_of_y_workers_log(
+    runem_stdout: typing.List[str], phase: str = "dummy phase 1"
+) -> None:
+    """Asserts that the 'x of y' workers text exists and in-place tries to remove it.
+
+    This is because the number of works changes per machine.
+    """
+    machine_specific_job: str = (
+        f"runem: Running '{phase}' with 1 workers (of "
+        f"{multiprocessing.cpu_count()} max) processing 1 jobs"
+    )
+    # the index() call will error if the X/Z message isn't found, so we know
+    # it's there, so just remove it.
+    pprint(runem_stdout)
+    assert machine_specific_job in runem_stdout, runem_stdout
+    idx = runem_stdout.index(machine_specific_job)
+    del runem_stdout[idx]
 
 
 def test_runem_basic() -> None:
@@ -228,6 +248,9 @@ def test_runem_with_full_config() -> None:
         runem_cli_switches=runem_cli_switches
     )
     assert error_raised is None
+    _remove_x_of_y_workers_log(runem_stdout, phase="dummy phase 1")
+    _remove_x_of_y_workers_log(runem_stdout, phase="dummy phase 2")
+
     assert [
         "runem: found 1 batches, 1 'mock phase' files, ",
         (
@@ -238,8 +261,8 @@ def test_runem_with_full_config() -> None:
         "runem: \t['dummy job label 1']",
         "runem: will run 1 jobs for phase 'dummy phase 2'",
         "runem: \t['dummy job label 2']",
-        "runem: Running 'dummy phase 1' with 1 workers processing 1 jobs",
-        "runem: Running 'dummy phase 2' with 1 workers processing 1 jobs",
+        # "runem: Running 'dummy phase 1' with 1 workers processing 1 jobs",
+        # "runem: Running 'dummy phase 2' with 1 workers processing 1 jobs",
     ] == runem_stdout
 
 
@@ -255,6 +278,10 @@ def test_runem_with_full_config_verbose() -> None:
         runem_cli_switches=runem_cli_switches
     )
     assert error_raised is None
+
+    _remove_x_of_y_workers_log(runem_stdout, phase="dummy phase 1")
+    _remove_x_of_y_workers_log(runem_stdout, phase="dummy phase 2")
+
     assert [
         "runem: loaded config from [CONFIG PATH]",
         "runem: found 1 batches, 1 'mock phase' files, ",
@@ -267,9 +294,9 @@ def test_runem_with_full_config_verbose() -> None:
         "runem: will run 1 jobs for phase 'dummy phase 2'",
         "runem: \t['dummy job label 2']",
         "runem: Running Phase dummy phase 1",
-        "runem: Running 'dummy phase 1' with 1 workers processing 1 jobs",
+        # "runem: Running 'dummy phase 1' with 1 workers processing 1 jobs",
         "runem: Running Phase dummy phase 2",
-        "runem: Running 'dummy phase 2' with 1 workers processing 1 jobs",
+        # "runem: Running 'dummy phase 2' with 1 workers processing 1 jobs",
     ] == runem_stdout
 
 
@@ -285,6 +312,9 @@ def test_runem_with_single_phase() -> None:
         runem_cli_switches=runem_cli_switches
     )
     assert error_raised is None
+
+    _remove_x_of_y_workers_log(runem_stdout)
+
     assert [
         "runem: found 1 batches, 1 'mock phase' files, ",
         (
@@ -294,7 +324,7 @@ def test_runem_with_single_phase() -> None:
         "runem: will run 1 jobs for phase 'dummy phase 1'",
         "runem: \t['dummy job label 1']",
         "runem: skipping phase 'dummy phase 2'",
-        "runem: Running 'dummy phase 1' with 1 workers processing 1 jobs",
+        # "runem: Running 'dummy phase 1' with 1 workers processing 1 jobs",
     ] == runem_stdout
 
 
@@ -309,6 +339,9 @@ def test_runem_with_single_phase_verbose() -> None:
     ) = _run_full_config_runem(  # pylint: disable=no-value-for-parameter
         runem_cli_switches=runem_cli_switches
     )
+
+    _remove_x_of_y_workers_log(runem_stdout)
+
     assert error_raised is None
     assert runem_stdout == [
         "runem: loaded config from [CONFIG PATH]",
@@ -321,7 +354,7 @@ def test_runem_with_single_phase_verbose() -> None:
         "runem: \t['dummy job label 1']",
         "runem: skipping phase 'dummy phase 2'",
         "runem: Running Phase dummy phase 1",
-        "runem: Running 'dummy phase 1' with 1 workers processing 1 jobs",
+        # "runem: Running 'dummy phase 1' with 1 workers processing 1 jobs",
     ]
 
 
@@ -509,6 +542,9 @@ def test_runem_job_filters_work(verbosity: bool) -> None:
         runem_cli_switches=runem_cli_switches
     )
     assert error_raised is None
+
+    _remove_x_of_y_workers_log(runem_stdout)
+
     if verbosity:
         assert runem_stdout == [
             "runem: loaded config from [CONFIG PATH]",
@@ -529,7 +565,7 @@ def test_runem_job_filters_work(verbosity: bool) -> None:
                 "'tag only on job 2'"
             ),
             "runem: Running Phase dummy phase 1",
-            "runem: Running 'dummy phase 1' with 1 workers processing 1 jobs",
+            # see above: "runem: Running 'dummy phase 1' with 1 workers processing 1 jobs",
         ]
     else:
         assert runem_stdout == [
@@ -545,7 +581,7 @@ def test_runem_job_filters_work(verbosity: bool) -> None:
                 "'dummy tag 2', 'tag only on job 1', "
                 "'tag only on job 2'"
             ),
-            "runem: Running 'dummy phase 1' with 1 workers processing 1 jobs",
+            # see above: "runem: Running 'dummy phase 1' with 1 workers processing 1 jobs",
         ]
 
 
@@ -573,6 +609,9 @@ def test_runem_tag_filters_work(verbosity: bool) -> None:
         runem_cli_switches=runem_cli_switches
     )
     assert error_raised is None
+
+    _remove_x_of_y_workers_log(runem_stdout)
+
     if verbosity:
         assert runem_stdout == [
             "runem: loaded config from [CONFIG PATH]",
@@ -586,7 +625,7 @@ def test_runem_tag_filters_work(verbosity: bool) -> None:
             ),
             "runem: No jobs for phase 'dummy phase 2' tags 'tag only on job 1'",
             "runem: Running Phase dummy phase 1",
-            "runem: Running 'dummy phase 1' with 1 workers processing 1 jobs",
+            # "runem: Running 'dummy phase 1' with 1 workers processing 1 jobs",
         ]
     else:
         assert runem_stdout == [
@@ -595,7 +634,7 @@ def test_runem_tag_filters_work(verbosity: bool) -> None:
             "runem: will run 1 jobs for phase 'dummy phase 1'",
             "runem: \t['dummy job label 1']",
             "runem: No jobs for phase 'dummy phase 2' tags 'tag only on job 1'",
-            "runem: Running 'dummy phase 1' with 1 workers processing 1 jobs",
+            # "runem: Running 'dummy phase 1' with 1 workers processing 1 jobs",
         ]
 
 
@@ -622,6 +661,9 @@ def test_runem_tag_out_filters_work(verbosity: bool) -> None:
     ) = _run_full_config_runem(  # pylint: disable=no-value-for-parameter
         runem_cli_switches=runem_cli_switches
     )
+
+    _remove_x_of_y_workers_log(runem_stdout, phase="dummy phase 2")
+
     assert error_raised is None
     if verbosity:
         assert runem_stdout == [
@@ -642,7 +684,7 @@ def test_runem_tag_out_filters_work(verbosity: bool) -> None:
             "runem: will run 1 jobs for phase 'dummy phase 2'",
             "runem: \t['dummy job label 2']",
             "runem: Running Phase dummy phase 2",
-            "runem: Running 'dummy phase 2' with 1 workers processing 1 jobs",
+            # "runem: Running 'dummy phase 2' with 1 workers processing 1 jobs",
         ]
     else:
         assert runem_stdout == [
@@ -657,7 +699,7 @@ def test_runem_tag_out_filters_work(verbosity: bool) -> None:
             ),
             "runem: will run 1 jobs for phase 'dummy phase 2'",
             "runem: \t['dummy job label 2']",
-            "runem: Running 'dummy phase 2' with 1 workers processing 1 jobs",
+            # "runem: Running 'dummy phase 2' with 1 workers processing 1 jobs",
         ]
 
 
@@ -743,6 +785,9 @@ def test_runem_phase_filters_work(verbosity: bool) -> None:
         runem_cli_switches=runem_cli_switches
     )
     assert error_raised is None
+
+    _remove_x_of_y_workers_log(runem_stdout)
+
     if verbosity:
         assert runem_stdout == [
             "runem: loaded config from [CONFIG PATH]",
@@ -755,7 +800,7 @@ def test_runem_phase_filters_work(verbosity: bool) -> None:
             "runem: \t['dummy job label 1']",
             "runem: skipping phase 'dummy phase 2'",
             "runem: Running Phase dummy phase 1",
-            "runem: Running 'dummy phase 1' with 1 workers processing 1 jobs",
+            # "runem: Running 'dummy phase 1' with 1 workers processing 1 jobs",
         ]
     else:
         assert runem_stdout == [
@@ -767,7 +812,7 @@ def test_runem_phase_filters_work(verbosity: bool) -> None:
             "runem: will run 1 jobs for phase 'dummy phase 1'",
             "runem: \t['dummy job label 1']",
             "runem: skipping phase 'dummy phase 2'",
-            "runem: Running 'dummy phase 1' with 1 workers processing 1 jobs",
+            # "runem: Running 'dummy phase 1' with 1 workers processing 1 jobs",
         ]
 
 
