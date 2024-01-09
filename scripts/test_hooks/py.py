@@ -240,11 +240,17 @@ def _job_py_pytest(  # noqa: C901 # pylint: disable=too-many-branches,too-many-s
             f"--rcfile={str(coverage_cfg)}",
         ]
         kwargs["label"] = f"{label} coverage cli"
-        run_command(cmd=gen_cli_coverage_report_cmd, **kwargs)
-        assert coverage_output_dir.exists(), coverage_output_dir
         report_html = coverage_output_dir / "index.html"
-        assert report_html.exists(), report_html
         report_cobertura = coverage_output_dir / "cobertura.xml"
+        try:
+            run_command(cmd=gen_cli_coverage_report_cmd, **kwargs)
+        except BaseException:
+            print()
+            print(report_html)
+            print(report_cobertura)
+            raise
+        assert coverage_output_dir.exists(), coverage_output_dir
+        assert report_html.exists(), report_html
         assert report_cobertura.exists(), report_cobertura
         reports["reportUrls"].append(("coverage html", report_html))
         reports["reportUrls"].append(("coverage cobertura", report_cobertura))
