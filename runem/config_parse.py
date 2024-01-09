@@ -34,14 +34,14 @@ def _parse_global_config(
     Returns the phases in the order we want to run them
     """
     options: OptionConfigs = ()
-    if "options" in global_config:
+    if "options" in global_config and global_config["options"]:
         options = tuple(
             option_serialised["option"]
             for option_serialised in global_config["options"]
         )
 
     file_filters: TagFileFilters = {}
-    if "files" in global_config:
+    if "files" in global_config and global_config["files"]:
         file_filter: TagFileFilterSerialised
         serialised_filters: typing.List[TagFileFilterSerialised] = global_config[
             "files"
