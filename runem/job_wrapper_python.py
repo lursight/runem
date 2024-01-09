@@ -26,7 +26,7 @@ def _load_python_function_from_module(
         )
         if not module_spec:
             raise FileNotFoundError()
-        if not module_spec.loader:
+        if not module_spec.loader:  # pragma: FIXME: add code coverage
             raise FunctionNotFound("unable to load module")
     except FileNotFoundError as err:
         raise FunctionNotFound(

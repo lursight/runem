@@ -102,6 +102,40 @@ def test_parse_job_config_throws_on_dupe_name() -> None:
         )
 
 
+def test_parse_job_config_throws_on_missing_key() -> None:
+    """Tests for expected keys are reported if missing."""
+    job_config: JobConfig = {
+        "addr": {
+            "file": __file__,
+            "function": "test_parse_job_config",
+        },
+        # intentionally removed:
+        # "label": "reformat py",
+        "when": {
+            "phase": "edit",
+            "tags": set(
+                (
+                    "py",
+                    "format",
+                )
+            ),
+        },
+    }
+    tags: JobTags = set(["py"])
+    jobs_by_phase: PhaseGroupedJobs = defaultdict(list)
+    job_names: JobNames = set(("reformat py",))
+    phases: JobPhases = set()
+    with pytest.raises(ValueError):
+        parse_job_config(
+            cfg_filepath=pathlib.Path(__file__),
+            job=job_config,
+            in_out_tags=tags,
+            in_out_jobs_by_phase=jobs_by_phase,
+            in_out_job_names=job_names,
+            in_out_phases=phases,
+        )
+
+
 def test_parse_global_config_empty() -> None:
     """Test the global config parse handles empty data."""
     dummy_global_config: GlobalConfig = {

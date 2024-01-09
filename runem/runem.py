@@ -28,7 +28,7 @@ import typing
 from collections import defaultdict
 from datetime import timedelta
 from itertools import repeat
-from multiprocessing.managers import DictProxy, ValueProxy
+from multiprocessing.managers import DictProxy, ListProxy, ValueProxy
 from timeit import default_timer as timer
 
 from halo import Halo
@@ -54,6 +54,7 @@ from runem.types import (
     PhaseGroupedJobs,
     PhaseName,
 )
+from runem.utils import printable_set
 
 
 def _determine_run_parameters(argv: typing.List[str]) -> ConfigMetadata:
@@ -79,19 +80,66 @@ def _determine_run_parameters(argv: typing.List[str]) -> ConfigMetadata:
     return config_metadata
 
 
-def _progress_updater(
-    label: str, running_jobs: typing.Dict[str, str], is_running: ValueProxy[bool]
+def _update_progress(
+    label: str,
+    running_jobs: typing.Dict[str, str],
+    seen_jobs: typing.List[str],
+    all_jobs: Jobs,
+    is_running: ValueProxy[bool],
+    num_workers: int,
 ) -> None:
+    """Updates progress report periodically for running tasks.
+
+    Args:
+        label (str): The identifier.
+        running_jobs (Dict[str, str]): The currently running jobs.
+        seen_jobs (List[str]): Jobs that the function has previously tracked.
+        all_jobs (Jobs): All jobs, encompassing both completed and running jobs.
+        is_running (ValueProxy[bool]): Flag indicating if jobs are still running.
+        num_workers (int): Indicates the number of workers performing the jobs.
+    """
+    # Using Halo library to show a loading spinner on console
     spinner = Halo(text="", spinner="dots")
     spinner.start()
 
+    # The set of all job labels, and the set of completed jobs
+    all_job_names: typing.Set[str] = {job["label"] for job in all_jobs}
+    completed_jobs: typing.Set[str] = set()
+
+    # This dataset is used to track changes between iterations
+    last_running_jobs_set: typing.Set[str] = set()
+
     while is_running.value:
-        running_job_names: typing.List[str] = [
-            f"'{job}'" for job in sorted(list(running_jobs.values()))
-        ]
-        printable_jobs: str = ", ".join(running_job_names)
-        spinner.text = f"{label}: {printable_jobs}"
+        running_jobs_set: typing.Set[str] = set(running_jobs.values())
+        seen_jobs = list(running_jobs_set.union(seen_jobs))  # Update the seen jobs
+
+        # Jobs that have disappeared since last check
+        disappeared_jobs: typing.Set[str] = last_running_jobs_set - running_jobs_set
+
+        # Jobs that have not yet completed
+        remaining_jobs: typing.Set[str] = all_job_names - completed_jobs
+
+        # Check if we're closing to completion
+        workers_retiring: bool = len(remaining_jobs) <= num_workers
+
+        if workers_retiring:
+            # Handle edge case: a task may have disappeared whilst process was sleeping
+            all_completed_jobs: typing.Set[str] = all_job_names - remaining_jobs
+            disappeared_jobs.update(all_completed_jobs - running_jobs_set)
+
+        completed_jobs.update(disappeared_jobs)
+
+        # Prepare progress report
+        progress: str = f"{len(completed_jobs)}/{len(all_jobs)}"
+        running_jobs_list = printable_set(running_jobs_set)
+        spinner.text = f"{label}: {progress}({num_workers}): {running_jobs_list}"
+
+        # Update the tracked dataset for the next iteration
+        last_running_jobs_set = running_jobs_set
+
+        # Sleep to decrease frequency of updates and reduce CPU usage
         time.sleep(0.1)
+
     spinner.stop()
 
 
@@ -125,11 +173,20 @@ def _process_jobs(
     )
 
     with multiprocessing.Manager() as manager:
+        seen_jobs: ListProxy[str] = manager.list()
         running_jobs: DictProxy[typing.Any, typing.Any] = manager.dict()
         is_running: ValueProxy[bool] = manager.Value("b", True)
 
         terminal_writer_process = multiprocessing.Process(
-            target=_progress_updater, args=(phase, running_jobs, is_running)
+            target=_update_progress,
+            args=(
+                phase,
+                running_jobs,
+                seen_jobs,
+                jobs,
+                is_running,
+                num_concurrent_procs,
+            ),
         )
         terminal_writer_process.start()
 
