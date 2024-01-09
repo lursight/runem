@@ -4,10 +4,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from runem.job_function_python import (
-    _load_python_function_from_module,
-    get_job_function,
-)
+from runem.job_wrapper_python import _load_python_function_from_module, get_job_wrapper
 from runem.types import FunctionNotFound, JobConfig, JobFunction
 
 
@@ -37,7 +34,7 @@ def test_get_job_function(tmp_path: pathlib.Path) -> None:
             ),
         },
     }
-    loaded_func: JobFunction = get_job_function(job_config, tmp_path / ".runem.yml")
+    loaded_func: JobFunction = get_job_wrapper(job_config, tmp_path / ".runem.yml")
     assert loaded_func is not None
     assert loaded_func.__name__ == "test_get_job_function"
 
@@ -71,7 +68,7 @@ def test_get_job_function_handles_missing_function(tmp_path: pathlib.Path) -> No
 
     with pytest.raises(FunctionNotFound):
         # this should throw an exception
-        get_job_function(job_config, tmp_path / ".runem.yml")
+        get_job_wrapper(job_config, tmp_path / ".runem.yml")
 
 
 def test_get_job_function_handles_missing_module(tmp_path: pathlib.Path) -> None:
@@ -102,11 +99,11 @@ def test_get_job_function_handles_missing_module(tmp_path: pathlib.Path) -> None
 
     with pytest.raises(FunctionNotFound):
         # this should throw an exception
-        get_job_function(job_config, tmp_path / ".runem.yml")
+        get_job_wrapper(job_config, tmp_path / ".runem.yml")
 
 
 @patch(
-    "runem.job_function_python.module_spec_from_file_location",
+    "runem.job_wrapper_python.module_spec_from_file_location",
     return_value=None,
 )
 def test_load_python_function_from_module_handles_module_spec_loading(
@@ -132,6 +129,29 @@ def test_load_python_function_from_module_handles_module_spec_loading(
         )
     )
     mock_spec_from_file_location.assert_called()
+
+
+@patch(
+    "runem.job_wrapper_python.module_from_spec",
+    return_value=None,
+)
+def test_load_python_function_from_module_handles_module_from_spec_failing(
+    mock_module_from_spec: Mock,
+) -> None:
+    """Tests that another case of importlib internals failing is handled.
+
+    mocks importlib.util.module_from_spec to return None
+    """
+    file_path: pathlib.Path = pathlib.Path(__file__)
+    base_path = file_path.parent
+    with pytest.raises(FunctionNotFound, match=("unable to load module")):
+        _load_python_function_from_module(
+            base_path / ".runem.no_exist.yml",
+            "test_module_name",
+            file_path,
+            "test_load_python_function_from_module_handles_module_spec_loading",
+        )
+    mock_module_from_spec.assert_called()
 
 
 def test_load_python_function_success(tmp_path):

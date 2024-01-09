@@ -26,6 +26,8 @@ def _load_python_function_from_module(
         )
         if not module_spec:
             raise FileNotFoundError()
+        if not module_spec.loader:
+            raise FunctionNotFound("unable to load module")
     except FileNotFoundError as err:
         raise FunctionNotFound(
             (
@@ -35,9 +37,9 @@ def _load_python_function_from_module(
         ) from err
 
     module = module_from_spec(module_spec)
-    sys.modules[module_name] = module
-    if not module_spec.loader:
+    if not module:
         raise FunctionNotFound("unable to load module")
+    sys.modules[module_name] = module
     try:
         module_spec.loader.exec_module(module)
     except FileNotFoundError as err:
@@ -83,7 +85,7 @@ def _find_job_module(cfg_filepath: pathlib.Path, module_file_path: str) -> pathl
     return module_path.relative_to(cfg_filepath.parent.absolute())
 
 
-def get_job_function(job_config: JobConfig, cfg_filepath: pathlib.Path) -> JobFunction:
+def get_job_wrapper(job_config: JobConfig, cfg_filepath: pathlib.Path) -> JobFunction:
     """Given a job-description dynamically loads the job-function so we can call it.
 
     Side-effects: also re-addressed the job-config.

@@ -3,7 +3,7 @@ from argparse import Namespace
 from collections import defaultdict
 
 from runem.config_metadata import ConfigMetadata
-from runem.job_runner import job_runner
+from runem.job_execute import job_execute
 from runem.types import (
     FilePathList,
     FilePathListLookup,
@@ -21,7 +21,7 @@ def old_style_function(args: Namespace, options: Options, file_list: FilePathLis
     """Does nothing called by runner."""
 
 
-def test_job_runner_basic_call() -> None:
+def test_job_execute_basic_call() -> None:
     job_config: JobConfig = {
         "addr": {
             "file": __file__,
@@ -75,10 +75,10 @@ def test_job_runner_basic_call() -> None:
 
     file_lists: FilePathListLookup = defaultdict(list)
     file_lists["dummy tag"] = [__file__]
-    job_runner(job_config, {}, config_metadata, file_lists)
+    job_execute(job_config, {}, config_metadata, file_lists)
 
 
-def test_job_runner_basic_call_verbose() -> None:
+def test_job_execute_basic_call_verbose() -> None:
     job_config: JobConfig = {
         "addr": {
             "file": __file__,
@@ -127,10 +127,10 @@ def test_job_runner_basic_call_verbose() -> None:
 
     file_lists: FilePathListLookup = defaultdict(list)
     file_lists["dummy tag"] = [__file__]
-    job_runner(job_config, {}, config_metadata, file_lists)
+    job_execute(job_config, {}, config_metadata, file_lists)
 
 
-def test_job_runner_empty_files() -> None:
+def test_job_execute_empty_files() -> None:
     job_config: JobConfig = {
         "addr": {
             "file": __file__,
@@ -179,10 +179,10 @@ def test_job_runner_empty_files() -> None:
 
     file_lists: FilePathListLookup = defaultdict(list)
     # file_lists["dummy tag"] = [__file__]
-    job_runner(job_config, {}, config_metadata, file_lists)
+    job_execute(job_config, {}, config_metadata, file_lists)
 
 
-def test_job_runner_with_ctx_cwd() -> None:
+def test_job_execute_with_ctx_cwd() -> None:
     job_config: JobConfig = {
         "addr": {
             "file": __file__,
@@ -235,10 +235,10 @@ def test_job_runner_with_ctx_cwd() -> None:
 
     file_lists: FilePathListLookup = defaultdict(list)
     file_lists["dummy tag"] = [__file__]
-    job_runner(job_config, {}, config_metadata, file_lists)
+    job_execute(job_config, {}, config_metadata, file_lists)
 
 
-def test_job_runner_with_old_style_func() -> None:
+def test_job_execute_with_old_style_func() -> None:
     job_config: JobConfig = {
         "addr": {
             "file": __file__,
@@ -291,4 +291,4 @@ def test_job_runner_with_old_style_func() -> None:
 
     file_lists: FilePathListLookup = defaultdict(list)
     file_lists["dummy tag"] = [__file__]
-    job_runner(job_config, {}, config_metadata, file_lists)
+    job_execute(job_config, {}, config_metadata, file_lists)
