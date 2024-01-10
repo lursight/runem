@@ -4,6 +4,68 @@ Changelog
 
 (unreleased)
 ------------
+- Merge pull request #16 from lursight/feat/in-progress-job-count.
+  [Frank Harrison]
+
+  Feat/in progress job count
+- Feat(in-progress-job-count): shows num jobs completed in halo ticker.
+  [Frank Harrison]
+
+  This gives better feedback about what runem is doing to the user and
+  reduces frustration for long-running tasks.
+- Chore(coverage): adds more explicit coverage to code that will need it
+  later. [Frank Harrison]
+- Merge pull request #14 from lursight/chore/add_vscode_runner. [Frank
+  Harrison]
+
+  Chore/add vscode runner
+- Chore(vs-code): configures vscode's test runner. [Frank Harrison]
+- Chore(vs-code): adds a launch.json for debugging in vscode. [Frank
+  Harrison]
+- Merge pull request #13 from lursight/chore/tidy_pull_request_template.
+  [Frank Harrison]
+
+  chore: updates the PR template
+- Chore: updates the PR template. [Frank Harrison]
+
+  ... making it less annoying to use
+- Merge pull request #12 from lursight/chore/remove_rename_try_2. [Frank
+  Harrison]
+
+  chore: removes the rename-project action from workflows
+- Chore: removes the rename-project action from workflows. [Frank
+  Harrison]
+- Merge pull request #11 from lursight/chore/fix_mypy_checks. [Frank
+  Harrison]
+
+  chore(fix-mypy-config): ensures mypy catches all error (strict mode)
+- Chore(mypy): upgrade mypy 1.7.0 -> 1.8.0. [Frank Harrison]
+- Chore(fix-mypy): fixes spurious test-types. [Frank Harrison]
+
+  This is a heavier "fix" than just a chore, but not really a fix either.
+
+  Basically the test was writing an invalid yml file and the code supported
+  that bad behaviour. This replaces that buggy test with a correctly typed
+  one and adds some earlier conformance to the config loader for a
+  (hopefully) minor functional change.
+- Chore(fix-mypy): fixes the various type issues. [Frank Harrison]
+- Chore(fix-mypy-config): adds noddy detector for if mypy.ini is
+  invalid, as reported by mypy. [Frank Harrison]
+- Chore(fix-mypy-config): fixes comments being included as option
+  values. [Frank Harrison]
+
+  We had comments after each option in mypy.ini which the mypy ini parser
+  couldn't process. We put the comments first now.
+- Merge pull request #10 from lursight/feat/show_num_worker. [Frank
+  Harrison]
+
+  feat(show-num-workers): show max workers in output
+- Feat(show-num-workers): show max workers in output. [Frank Harrison]
+
+
+0.0.18 (2024-01-09)
+-------------------
+- Release: version 0.0.18 🚀 [Frank Harrison]
 - Merge pull request #9 from lursight/chore/rename_core_functions.
   [Frank Harrison]
 
