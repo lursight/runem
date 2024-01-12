@@ -69,6 +69,64 @@ def test_parse_job_config() -> None:
     assert phases == {"edit"}
 
 
+def test_parse_job_config_handles_multiple_cwd() -> None:
+    """Tests that multiple cwd generate jobs per cwd."""
+    job_config: JobConfig = {
+        "addr": {
+            "file": __file__,
+            "function": "test_parse_job_config",
+        },
+        "ctx": {"cwd": ["path/a", "path/b"]},
+        "label": "reformat py",
+        "when": {
+            "phase": "edit",
+            "tags": set(
+                (
+                    "py",
+                    "format",
+                )
+            ),
+        },
+    }
+    tags: JobTags = set(["py"])
+    jobs_by_phase: PhaseGroupedJobs = defaultdict(list)
+    job_names: JobNames = set()
+    phases: JobPhases = set()
+    parse_job_config(
+        cfg_filepath=pathlib.Path(__file__),
+        job=job_config,
+        in_out_tags=tags,
+        in_out_jobs_by_phase=jobs_by_phase,
+        in_out_job_names=job_names,
+        in_out_phases=phases,
+    )
+    assert tags == {"format", "py"}
+    assert jobs_by_phase == {
+        "edit": [
+            {
+                "addr": {
+                    "file": "test_config_parse.py",
+                    "function": "test_parse_job_config",
+                },
+                "ctx": {"cwd": "path/a"},
+                "label": "reformat py(path/a)",
+                "when": {"phase": "edit", "tags": set(("py", "format"))},
+            },
+            {
+                "addr": {
+                    "file": "test_config_parse.py",
+                    "function": "test_parse_job_config",
+                },
+                "ctx": {"cwd": "path/b"},
+                "label": "reformat py(path/b)",
+                "when": {"phase": "edit", "tags": set(("py", "format"))},
+            },
+        ]
+    }
+    assert job_names == {"reformat py(path/a)", "reformat py(path/b)"}
+    assert phases == {"edit"}
+
+
 def test_parse_job_config_throws_on_dupe_name() -> None:
     """Tests for job-name clashes."""
     job_config: JobConfig = {
