@@ -265,9 +265,9 @@ def test_runem_with_full_config() -> None:
             "'tag only on job 1', 'tag only on job 2'"
         ),
         "runem: will run 1 jobs for phase 'dummy phase 1'",
-        "runem: \t['dummy job label 1']",
+        "runem: \t'dummy job label 1'",
         "runem: will run 1 jobs for phase 'dummy phase 2'",
-        "runem: \t['dummy job label 2']",
+        "runem: \t'dummy job label 2'",
         # "runem: Running 'dummy phase 1' with 1 workers processing 1 jobs",
         # "runem: Running 'dummy phase 2' with 1 workers processing 1 jobs",
     ] == runem_stdout
@@ -297,9 +297,9 @@ def test_runem_with_full_config_verbose() -> None:
             "'tag only on job 1', 'tag only on job 2'"
         ),
         "runem: will run 1 jobs for phase 'dummy phase 1'",
-        "runem: \t['dummy job label 1']",
+        "runem: \t'dummy job label 1'",
         "runem: will run 1 jobs for phase 'dummy phase 2'",
-        "runem: \t['dummy job label 2']",
+        "runem: \t'dummy job label 2'",
         "runem: Running Phase dummy phase 1",
         # "runem: Running 'dummy phase 1' with 1 workers processing 1 jobs",
         "runem: Running Phase dummy phase 2",
@@ -329,7 +329,7 @@ def test_runem_with_single_phase() -> None:
             "'tag only on job 1', 'tag only on job 2'"
         ),
         "runem: will run 1 jobs for phase 'dummy phase 1'",
-        "runem: \t['dummy job label 1']",
+        "runem: \t'dummy job label 1'",
         "runem: skipping phase 'dummy phase 2'",
         # "runem: Running 'dummy phase 1' with 1 workers processing 1 jobs",
     ] == runem_stdout
@@ -358,7 +358,7 @@ def test_runem_with_single_phase_verbose() -> None:
             "'tag only on job 1', 'tag only on job 2'"
         ),
         "runem: will run 1 jobs for phase 'dummy phase 1'",
-        "runem: \t['dummy job label 1']",
+        "runem: \t'dummy job label 1'",
         "runem: skipping phase 'dummy phase 2'",
         "runem: Running Phase dummy phase 1",
         # "runem: Running 'dummy phase 1' with 1 workers processing 1 jobs",
@@ -561,7 +561,7 @@ def test_runem_job_filters_work(verbosity: bool) -> None:
                 "'tag only on job 1', 'tag only on job 2'"
             ),
             "runem: will run 1 jobs for phase 'dummy phase 1'",
-            "runem: \t['dummy job label 1']",
+            "runem: \t'dummy job label 1'",
             (
                 "runem: not running job 'dummy job label 2' because it isn't in the list "
                 "of job names. See --jobs and --not-jobs"
@@ -582,7 +582,7 @@ def test_runem_job_filters_work(verbosity: bool) -> None:
                 "'tag only on job 1', 'tag only on job 2'"
             ),
             "runem: will run 1 jobs for phase 'dummy phase 1'",
-            "runem: \t['dummy job label 1']",
+            "runem: \t'dummy job label 1'",
             (
                 "runem: No jobs for phase 'dummy phase 2' tags 'dummy tag 1', "
                 "'dummy tag 2', 'tag only on job 1', "
@@ -625,7 +625,7 @@ def test_runem_tag_filters_work(verbosity: bool) -> None:
             "runem: found 1 batches, 1 'mock phase' files, ",
             "runem: filtering for tags 'tag only on job 1'",
             "runem: will run 1 jobs for phase 'dummy phase 1'",
-            "runem: \t['dummy job label 1']",
+            "runem: \t'dummy job label 1'",
             (
                 "runem: not running job 'dummy job label 2' because it doesn't have any of the "
                 "following tags: 'tag only on job 1'"
@@ -639,7 +639,7 @@ def test_runem_tag_filters_work(verbosity: bool) -> None:
             "runem: found 1 batches, 1 'mock phase' files, ",
             "runem: filtering for tags 'tag only on job 1'",
             "runem: will run 1 jobs for phase 'dummy phase 1'",
-            "runem: \t['dummy job label 1']",
+            "runem: \t'dummy job label 1'",
             "runem: No jobs for phase 'dummy phase 2' tags 'tag only on job 1'",
             # "runem: Running 'dummy phase 1' with 1 workers processing 1 jobs",
         ]
@@ -689,7 +689,7 @@ def test_runem_tag_out_filters_work(verbosity: bool) -> None:
                 "'tag only on job 2'"
             ),
             "runem: will run 1 jobs for phase 'dummy phase 2'",
-            "runem: \t['dummy job label 2']",
+            "runem: \t'dummy job label 2'",
             "runem: Running Phase dummy phase 2",
             # "runem: Running 'dummy phase 2' with 1 workers processing 1 jobs",
         ]
@@ -705,7 +705,7 @@ def test_runem_tag_out_filters_work(verbosity: bool) -> None:
                 "'tag only on job 2'"
             ),
             "runem: will run 1 jobs for phase 'dummy phase 2'",
-            "runem: \t['dummy job label 2']",
+            "runem: \t'dummy job label 2'",
             # "runem: Running 'dummy phase 2' with 1 workers processing 1 jobs",
         ]
 
@@ -804,7 +804,7 @@ def test_runem_phase_filters_work(verbosity: bool) -> None:
                 "'tag only on job 2'"
             ),
             "runem: will run 1 jobs for phase 'dummy phase 1'",
-            "runem: \t['dummy job label 1']",
+            "runem: \t'dummy job label 1'",
             "runem: skipping phase 'dummy phase 2'",
             "runem: Running Phase dummy phase 1",
             # "runem: Running 'dummy phase 1' with 1 workers processing 1 jobs",
@@ -817,7 +817,7 @@ def test_runem_phase_filters_work(verbosity: bool) -> None:
                 "'tag only on job 2'"
             ),
             "runem: will run 1 jobs for phase 'dummy phase 1'",
-            "runem: \t['dummy job label 1']",
+            "runem: \t'dummy job label 1'",
             "runem: skipping phase 'dummy phase 2'",
             # "runem: Running 'dummy phase 1' with 1 workers processing 1 jobs",
         ]
