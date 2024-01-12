@@ -70,8 +70,8 @@ def parse_job_config(
     Returns the tags generated
     """
     try:
-        job_names_used = job["label"] in in_out_job_names
-        if job_names_used:
+        job_name_used = job["label"] in in_out_job_names
+        if job_name_used:
             log("ERROR: duplicate job label!")
             log(f"\t'{job['label']}' is used twice or more in {str(cfg_filepath)}")
             sys.exit(1)
