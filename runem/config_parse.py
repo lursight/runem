@@ -79,6 +79,8 @@ def parse_job_config(
         # try and load the function _before_ we schedule it's execution
         get_job_wrapper(job, cfg_filepath)
         phase_id: PhaseName = job["when"]["phase"]
+
+        # add the job to the list of jobs
         in_out_jobs_by_phase[phase_id].append(job)
 
         in_out_job_names.add(job["label"])
