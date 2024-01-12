@@ -4,6 +4,32 @@ Changelog
 
 (unreleased)
 ------------
+- Merge pull request #17 from lursight/feat/multiple_cwd. [Frank
+  Harrison]
+
+  Feat/multiple cwd
+- Feat(multi-cwd): clones jobs for each cwd path given in .runem.yml.
+  [Frank Harrison]
+
+  Allows a job to have multiple cwds. That job will then be run once for
+  each of those cwds.
+
+  This make running individual commands across many project path much
+  easier and faster as the normal is to run them in serial.
+
+  This gives us reporting on each path bit as well as faster completion of
+  tasks.
+- Feat(multi-cwd): adds annotation to bit where we add jobs. [Frank
+  Harrison]
+- Chore(typo): fixes a typo in a variable. [Frank Harrison]
+- Chore(docs): removes defunct comment. [Frank Harrison]
+- Fix(stdout): ensure the job filter log output is tidier and sorted.
+  [Frank Harrison]
+
+
+0.0.19 (2024-01-10)
+-------------------
+- Release: version 0.0.19 🚀 [Frank Harrison]
 - Merge pull request #16 from lursight/feat/in-progress-job-count.
   [Frank Harrison]
 
