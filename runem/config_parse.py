@@ -1,7 +1,9 @@
+import copy
 import pathlib
 import sys
 import typing
 from collections import defaultdict
+from collections.abc import Iterable
 
 from runem.config_metadata import ConfigMetadata
 from runem.job_wrapper_python import get_job_wrapper
@@ -57,6 +59,34 @@ def _parse_global_config(
     return phases, options, file_filters
 
 
+def _parse_job(
+    cfg_filepath: pathlib.Path,
+    job: JobConfig,
+    in_out_tags: JobTags,
+    in_out_jobs_by_phase: PhaseGroupedJobs,
+    in_out_job_names: JobNames,
+    in_out_phases: JobPhases,
+) -> None:
+    """Parse an individual job."""
+    job_name_used = job["label"] in in_out_job_names
+    if job_name_used:
+        log("ERROR: duplicate job label!")
+        log(f"\t'{job['label']}' is used twice or more in {str(cfg_filepath)}")
+        sys.exit(1)
+
+        # try and load the function _before_ we schedule it's execution
+    get_job_wrapper(job, cfg_filepath)
+    phase_id: PhaseName = job["when"]["phase"]
+
+    # add the job to the list of jobs
+    in_out_jobs_by_phase[phase_id].append(job)
+
+    in_out_job_names.add(job["label"])
+    in_out_phases.add(job["when"]["phase"])
+    for tag in job["when"]["tags"]:
+        in_out_tags.add(tag)
+
+
 def parse_job_config(
     cfg_filepath: pathlib.Path,
     job: JobConfig,
@@ -67,26 +97,52 @@ def parse_job_config(
 ) -> None:
     """Parses and validates a job-entry read in from disk.
 
-    Tries to relocate the function address relative to the config-file
-
     Returns the tags generated
     """
     try:
-        job_names_used = job["label"] in in_out_job_names
-        if job_names_used:
-            log("ERROR: duplicate job label!")
-            log(f"\t'{job['label']}' is used twice or more in {str(cfg_filepath)}")
-            sys.exit(1)
+        # if there is more than one cwd, duplicate the job for each cwd
+        generated_jobs: typing.List[JobConfig] = []
+        have_ctw_cwd: bool = (("ctx" in job) and (job["ctx"] is not None)) and (
+            ("cwd" in job["ctx"]) and (job["ctx"]["cwd"] is not None)
+        )
+        if (not have_ctw_cwd) or isinstance(
+            job["ctx"]["cwd"], str  # type: ignore # handled above
+        ):
+            # if
+            # - we don't have a cwd, ctx
+            # - or if the cwd is just a string, it's a path, just use it
+            generated_jobs.append(job)
+        else:
+            assert job["ctx"] is not None
+            assert job["ctx"]["cwd"] is not None
+            assert isinstance(job["ctx"]["cwd"], Iterable)
+            assert isinstance(job["ctx"]["cwd"], list)
+            cwd_list: typing.List[str] = job["ctx"]["cwd"]
+            cwd: str
+            for cwd in cwd_list:
+                specialised_job_for_cwd = copy.deepcopy(job)
+                # overwrite the list of cwd paths with just the single instance
+                assert (
+                    "ctx" in specialised_job_for_cwd and specialised_job_for_cwd["ctx"]
+                ), specialised_job_for_cwd
+                assert (
+                    "cwd" in specialised_job_for_cwd["ctx"]
+                    and specialised_job_for_cwd["ctx"]["cwd"]
+                ), specialised_job_for_cwd["ctx"].keys()
+                specialised_job_for_cwd["ctx"]["cwd"] = cwd
+                # update the label to reflect the specialisation
+                specialised_job_for_cwd["label"] = f"{job['label']}({cwd})"
+                generated_jobs.append(specialised_job_for_cwd)
 
-        # try and load the function _before_ we schedule it's execution
-        get_job_wrapper(job, cfg_filepath)
-        phase_id: PhaseName = job["when"]["phase"]
-        in_out_jobs_by_phase[phase_id].append(job)
-
-        in_out_job_names.add(job["label"])
-        in_out_phases.add(job["when"]["phase"])
-        for tag in job["when"]["tags"]:
-            in_out_tags.add(tag)
+        for generated_job in generated_jobs:
+            _parse_job(
+                cfg_filepath,
+                generated_job,
+                in_out_tags,
+                in_out_jobs_by_phase,
+                in_out_job_names,
+                in_out_phases,
+            )
     except KeyError as err:
         raise ValueError(
             f"job config entry is missing '{err.args[0]}' data. Have {job}"

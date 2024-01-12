@@ -54,6 +54,7 @@ def job_execute_inner(
         and "cwd" in job_config["ctx"]
         and job_config["ctx"]["cwd"]
     ):
+        assert isinstance(job_config["ctx"]["cwd"], str)
         os.chdir(root_path / job_config["ctx"]["cwd"])
     else:
         os.chdir(root_path)

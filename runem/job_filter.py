@@ -106,6 +106,7 @@ def filter_jobs(
             continue
 
         log((f"will run {len(filtered_jobs[phase])} jobs for phase '{phase}'"))
-        log(f"\t{[job['label'] for job in filtered_jobs[phase]]}")
+        job_names: JobNames = {job["label"] for job in filtered_jobs[phase]}
+        log(f"\t{printable_set(job_names)}")
 
     return filtered_jobs
