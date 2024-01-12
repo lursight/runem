@@ -67,8 +67,6 @@ def parse_job_config(
 ) -> None:
     """Parses and validates a job-entry read in from disk.
 
-    Tries to relocate the function address relative to the config-file
-
     Returns the tags generated
     """
     try:
