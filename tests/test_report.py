@@ -14,15 +14,24 @@ from runem.types import (
 
 
 def test_report_on_run_basic_call() -> None:
-    job_timing_1: JobTiming = ("job label 1", timedelta(seconds=0))
-    job_timing_2: JobTiming = ("job label 2", timedelta(seconds=1))
+    job_timing_1: JobTiming = ("job 1", timedelta(seconds=0))
+    job_timing_2: JobTiming = (
+        "job label 2",
+        timedelta(seconds=1000, milliseconds=1, microseconds=1),
+    )
+    job_timing_3: JobTiming = (
+        "another job 3",
+        timedelta(seconds=2),
+    )
     job_return: JobReturn = None  # typing.Optional[JobReturnData]
     job_run_metadata_1: JobRunMetadata = (job_timing_1, job_return)
     job_run_metadata_2: JobRunMetadata = (job_timing_2, job_return)
+    job_run_metadata_3: JobRunMetadata = (job_timing_3, job_return)
     job_run_metadatas: JobRunMetadatasByPhase = {
         "phase 1": [
             job_run_metadata_1,
             job_run_metadata_2,
+            job_run_metadata_3,
         ]
     }
     with io.StringIO() as buf, redirect_stdout(buf):
@@ -34,9 +43,10 @@ def test_report_on_run_basic_call() -> None:
         run_command_stdout = buf.getvalue()
     assert run_command_stdout.split("\n") == [
         "runem: reports:",
-        "runem                  [0.0]",
-        "├phase 1 (total)       [1.0]  ████████████████████████████████████████",
-        "│├phase 1.job label 2  [1.0]  ████████████████████████████████████████",
+        "runem                    [0.000000]",
+        "├phase 1 (total)         [1002.001001]  ████████████████████████████████████████",
+        "│├phase 1.job label 2    [1000.001001]  ███████████████████████████████████████▉",
+        "│├phase 1.another job 3  [2.000000]  ▏",
         "",
     ]
 
@@ -49,13 +59,22 @@ def test_report_on_run_reports() -> None:
     }
     job_return_2: JobReturn = None  # typing.Optional[JobReturnData]
     job_timing_1: JobTiming = ("job label 1", timedelta(seconds=0))
-    job_timing_2: JobTiming = ("job label 2", timedelta(seconds=1))
+    job_timing_2: JobTiming = (
+        "job label 2",
+        timedelta(seconds=1000, milliseconds=1, microseconds=1),
+    )
+    job_timing_3: JobTiming = (
+        "another job 3",
+        timedelta(seconds=2),
+    )
     job_run_metadata_1: JobRunMetadata = (job_timing_1, job_return_1)
     job_run_metadata_2: JobRunMetadata = (job_timing_2, job_return_2)
+    job_run_metadata_3: JobRunMetadata = (job_timing_3, job_return_2)
     job_run_metadatas: JobRunMetadatasByPhase = {
         "phase 1": [
             job_run_metadata_1,
             job_run_metadata_2,
+            job_run_metadata_3,
         ]
     }
     with io.StringIO() as buf, redirect_stdout(buf):
@@ -67,9 +86,10 @@ def test_report_on_run_reports() -> None:
         run_command_stdout = buf.getvalue()
     assert run_command_stdout.split("\n") == [
         "runem: reports:",
-        "runem                  [0.0]",
-        "├phase 1 (total)       [1.0]  ████████████████████████████████████████",
-        "│├phase 1.job label 2  [1.0]  ████████████████████████████████████████",
+        "runem                    [0.000000]",
+        "├phase 1 (total)         [1002.001001]  ████████████████████████████████████████",
+        "│├phase 1.job label 2    [1000.001001]  ███████████████████████████████████████▉",
+        "│├phase 1.another job 3  [2.000000]  ▏",
         "runem: report: dummy report label: /dummy/report/url",
         "",
     ]
