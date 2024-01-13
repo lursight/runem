@@ -1,7 +1,12 @@
+import io
 import pathlib
 import typing
 from argparse import Namespace
 from collections import defaultdict
+from contextlib import redirect_stdout
+from unittest.mock import patch
+
+import pytest
 
 from runem.config_metadata import ConfigMetadata
 from runem.job_execute import job_execute
@@ -22,6 +27,26 @@ def old_style_function(
     args: Namespace, options: Options, file_list: FilePathList
 ) -> None:
     """Does nothing called by runner."""
+
+
+def _job_execute_and_capture_stdout(
+    job_config: JobConfig,
+    running_jobs: typing.Dict[str, str],
+    config_metadata: ConfigMetadata,
+    file_lists: FilePathListLookup,
+) -> str:
+    """Runs job execute and asserts on stdout."""
+    with io.StringIO() as buf, redirect_stdout(buf):
+        job_execute(job_config, running_jobs, config_metadata, file_lists)
+        stdout: str = buf.getvalue()
+    # float_less_stdout = re.sub(r"\d+\.\d+", "[FLOAT]", stdout)
+    return stdout
+
+
+@pytest.fixture(name="mock_timer", autouse=True)
+def create_mock_print_sleep() -> typing.Generator[None, None, None]:
+    with patch("runem.job_execute.timer", return_value=0.0):  # as mock_timer
+        yield
 
 
 def test_job_execute_basic_call() -> None:
@@ -78,7 +103,13 @@ def test_job_execute_basic_call() -> None:
 
     file_lists: FilePathListLookup = defaultdict(list)
     file_lists["dummy tag"] = [__file__]
-    job_execute(job_config, {}, config_metadata, file_lists)
+    stdout: str = _job_execute_and_capture_stdout(
+        job_config,
+        {},
+        config_metadata,
+        file_lists,
+    )
+    assert stdout == ""
 
 
 def test_job_execute_basic_call_verbose() -> None:
@@ -130,7 +161,17 @@ def test_job_execute_basic_call_verbose() -> None:
 
     file_lists: FilePathListLookup = defaultdict(list)
     file_lists["dummy tag"] = [__file__]
-    job_execute(job_config, {}, config_metadata, file_lists)
+    stdout: str = _job_execute_and_capture_stdout(
+        job_config,
+        {},
+        config_metadata,
+        file_lists,
+    )
+    assert stdout == (
+        "runem: START: reformat py\n"
+        "runem: job: running reformat py\n"
+        "runem: DONE: reformat py: 0:00:00\n"
+    )
 
 
 def test_job_execute_empty_files() -> None:
@@ -182,7 +223,18 @@ def test_job_execute_empty_files() -> None:
 
     file_lists: FilePathListLookup = defaultdict(list)
     # file_lists["dummy tag"] = [__file__]
-    job_execute(job_config, {}, config_metadata, file_lists)
+    stdout: str = _job_execute_and_capture_stdout(
+        job_config,
+        {},
+        config_metadata,
+        file_lists,
+    )
+    assert stdout == (
+        "runem: START: reformat py\n"
+        "runem: WARNING: skipping job 'reformat py', no files for job\n"
+        # "runem: job: running reformat py\n"
+        # "runem: DONE: reformat py: 0:00:00\n"
+    )
 
 
 def test_job_execute_with_ctx_cwd() -> None:
@@ -238,7 +290,17 @@ def test_job_execute_with_ctx_cwd() -> None:
 
     file_lists: FilePathListLookup = defaultdict(list)
     file_lists["dummy tag"] = [__file__]
-    job_execute(job_config, {}, config_metadata, file_lists)
+    stdout: str = _job_execute_and_capture_stdout(
+        job_config,
+        {},
+        config_metadata,
+        file_lists,
+    )
+    assert stdout == (
+        "runem: START: reformat py\n"
+        "runem: job: running reformat py\n"
+        "runem: DONE: reformat py: 0:00:00\n"
+    )
 
 
 def test_job_execute_with_old_style_func() -> None:
@@ -294,4 +356,14 @@ def test_job_execute_with_old_style_func() -> None:
 
     file_lists: FilePathListLookup = defaultdict(list)
     file_lists["dummy tag"] = [__file__]
-    job_execute(job_config, {}, config_metadata, file_lists)
+    stdout: str = _job_execute_and_capture_stdout(
+        job_config,
+        {},
+        config_metadata,
+        file_lists,
+    )
+    assert stdout == (
+        "runem: START: reformat py\n"
+        "runem: job: running reformat py\n"
+        "runem: DONE: reformat py: 0:00:00\n"
+    )
