@@ -183,7 +183,7 @@ def test_parse_job_config_throws_on_missing_key() -> None:
     jobs_by_phase: PhaseGroupedJobs = defaultdict(list)
     job_names: JobNames = set(("reformat py",))
     phases: JobPhases = set()
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError) as err_info:
         parse_job_config(
             cfg_filepath=pathlib.Path(__file__),
             job=job_config,
@@ -192,6 +192,7 @@ def test_parse_job_config_throws_on_missing_key() -> None:
             in_out_job_names=job_names,
             in_out_phases=phases,
         )
+    assert str(err_info.value).startswith(("job config entry is missing 'label' data"))
 
 
 def test_parse_global_config_empty() -> None:
