@@ -22,7 +22,7 @@ def test_get_stdout() -> None:
             self.stdout = str.encode("test string")
 
     dummy_process: subprocess.CompletedProcess[bytes] = DummyProcess()
-    assert "test string" == runem.run_command.get_stdout(dummy_process, "test")
+    assert "test: test string" == runem.run_command.get_stdout(dummy_process, "test: ")
 
 
 def test_get_stdout_handles_non_started_processes() -> None:
@@ -50,8 +50,8 @@ def test_get_stdout_handles_non_started_processes() -> None:
             self.stdout = DummyString()  # type: ignore  # "mocking" bytes string
 
     dummy_process: subprocess.CompletedProcess[bytes] = DummyProcess()
-    assert "No process started, does it exist?" == runem.run_command.get_stdout(
-        dummy_process, "test"
+    assert "test: No process started, does it exist?" == runem.run_command.get_stdout(
+        dummy_process, "test: "
     )
 
 
@@ -72,7 +72,7 @@ def test_run_command_basic_call(run_mock: Mock) -> None:
             cmd=["ls"], label="test command", verbose=False
         )
         run_command_stdout = buf.getvalue()
-    assert output == "test output"
+    assert output == "test command: test output"
     assert "" == run_command_stdout, "expected empty output when verbosity is off"
     run_mock.assert_called_once()
     assert len(run_mock.call_args) == 2
@@ -96,13 +96,13 @@ def test_run_command_basic_call_verbose(run_mock: Mock) -> None:
             cmd=["ls"], label="test command", verbose=True
         )
         run_command_stdout = buf.getvalue()
-    assert output == "test output"
+    assert output == "test command: test output"
 
     # check the log output hasn't changed. Update as needed.
     assert run_command_stdout == (
         "runem: running: start: test command: ls\n"
         "runem: RUN ENV OVERRIDES: LANG_DO_PRINTS='True' ls\n"
-        "runem: test output\n"
+        "runem: test command: test output\n"
         "runem: running: done: test command: ls\n"
     )
     run_mock.assert_called_once()
@@ -209,7 +209,7 @@ def test_run_command_ignore_fails_skips_no_side_effects_on_success(
             ignore_fails=True,
         )
         assert (
-            output == "test output"
+            output == "test command: test output"
         ), "expected empty output on failed run with 'ignore_fails=True'"
 
         run_command_stdout = buf.getvalue()
@@ -241,7 +241,7 @@ def test_run_command_ignore_fails_skips_no_side_effects_on_success_with_valid_ex
             ignore_fails=True,
         )
         assert (
-            output == "test output"
+            output == "test command: test output"
         ), "expected empty output on failed run with 'ignore_fails=True'"
 
         run_command_stdout = buf.getvalue()
@@ -270,7 +270,7 @@ def test_run_command_basic_call_non_standard_exit_ok_code(run_mock: Mock) -> Non
             valid_exit_ids=(3,),  # matches the monkey-patch config about
         )
         run_command_stdout = buf.getvalue()
-    assert output == "test output"
+    assert output == "test command: test output"
 
     # check the log output hasn't changed. Update as needed.
     assert run_command_stdout == ""
@@ -298,14 +298,14 @@ def test_run_command_basic_call_non_standard_exit_ok_code_verbose(
             valid_exit_ids=(3,),  # matches the monkey-patch config about
         )
         run_command_stdout = buf.getvalue()
-    assert output == "test output"
+    assert output == "test command: test output"
 
     # check the log output hasn't changed. Update as needed.
     assert run_command_stdout == (
         "runem: running: start: test command: ls\n"
         "runem: 	allowed return ids are: 3\n"
         "runem: RUN ENV OVERRIDES: LANG_DO_PRINTS='True' ls\n"
-        "runem: test output\n"
+        "runem: test command: test output\n"
         "runem: running: done: test command: ls\n"
     )
     run_mock.assert_called_once()
@@ -328,7 +328,7 @@ def test_run_command_with_env(run_mock: Mock) -> None:
             env_overrides={"TEST_ENV_1": "1", "TEST_ENV_2": "2"},
         )
         run_command_stdout = buf.getvalue()
-    assert output == "test output"
+    assert output == "test command: test output"
     assert "" == run_command_stdout, "expected empty output when verbosity is off"
     assert len(run_mock.call_args) == 2
     assert run_mock.call_args[0] == (["ls"],)
@@ -357,12 +357,12 @@ def test_run_command_with_env_verbose(run_mock: Mock) -> None:
             env_overrides={"TEST_ENV_1": "1", "TEST_ENV_2": "2"},
         )
         run_command_stdout = buf.getvalue()
-    assert output == "test output"
+    assert output == "test command: test output"
     assert run_command_stdout == (
         "runem: running: start: test command: ls\n"
         "runem: RUN ENV OVERRIDES: LANG_DO_PRINTS='True' ls\n"
         "runem: ENV OVERRIDES: TEST_ENV_1='1' TEST_ENV_2='2' ls\n"
-        "runem: test output\n"
+        "runem: test command: test output\n"
         "runem: running: done: test command: ls\n"
     )
     assert len(run_mock.call_args) == 2
