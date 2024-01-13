@@ -17,10 +17,16 @@ from runem.types import (
     Options,
     PhaseGroupedJobs,
 )
+from tests.intentional_test_error import IntentionalTestError
 
 
 def empty_function(**kwargs: typing.Any) -> None:
     """Does nothing, called by runner."""
+
+
+def intentionally_raising_function(**kwargs: typing.Any) -> None:
+    """Raises an error called by runner."""
+    raise IntentionalTestError()
 
 
 def old_style_function(
@@ -34,13 +40,19 @@ def _job_execute_and_capture_stdout(
     running_jobs: typing.Dict[str, str],
     config_metadata: ConfigMetadata,
     file_lists: FilePathListLookup,
-) -> str:
+) -> typing.Tuple[str, typing.Optional[BaseException]]:
     """Runs job execute and asserts on stdout."""
+    ret_err: typing.Optional[BaseException] = None
     with io.StringIO() as buf, redirect_stdout(buf):
-        job_execute(job_config, running_jobs, config_metadata, file_lists)
+        try:
+            job_execute(job_config, running_jobs, config_metadata, file_lists)
+        except BaseException as err:  # pylint: disable=broad-exception-caught
+            # capture the error and return it
+            ret_err = err
+        # also capture the stdout so we can inspect that as well.
         stdout: str = buf.getvalue()
     # float_less_stdout = re.sub(r"\d+\.\d+", "[FLOAT]", stdout)
-    return stdout
+    return stdout, ret_err
 
 
 @pytest.fixture(name="mock_timer", autouse=True)
@@ -103,7 +115,7 @@ def test_job_execute_basic_call() -> None:
 
     file_lists: FilePathListLookup = defaultdict(list)
     file_lists["dummy tag"] = [__file__]
-    stdout: str = _job_execute_and_capture_stdout(
+    stdout, _ = _job_execute_and_capture_stdout(
         job_config,
         {},
         config_metadata,
@@ -161,7 +173,7 @@ def test_job_execute_basic_call_verbose() -> None:
 
     file_lists: FilePathListLookup = defaultdict(list)
     file_lists["dummy tag"] = [__file__]
-    stdout: str = _job_execute_and_capture_stdout(
+    stdout, _ = _job_execute_and_capture_stdout(
         job_config,
         {},
         config_metadata,
@@ -223,7 +235,7 @@ def test_job_execute_empty_files() -> None:
 
     file_lists: FilePathListLookup = defaultdict(list)
     # file_lists["dummy tag"] = [__file__]
-    stdout: str = _job_execute_and_capture_stdout(
+    stdout, _ = _job_execute_and_capture_stdout(
         job_config,
         {},
         config_metadata,
@@ -290,7 +302,7 @@ def test_job_execute_with_ctx_cwd() -> None:
 
     file_lists: FilePathListLookup = defaultdict(list)
     file_lists["dummy tag"] = [__file__]
-    stdout: str = _job_execute_and_capture_stdout(
+    stdout, _ = _job_execute_and_capture_stdout(
         job_config,
         {},
         config_metadata,
@@ -356,7 +368,7 @@ def test_job_execute_with_old_style_func() -> None:
 
     file_lists: FilePathListLookup = defaultdict(list)
     file_lists["dummy tag"] = [__file__]
-    stdout: str = _job_execute_and_capture_stdout(
+    stdout, _ = _job_execute_and_capture_stdout(
         job_config,
         {},
         config_metadata,
@@ -366,4 +378,80 @@ def test_job_execute_with_old_style_func() -> None:
         "runem: START: reformat py\n"
         "runem: job: running reformat py\n"
         "runem: DONE: reformat py: 0:00:00\n"
+    )
+
+
+def test_job_execute_with_raising_func() -> None:
+    """Tests that the output is sane on a job-function-raise.
+
+    Aka a job-function throw.
+
+    This test should show that it is the Python exception-handling code that
+    repeats output, not the run'em code.
+
+    FIXME: this contains a lot of copy-pasted code from above.
+    """
+    job_config: JobConfig = {
+        "addr": {
+            "file": __file__,
+            "function": "intentionally_raising_function",
+        },
+        "label": "intentionally throwing",
+        "when": {
+            "phase": "edit",
+            "tags": set(("dummy tag",)),
+        },
+        "ctx": {
+            # set the cwd
+            "cwd": ".",
+        },
+    }
+    config_file_path = pathlib.Path(__file__).parent / ".runem.yml"
+
+    expected_jobs: PhaseGroupedJobs = defaultdict(list)
+    expected_jobs["dummy phase 1"] = [
+        job_config,
+    ]
+    config_metadata: ConfigMetadata = ConfigMetadata(
+        cfg_filepath=config_file_path,
+        phases=("dummy phase 1",),
+        options_config=tuple(),
+        file_filters={
+            # "dummy tag": {
+            #     "tag": "dummy tag",
+            #     "regex": ".*1.txt",  # should match just one file
+            # }
+        },
+        jobs=expected_jobs,
+        all_job_names=set(("dummy job label",)),
+        all_job_phases=set(("dummy phase 1",)),
+        all_job_tags=set(
+            (
+                "dummy tag 2",
+                "dummy tag 1",
+            )
+        ),
+    )
+    config_metadata.set_cli_data(
+        args=Namespace(verbose=True, procs=1),
+        jobs_to_run=set((job_config["label"])),  # JobNames,
+        phases_to_run=set(),  # ignored JobPhases,
+        tags_to_run=set(),  # ignored JobTags,
+        tags_to_avoid=set(),  # ignored  JobTags,
+        options={},  # Options,
+    )
+
+    file_lists: FilePathListLookup = defaultdict(list)
+    file_lists["dummy tag"] = [__file__]
+
+    stdout, err = _job_execute_and_capture_stdout(
+        job_config,
+        {},
+        config_metadata,
+        file_lists,
+    )
+    assert isinstance(err, IntentionalTestError)
+    assert stdout == (
+        "runem: START: intentionally throwing\n"
+        "runem: job: running intentionally throwing\n"
     )

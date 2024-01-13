@@ -22,6 +22,7 @@ from runem.types import (
     Jobs,
     JobSerialisedConfig,
 )
+from tests.intentional_test_error import IntentionalTestError
 
 
 def _remove_x_of_y_workers_log(
@@ -936,13 +937,6 @@ def test_progress_updater_with_false() -> None:
             1,
             show_spinner=False,
         )
-
-
-class IntentionalTestError(RuntimeError):
-    pass
-
-    def __init__(self) -> None:
-        super().__init__(self, "expected test error")
 
 
 @patch(
