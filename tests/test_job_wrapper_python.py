@@ -4,7 +4,8 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from runem.job_wrapper_python import _load_python_function_from_module, get_job_wrapper
+from runem.job_wrapper import get_job_wrapper
+from runem.job_wrapper_python import _load_python_function_from_module
 from runem.types import FunctionNotFound, JobConfig, JobFunction
 
 

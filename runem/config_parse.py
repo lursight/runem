@@ -6,7 +6,7 @@ from collections import defaultdict
 from collections.abc import Iterable
 
 from runem.config_metadata import ConfigMetadata
-from runem.job_wrapper_python import get_job_wrapper
+from runem.job_wrapper import get_job_wrapper
 from runem.log import log
 from runem.types import (
     Config,

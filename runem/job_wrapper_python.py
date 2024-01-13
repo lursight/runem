@@ -120,8 +120,3 @@ def get_job_wrapper_py_func(
     # re-write the job-config file-path for the module with the one that worked
     job_config["addr"]["file"] = str(module_file_path)
     return function
-
-
-def get_job_wrapper(job_config: JobConfig, cfg_filepath: pathlib.Path) -> JobFunction:
-    """Returns a pythonic job-wrapper function that can be called to run a job."""
-    return get_job_wrapper_py_func(job_config, cfg_filepath)
