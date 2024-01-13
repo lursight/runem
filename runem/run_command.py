@@ -28,7 +28,7 @@ def get_stdout(process: CompletedProcess[bytes], prefix: str) -> str:
         stdout = str(process.stdout.decode("utf-8"))
     except UnboundLocalError:
         stdout = "No process started, does it exist?"
-    stdout = stdout.replace("\n", f"\n{prefix}")
+    stdout = prefix + stdout.replace("\n", f"\n{prefix}")
     return stdout
 
 
@@ -117,7 +117,7 @@ def run_command(  # noqa: C901 # pylint: disable=too-many-branches
             f"runem: test: FATAL: command failed: {label}"
             f"\n\t{env_overrides_as_string}{cmd_string}"
             f"\nERROR"
-            f"\n\t{str(stdout)}"
+            f"\n{str(stdout)}"
             f"\nERROR END"
         )
 
@@ -127,7 +127,7 @@ def run_command(  # noqa: C901 # pylint: disable=too-many-branches
         raise RunCommandUnhandledError(error_string) from err
 
     assert process is not None
-    cmd_stdout: str = get_stdout(process, prefix=label)
+    cmd_stdout: str = get_stdout(process, prefix=f"{label}: ")
     if verbose:
         log(cmd_stdout)
         log(f"running: done: {label}: {cmd_string}")

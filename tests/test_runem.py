@@ -22,6 +22,7 @@ from runem.types import (
     Jobs,
     JobSerialisedConfig,
 )
+from tests.intentional_test_error import IntentionalTestError
 
 
 def _remove_x_of_y_workers_log(
@@ -852,6 +853,7 @@ def test_progress_updater_with_running_jobs(mock_sleep: Mock) -> None:
             all_jobs=[],
             is_running=manager.Value("b", True),
             num_workers=1,
+            show_spinner=False,
         )
     mock_sleep.assert_called()
 
@@ -888,6 +890,7 @@ def test_progress_updater_with_running_jobs_and_10_jobs(mock_sleep: Mock) -> Non
             all_jobs=all_jobs,
             is_running=manager.Value("b", True),
             num_workers=1,
+            show_spinner=False,
         )
     mock_sleep.assert_called()
 
@@ -902,6 +905,7 @@ def test_progress_updater_without_running_jobs(mock_sleep: Mock) -> None:
             all_jobs=[],
             is_running=manager.Value("b", True),
             num_workers=1,
+            show_spinner=False,
         )
     mock_sleep.assert_called()
 
@@ -916,6 +920,7 @@ def test_progress_updater_with_empty_running_jobs(mock_sleep: Mock) -> None:
             all_jobs=[],
             is_running=manager.Value("b", True),
             num_workers=1,
+            show_spinner=False,
         )
     mock_sleep.assert_called()
 
@@ -924,5 +929,26 @@ def test_progress_updater_with_false() -> None:
     running_jobs: typing.Dict[str, str] = {"job1": ""}
     with multiprocessing.Manager() as manager:
         _update_progress(
-            "dummy label", running_jobs, [], [], manager.Value("b", False), 1
+            "dummy label",
+            running_jobs,
+            [],
+            [],
+            manager.Value("b", False),
+            1,
+            show_spinner=False,
         )
+
+
+@patch(
+    "runem.runem._main",
+    return_value=(
+        (),  # phase_run_oder,
+        (),  # job_run_metadatas,
+        IntentionalTestError(),
+    ),
+)
+def test_runem_re_raises_after_reporting(
+    main_mock: Mock,
+) -> None:
+    with pytest.raises(IntentionalTestError):
+        timed_main([])

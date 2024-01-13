@@ -87,6 +87,7 @@ def _update_progress(
     all_jobs: Jobs,
     is_running: ValueProxy[bool],
     num_workers: int,
+    show_spinner: bool = True,
 ) -> None:
     """Updates progress report periodically for running tasks.
 
@@ -99,8 +100,9 @@ def _update_progress(
         num_workers (int): Indicates the number of workers performing the jobs.
     """
     # Using Halo library to show a loading spinner on console
-    spinner = Halo(text="", spinner="dots")
-    spinner.start()
+    if show_spinner:
+        spinner = Halo(text="", spinner="dots")
+        spinner.start()
 
     # The set of all job labels, and the set of completed jobs
     all_job_names: typing.Set[str] = {job["label"] for job in all_jobs}
@@ -132,7 +134,8 @@ def _update_progress(
         # Prepare progress report
         progress: str = f"{len(completed_jobs)}/{len(all_jobs)}"
         running_jobs_list = printable_set(running_jobs_set)
-        spinner.text = f"{label}: {progress}({num_workers}): {running_jobs_list}"
+        if show_spinner:
+            spinner.text = f"{label}: {progress}({num_workers}): {running_jobs_list}"
 
         # Update the tracked dataset for the next iteration
         last_running_jobs_set = running_jobs_set
@@ -140,7 +143,8 @@ def _update_progress(
         # Sleep to decrease frequency of updates and reduce CPU usage
         time.sleep(0.1)
 
-    spinner.stop()
+    if show_spinner:
+        spinner.stop()
 
 
 def _process_jobs(
@@ -149,7 +153,7 @@ def _process_jobs(
     in_out_job_run_metadatas: JobRunMetadatasByPhase,
     phase: PhaseName,
     jobs: Jobs,
-) -> None:
+) -> typing.Optional[BaseException]:
     """Execute each given job asynchronously.
 
     This is where the major real-world time savings happen, and it could be
@@ -158,6 +162,8 @@ def _process_jobs(
     TODO: this is where we do the scheduling, if we wanted to be smarter about
           it and, for instance, run the longest-running job first with quicker
           jobs completing around it, then we would work out that schedule here.
+
+    returns the exception if the any of sub-procs fails, None otherwise
     """
     max_num_concurrent_procs: int = (
         config_metadata.args.procs
@@ -171,6 +177,8 @@ def _process_jobs(
             f"{max_num_concurrent_procs} max) processing {len(jobs)} jobs"
         )
     )
+
+    subprocess_error: typing.Optional[BaseException] = None
 
     with multiprocessing.Manager() as manager:
         seen_jobs: ListProxy[str] = manager.list()
@@ -202,10 +210,14 @@ def _process_jobs(
                         repeat(file_lists),
                     ),
                 )
+        except BaseException as err:  # pylint: disable=broad-exception-caught
+            subprocess_error = err
         finally:
             # Signal the terminal_writer process to exit
             is_running.value = False
             terminal_writer_process.join()
+
+    return subprocess_error
 
 
 def _process_jobs_by_phase(
@@ -213,7 +225,7 @@ def _process_jobs_by_phase(
     file_lists: FilePathListLookup,
     filtered_jobs_by_phase: PhaseGroupedJobs,
     in_out_job_run_metadatas: JobRunMetadatasByPhase,
-) -> None:
+) -> typing.Optional[BaseException]:
     """Execute each job asynchronously, grouped by phase.
 
     Whilst it is conceptually useful to group jobs by 'phase', Phases are
@@ -225,6 +237,8 @@ def _process_jobs_by_phase(
     TODO: augment (NOT REPLACE) with dependency graph. New users and hacker
           dev-ops/SREs find phases useful and, more importantly, quick to
           implement.
+
+    returns the exception, if any thrown during run.
     """
     for phase in config_metadata.phases:
         jobs = filtered_jobs_by_phase[phase]
@@ -235,14 +249,21 @@ def _process_jobs_by_phase(
         if config_metadata.args.verbose:
             log(f"Running Phase {phase}")
 
-        _process_jobs(
+        failure_exception: typing.Optional[BaseException] = _process_jobs(
             config_metadata, file_lists, in_out_job_run_metadatas, phase, jobs
         )
+        if failure_exception is not None:
+            return failure_exception
+
+    # ALl phases completed aok.
+    return None
 
 
 def _main(
     argv: typing.List[str],
-) -> typing.Tuple[OrderedPhases, JobRunMetadatasByPhase]:
+) -> typing.Tuple[
+    OrderedPhases, JobRunMetadatasByPhase, typing.Optional[BaseException]
+]:
     start = timer()
 
     config_metadata: ConfigMetadata = _determine_run_parameters(argv)
@@ -270,7 +291,7 @@ def _main(
 
     start = timer()
 
-    _process_jobs_by_phase(
+    failure_exception: typing.Optional[BaseException] = _process_jobs_by_phase(
         config_metadata, file_lists, filtered_jobs_by_phase, job_run_metadatas
     )
 
@@ -280,7 +301,7 @@ def _main(
     phase_run_report: JobReturn = None
     phase_run_metadata: JobRunMetadata = (phase_run_timing, phase_run_report)
     job_run_metadatas["_app"].append(phase_run_metadata)
-    return config_metadata.phases, job_run_metadatas
+    return config_metadata.phases, job_run_metadatas, failure_exception
 
 
 def timed_main(argv: typing.List[str]) -> None:
@@ -292,7 +313,8 @@ def timed_main(argv: typing.List[str]) -> None:
     start = timer()
     phase_run_oder: OrderedPhases
     job_run_metadatas: JobRunMetadatasByPhase
-    phase_run_oder, job_run_metadatas = _main(argv)
+    failure_exception: typing.Optional[BaseException]
+    phase_run_oder, job_run_metadatas, failure_exception = _main(argv)
     end = timer()
     time_taken: timedelta = timedelta(seconds=end - start)
     time_saved = report_on_run(phase_run_oder, job_run_metadatas, time_taken)
@@ -302,6 +324,11 @@ def timed_main(argv: typing.List[str]) -> None:
             f"saving you {time_saved.total_seconds()}s"
         )
     )
+
+    if failure_exception is not None:
+        # we got a failure somewhere, now that we've reported the timings we
+        # re-raise.
+        raise failure_exception
 
 
 if __name__ == "__main__":
