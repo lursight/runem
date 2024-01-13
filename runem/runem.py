@@ -273,11 +273,12 @@ def _main(
 
     file_lists: FilePathListLookup = find_files(config_metadata)
     assert file_lists
-    log(f"found {len(file_lists)} batches, ", end="")
-    for tag in sorted(file_lists.keys()):
-        file_list = file_lists[tag]
-        log(f"{len(file_list)} '{tag}' files, ", decorate=False, end="")
-    log(decorate=False)  # new line
+    if config_metadata.args.verbose:
+        log(f"found {len(file_lists)} batches, ", end="")
+        for tag in sorted(file_lists.keys()):
+            file_list = file_lists[tag]
+            log(f"{len(file_list)} '{tag}' files, ", decorate=False, end="")
+        log(decorate=False)  # new line
 
     filtered_jobs_by_phase: PhaseGroupedJobs = filter_jobs(
         config_metadata=config_metadata,

@@ -1,3 +1,4 @@
+import re
 import typing
 from collections import defaultdict
 from datetime import timedelta
@@ -19,6 +20,26 @@ try:
     import termplotlib
 except ImportError:  # pragma: FIXME: add code coverage
     termplotlib = None
+
+
+def _align_bar_graphs_workaround(original_text: str) -> None:
+    """Module termplotlib doesn't align floats, this fixes that.
+
+    This makes it so we can align the point in the floating point string, without it,
+    larger numbers push their bars right, instead of at the same place.
+    """
+    # Find the maximum width between '[' and '.' characters
+    max_width = max(
+        int(match.end() - match.start() - 2)
+        for match in re.finditer(r"\[.*?(\d+)\.", original_text)
+    )
+
+    # Replace each line with aligned numbers
+    formatted_text = re.sub(
+        r"\[.*?(\d+)\.", lambda m: f"[{m.group(1):>{max_width}}.", original_text
+    )
+
+    print(formatted_text)
 
 
 def _plot_times(
@@ -60,7 +81,8 @@ def _plot_times(
             labels,
             force_ascii=False,
         )
-        fig.show()
+        # ensure the graphs get aligned nicely.
+        _align_bar_graphs_workaround(fig.get_string())
     else:  # pragma: FIXME: add code coverage
         for label, time in zip(labels, times):
             log(f"{label}: {time}s")

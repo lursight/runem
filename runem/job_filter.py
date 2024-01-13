@@ -63,7 +63,7 @@ def _get_jobs_matching(
         filtered_jobs[phase].append(job)
 
 
-def filter_jobs(
+def filter_jobs(  # noqa: C901
     config_metadata: ConfigMetadata,
 ) -> PhaseGroupedJobs:
     """Filters the jobs to match requested tags."""
@@ -73,24 +73,30 @@ def filter_jobs(
     tags_to_avoid: JobTags = config_metadata.tags_to_avoid
     jobs: PhaseGroupedJobs = config_metadata.jobs
     verbose: bool = config_metadata.args.verbose
-    if tags_to_run:
-        log(f"filtering for tags {printable_set(tags_to_run)}", decorate=True, end="")
-    if tags_to_avoid:
+    if verbose:
         if tags_to_run:
-            log(", ", decorate=False, end="")
-        else:
-            log(decorate=True, end="")
-        log(
-            f"excluding jobs with tags {printable_set(tags_to_avoid)}",
-            decorate=False,
-            end="",
-        )
-    if tags_to_run or tags_to_avoid:
-        log(decorate=False)
+            log(
+                f"filtering for tags {printable_set(tags_to_run)}",
+                decorate=True,
+                end="",
+            )
+        if tags_to_avoid:
+            if tags_to_run:
+                log(", ", decorate=False, end="")
+            else:
+                log(decorate=True, end="")
+            log(
+                f"excluding jobs with tags {printable_set(tags_to_avoid)}",
+                decorate=False,
+                end="",
+            )
+        if tags_to_run or tags_to_avoid:
+            log(decorate=False)
     filtered_jobs: PhaseGroupedJobs = defaultdict(list)
     for phase in config_metadata.phases:
         if phase not in phases_to_run:
-            log(f"skipping phase '{phase}'")
+            if verbose:
+                log(f"skipping phase '{phase}'")
             continue
         _get_jobs_matching(
             phase=phase,
@@ -102,11 +108,13 @@ def filter_jobs(
             verbose=verbose,
         )
         if len(filtered_jobs[phase]) == 0:
-            log(f"No jobs for phase '{phase}' tags {printable_set(tags_to_run)}")
+            if verbose:
+                log(f"No jobs for phase '{phase}' tags {printable_set(tags_to_run)}")
             continue
 
-        log((f"will run {len(filtered_jobs[phase])} jobs for phase '{phase}'"))
-        job_names: JobNames = {job["label"] for job in filtered_jobs[phase]}
-        log(f"\t{printable_set(job_names)}")
+        if verbose:
+            log((f"will run {len(filtered_jobs[phase])} jobs for phase '{phase}'"))
+            job_names: JobNames = {job["label"] for job in filtered_jobs[phase]}
+            log(f"\t{printable_set(job_names)}")
 
     return filtered_jobs
