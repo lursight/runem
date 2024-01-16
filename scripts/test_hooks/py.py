@@ -187,10 +187,7 @@ def _job_py_pytest(  # noqa: C901 # pylint: disable=too-many-branches,too-many-s
     ]
 
     # use sqlite for unit-tests
-    env_overrides: typing.Dict[str, str] = {
-        "LURSIGHT_DB_SCHEMA": "sqlite",
-        "PYTHONPATH": str(root_path / "python"),
-    }
+    env_overrides: typing.Dict[str, str] = {}
 
     kwargs["label"] = f"{label} pytest"
     run_command(
