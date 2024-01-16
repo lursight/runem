@@ -35,7 +35,8 @@
     "mypy", // python module
     "negatise", //made up word for args utils
     "prettifier", // npm module for auto-formatting code
-    "procs", // runem switch for managing the number of proccesses we want to run
+    "procs", // runem switch for managing the number of processes we want to run
+    "psutil", // module for getting system resources
     "pylint", // python module
     "pypi", // the python package index
     "pytest", // the python module for testing

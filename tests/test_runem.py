@@ -1448,7 +1448,7 @@ def test_process_jobs_early_exits_with_exceptions(
     )
 
     config_metadata.set_cli_data(
-        args=Namespace(verbose=True, procs=1),
+        args=Namespace(verbose=True, procs=1, do_resource_profiling=False),
         jobs_to_run=set(all_job_names),  # JobNames,
         phases_to_run=set(all_phase_names),  # JobPhases,
         tags_to_run=set(),  # ignored JobTags,

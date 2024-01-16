@@ -6,6 +6,7 @@ import typing
 
 from runem.config_metadata import ConfigMetadata
 from runem.log import log
+from runem.resources_monitor import SamplesFile
 from runem.types import JobNames, OptionConfig, Options
 from runem.utils import printable_set
 
@@ -21,6 +22,17 @@ def parse_args(
     Returns the parsed args, the jobs_names_to_run, job_phases_to_run, job_tags_to_run
     """
     parser = argparse.ArgumentParser(description="Runs the Lursight Lang test-suite")
+
+    parser.add_argument(
+        "--profile-jobs",
+        dest="do_resource_profiling",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        required=False,
+        help=(
+            f"Turns on job resource-use profiling, writes a log to {str(SamplesFile)}"
+        ),
+    )
 
     job_group = parser.add_argument_group("jobs")
     all_job_names: JobNames = set(name for name in config_metadata.all_job_names)

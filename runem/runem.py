@@ -43,6 +43,7 @@ from runem.job_execute import job_execute
 from runem.job_filter import filter_jobs
 from runem.log import log
 from runem.report import report_on_run
+from runem.resources_monitor import monitor_resources
 from runem.types import (
     Config,
     FilePathListLookup,
@@ -160,6 +161,10 @@ def _process_jobs(
     This is where the major real-world time savings happen, and it could be
     better, much, much better.
 
+    If `do_resource_profiling` is set on teh args we run in
+    single-worker-per-job mode and run another sub-process to monitor the CPU
+    and Memory usage, via sampling.
+
     TODO: this is where we do the scheduling, if we wanted to be smarter about
           it and, for instance, run the longest-running job first with quicker
           jobs completing around it, then we would work out that schedule here.
@@ -178,8 +183,10 @@ def _process_jobs(
             f"{max_num_concurrent_procs} max) processing {len(jobs)} jobs"
         )
     )
+    sample_frequency: float = 0.1  # sample frequency for resource monitoring.
 
     subprocess_error: typing.Optional[BaseException] = None
+    resource_monitor_process: typing.Optional[multiprocessing.Process] = None
 
     with multiprocessing.Manager() as manager:
         seen_jobs: ListProxy[str] = manager.list()
@@ -199,6 +206,17 @@ def _process_jobs(
         )
         terminal_writer_process.start()
 
+        if config_metadata.args.do_resource_profiling:
+            resource_monitor_process = multiprocessing.Process(
+                target=monitor_resources,
+                args=(
+                    sample_frequency,
+                    running_jobs,
+                    is_running,
+                ),
+            )
+            resource_monitor_process.start()
+
         try:
             with multiprocessing.Pool(processes=num_concurrent_procs) as pool:
                 # use starmap so we can pass down the job-configs and the args and the files
@@ -217,6 +235,9 @@ def _process_jobs(
             # Signal the terminal_writer process to exit
             is_running.value = False
             terminal_writer_process.join()
+            if config_metadata.args.do_resource_profiling:
+                # wait for the resource monitor to close too
+                resource_monitor_process.join()
 
     return subprocess_error
 
@@ -251,7 +272,11 @@ def _process_jobs_by_phase(
             log(f"Running Phase {phase}")
 
         failure_exception: typing.Optional[BaseException] = _process_jobs(
-            config_metadata, file_lists, in_out_job_run_metadatas, phase, jobs
+            config_metadata,
+            file_lists,
+            in_out_job_run_metadatas,
+            phase,
+            jobs,
         )
         if failure_exception is not None:
             if config_metadata.args.verbose:
@@ -296,7 +321,10 @@ def _main(
     start = timer()
 
     failure_exception: typing.Optional[BaseException] = _process_jobs_by_phase(
-        config_metadata, file_lists, filtered_jobs_by_phase, job_run_metadatas
+        config_metadata,
+        file_lists,
+        filtered_jobs_by_phase,
+        job_run_metadatas,
     )
 
     end = timer()

@@ -1,5 +1,6 @@
 runem: WARNING: no phase found for 'echo "hello world!"', using 'dummy phase 1'
-usage: __main__.py [-h] [--jobs JOBS [JOBS ...]]
+usage: __main__.py [-h] [--profile-jobs | --no-profile-jobs]
+                   [--jobs JOBS [JOBS ...]]
                    [--not-jobs JOBS_EXCLUDED [JOBS_EXCLUDED ...]]
                    [--phases PHASES [PHASES ...]]
                    [--not-phases PHASES_EXCLUDED [PHASES_EXCLUDED ...]]
@@ -16,6 +17,9 @@ Runs the Lursight Lang test-suite
 
 [TEST_REPLACED_OPTION_HEADER]
   -h, --help            show this help message and exit
+  --profile-jobs, --no-profile-jobs
+                        Turns on job resource-use profiling, writes a log to
+                        .runem.samples (default: False)
   --call-graphs, --no-call-graphs
   --procs PROCS, -j PROCS
                         the number of concurrent test jobs to run, -1 runs all
