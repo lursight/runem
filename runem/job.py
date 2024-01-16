@@ -1,12 +1,6 @@
 import typing
 
-from runem.types import (
-    UNTAGGED_TAG,
-    FilePathList,
-    FilePathListLookup,
-    JobConfig,
-    JobTags,
-)
+from runem.types import FilePathList, FilePathListLookup, JobConfig, JobTags, JobWhen
 
 
 class NoJobName(ValueError):
@@ -34,8 +28,14 @@ class Job:
         if "when" not in job or "tags" not in job["when"]:
             # handle the special case where we have No tags
             return None
-        job_tags: JobTags = set(job.get("when", {}).get("tags", [UNTAGGED_TAG]))
-        return job_tags
+        when: JobWhen = job.get("when", {})
+        try:
+            job_tags: JobTags = when["tags"]
+        except KeyError:
+            # no tags, return None
+            return None
+        # have valid tags, coerce them to be a set-type and return
+        return set(job_tags)
 
     @staticmethod
     def get_job_files(

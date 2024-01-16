@@ -100,7 +100,7 @@ class JobContextConfig(typing.TypedDict, total=False):
     cwd: typing.Optional[typing.Union[str, typing.List[str]]]
 
 
-class JobWhen(typing.TypedDict):
+class JobWhen(typing.TypedDict, total=False):
     """Configures WHEN to call the callable i.e. priority."""
 
     tags: JobTags  # the job tags - used for filtering job-types
@@ -186,5 +186,3 @@ class JobSerialisedConfig(typing.TypedDict):
 ConfigNodes = typing.Union[GlobalSerialisedConfig, JobSerialisedConfig]
 # The config format as it is serialised to/from disk
 Config = typing.List[ConfigNodes]
-
-UNTAGGED_TAG: JobTag = "no_tag"

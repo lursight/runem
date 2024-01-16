@@ -489,12 +489,12 @@ def test_parse_job_with_tags(mock_get_job_wrapper: Mock) -> None:
     """Test case where job_tags is not empty."""
     cfg_filepath = pathlib.Path(__file__)
     job_config: JobConfig = {
-        "label": "Job1",  # a
-        "when": {  # type: ignore[typeddict-item]
-            "tags": [
-                "tag1",  # t1
+        "label": "Job1",
+        "when": {
+            "tags": {
+                "tag1",
                 "tag2",
-            ]
+            }
         },
     }
     in_out_tags: JobTags = set()
@@ -533,8 +533,8 @@ def test_parse_job_without_tags(mock_get_job_wrapper: Mock) -> None:
     cfg_filepath = pathlib.Path(__file__)
     job_config: JobConfig = {
         "label": "Job2",
-        "when": {  # type: ignore[typeddict-item]
-            "phase": "phase1",  # phase
+        "when": {
+            "phase": "phase1",
         },
     }
     in_out_tags: JobTags = set()

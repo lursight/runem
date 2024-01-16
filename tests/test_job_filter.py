@@ -84,11 +84,11 @@ def test_should_filter_out_by_tags_with_tags_to_avoid(verbosity: bool) -> None:
     """Test case where has_tags_to_avoid is not empty."""
     job: JobConfig = {
         "label": "Job1",
-        "when": {  # type: ignore[typeddict-item]
-            "tags": [
-                "tag1",  # dummy tag
-                "tag2",  # dummy tag
-            ]
+        "when": {
+            "tags": {
+                "tag1",
+                "tag2",
+            }
         },
     }
     tags: JobTags = {"tag1"}
@@ -120,11 +120,11 @@ def test_should_filter_out_by_tags_without_tags_to_avoid(verbosity: bool) -> Non
     """Test case where has_tags_to_avoid is empty."""
     job: JobConfig = {
         "label": "Job1",
-        "when": {  # type: ignore[typeddict-item]
-            "tags": [
-                "tag3",  # dummy tag
-                "tag4",  # dummy tag
-            ]
+        "when": {
+            "tags": {
+                "tag3",
+                "tag4",
+            }
         },
     }
     tags: JobTags = {"tag3"}
