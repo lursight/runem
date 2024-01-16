@@ -142,10 +142,7 @@
       tags:
         - json
 - job:
-    addr:
-      file: scripts/test_hooks/yarn.py
-      function: _job_spellcheck
-    label: spell check
+    command: yarn run spellCheck
     when:
       phase: analysis
       tags:
@@ -160,3 +157,5 @@
       tags:
         - json
         - format
+- job:
+    command: ls -alh runem

@@ -4,13 +4,6 @@ from runem.run_command import run_command
 from runem.types import Options
 
 
-def _job_spellcheck(
-    **kwargs: typing.Any,
-) -> None:
-    es_spellcheck = ["yarn", "run", "spellCheck"]
-    run_command(cmd=es_spellcheck, **kwargs)
-
-
 def _job_prettier(
     **kwargs: typing.Any,
 ) -> None:

@@ -100,7 +100,7 @@ class JobContextConfig(typing.TypedDict, total=False):
     cwd: typing.Optional[typing.Union[str, typing.List[str]]]
 
 
-class JobWhen(typing.TypedDict):
+class JobWhen(typing.TypedDict, total=False):
     """Configures WHEN to call the callable i.e. priority."""
 
     tags: JobTags  # the job tags - used for filtering job-types
@@ -111,10 +111,13 @@ class JobConfig(typing.TypedDict, total=False):
     """A dict that defines a job to be run.
 
     It consists of the label, address, context and filter information
+
+    TODO: make a class variant of this
     """
 
     label: JobName  # the name of the job
     addr: JobAddressConfig  # which callable to call
+    command: str  # a one-liner command to be run
     ctx: typing.Optional[JobContextConfig]  # how to call the callable
     when: JobWhen  # when to call the job
 

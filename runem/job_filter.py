@@ -2,6 +2,7 @@ import typing
 from collections import defaultdict
 
 from runem.config_metadata import ConfigMetadata
+from runem.job import Job
 from runem.log import log
 from runem.types import (
     JobConfig,
@@ -12,6 +13,47 @@ from runem.types import (
     PhaseName,
 )
 from runem.utils import printable_set
+
+
+def _should_filter_out_by_tags(
+    job: JobConfig,
+    tags: JobTags,
+    tags_to_avoid: JobTags,
+    verbose: bool,
+) -> bool:
+    job_tags: typing.Optional[JobTags] = Job.get_job_tags(job)
+    opted_into_tag_filtering: bool = job_tags is not None
+    if not opted_into_tag_filtering:
+        # TODO: should we also consider 'empty' tags and being opted out of
+        #       tag-filtering?
+        return False
+
+    # the config for the command has tags, use them
+    assert job_tags is not None  # for mypy
+    matching_tags = job_tags.intersection(tags)
+    if not matching_tags:
+        if verbose:
+            log(
+                (
+                    f"not running job '{job['label']}' because it doesn't have "
+                    f"any of the following tags: {printable_set(tags)}"
+                )
+            )
+        return True  # filter-out this job
+
+    has_tags_to_avoid = job_tags.intersection(tags_to_avoid)
+    if has_tags_to_avoid:
+        if verbose:
+            log(
+                (
+                    f"not running job '{job['label']}' because it contains the "
+                    f"following tags: {printable_set(has_tags_to_avoid)}"
+                )
+            )
+        return True  # filter-out this job
+
+    # no filter criteria met, filter-in the job i.e. run the job
+    return False
 
 
 def _get_jobs_matching(
@@ -27,35 +69,16 @@ def _get_jobs_matching(
 
     job: JobConfig
     for job in phase_jobs:
-        job_tags = set(job["when"]["tags"])
-        matching_tags = job_tags.intersection(tags)
-        if not matching_tags:
-            if verbose:
-                log(
-                    (
-                        f"not running job '{job['label']}' because it doesn't have "
-                        f"any of the following tags: {printable_set(tags)}"
-                    )
-                )
+        if _should_filter_out_by_tags(job, tags, tags_to_avoid, verbose):
             continue
 
-        if job["label"] not in job_names:
+        job_name: str = Job.get_job_name(job)
+        if job_name not in job_names:
             if verbose:
                 log(
                     (
-                        f"not running job '{job['label']}' because it isn't in the "
+                        f"not running job '{job_name}' because it isn't in the "
                         f"list of job names. See --jobs and --not-jobs"
-                    )
-                )
-            continue
-
-        has_tags_to_avoid = job_tags.intersection(tags_to_avoid)
-        if has_tags_to_avoid:
-            if verbose:
-                log(
-                    (
-                        f"not running job '{job['label']}' because it contains the "
-                        f"following tags: {printable_set(has_tags_to_avoid)}"
                     )
                 )
             continue
@@ -114,7 +137,9 @@ def filter_jobs(  # noqa: C901
 
         if verbose:
             log((f"will run {len(filtered_jobs[phase])} jobs for phase '{phase}'"))
-            job_names: JobNames = {job["label"] for job in filtered_jobs[phase]}
+            job_names: JobNames = {
+                Job.get_job_name(job) for job in filtered_jobs[phase]
+            }
             log(f"\t{printable_set(job_names)}")
 
     return filtered_jobs

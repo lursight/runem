@@ -4,7 +4,10 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from runem.job_wrapper_python import _load_python_function_from_module, get_job_wrapper
+from runem.job_wrapper_python import (
+    _load_python_function_from_module,
+    get_job_wrapper_py_func,
+)
 from runem.types import FunctionNotFound, JobConfig, JobFunction
 
 
@@ -34,7 +37,9 @@ def test_get_job_function(tmp_path: pathlib.Path) -> None:
             ),
         },
     }
-    loaded_func: JobFunction = get_job_wrapper(job_config, tmp_path / ".runem.yml")
+    loaded_func: JobFunction = get_job_wrapper_py_func(
+        job_config, tmp_path / ".runem.yml"
+    )
     assert loaded_func is not None
     assert loaded_func.__name__ == "test_get_job_function"
 
@@ -68,7 +73,7 @@ def test_get_job_function_handles_missing_function(tmp_path: pathlib.Path) -> No
 
     with pytest.raises(FunctionNotFound):
         # this should throw an exception
-        get_job_wrapper(job_config, tmp_path / ".runem.yml")
+        get_job_wrapper_py_func(job_config, tmp_path / ".runem.yml")
 
 
 def test_get_job_function_handles_missing_module(tmp_path: pathlib.Path) -> None:
@@ -99,7 +104,7 @@ def test_get_job_function_handles_missing_module(tmp_path: pathlib.Path) -> None
 
     with pytest.raises(FunctionNotFound):
         # this should throw an exception
-        get_job_wrapper(job_config, tmp_path / ".runem.yml")
+        get_job_wrapper_py_func(job_config, tmp_path / ".runem.yml")
 
 
 @patch(
