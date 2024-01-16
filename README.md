@@ -31,6 +31,17 @@ The name "runem" is derived from the fusion of "run" and "them," encapsulating t
   - [8. Configuration](#8-configuration)
     - [8.1. `config` - Run 'em global config](#81-config---run-em-global-config)
     - [8.2. `job` - Job config](#82-job---job-config)
+  - [9. Troubleshooting \& Known issues](#9-troubleshooting--known-issues)
+    - [9.1 I don't see bar graph timing reports!](#91-i-dont-see-bar-graph-timing-reports)
+      - [Solution:](#solution)
+    - [9.2 I can't specify a dependency!](#92-i-cant-specify-a-dependency)
+      - [Solution](#solution-1)
+    - [9.3 Why is there so much output on errors, it looks duplicated?](#93-why-is-there-so-much-output-on-errors-it-looks-duplicated)
+      - [Solution](#solution-2)
+    - [9.4 I can't see reports for job when errors happen!](#94-i-cant-see-reports-for-job-when-errors-happen)
+      - [Solution](#solution-3)
+    - [9.5 I want to see log output for tasks in real-time, as they're happening!](#95-i-want-to-see-log-output-for-tasks-in-real-time-as-theyre-happening)
+      - [Solution](#solution-4)
 - [Contributing to and supporting runem](#contributing-to-and-supporting-runem)
   - [Development](#development)
   - [Sponsor](#sponsor)
@@ -547,6 +558,37 @@ Configuration is Yaml and consists of two main configurations, `config` and `job
             - subproject4
             - pretty
 
+## 9. Troubleshooting & Known issues
+
+### 9.1 I don't see bar graph timing reports!
+We don't specify it in the output to reduce dependency installation for ci/cd. We may change this decision, especially as `halo` is a first-order dependency now.
+
+#### Solution:
+install `termplotlib`, 
+
+### 9.2 I can't specify a dependency!
+Outside of `phases` we don't support direct dependency-chaining between tasks. We would like to do this at some point. PRs gladly accepted for this.
+
+#### Solution
+Use `phases` instead, or contribute a PR.
+
+### 9.3 Why is there so much output on errors, it looks duplicated?
+We haven't looked at how we manage exception-handling with the python `multiprocessing` library, yet. Errors in `multiprocessing` procs tend to be re-reported in the calling process. PRs welcome.
+
+#### Solution
+Just look at one of the outputs.
+
+### 9.4 I can't see reports for job when errors happen!
+We try to show reports for completed tasks. If the task you're interested in doesn't show it probably hasn't been executed yet. Otherwise scroll up and you should see the reports and timings of *completed* tasks, if not, you may need to increase your buffer size.
+
+#### Solution
+If you are focusing on one task and are only interested in how that task is performing/operating, use one of the many filtering options e.g. `--jobs "your job name" "another job name"`.
+
+### 9.5 I want to see log output for tasks in real-time, as they're happening!
+We don't stream stdout/stderr direct to console, or provide functionality for doing so, yet. Yes it would be a nice feature and we welcome PRs for it.
+
+#### Solution
+On failure and with `--verbose` mode, the exact command is logged to console along with the environment that job was run in. You can copy/paste that command line to a terminal and run the command manually. The stdout/stderr will then be as you would get for that command. Refer to the documentation for that command.
 
 ---
 # Contributing to and supporting runem
