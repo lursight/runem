@@ -24,6 +24,7 @@
     "fixup", // used alot to denot fixing an issue
     "funcs", // convenience for functions
     "getfixturevalue", // pytest
+    "inplace", // switch for doc-formatter
     "isort", // python module
     "kwargs", // key-word args shorthand
     "linters", // collection of linting tools

@@ -2,34 +2,43 @@
 
 ## 1. Overview
 
-`runem` (run 'em) is a utility designed to optimise the process of running developer jobs concurrently.
+`runem` (run 'em) is a declarative tools designed to optimise the running of developer jobs concurrently.
 
-Job definitions are declarative and simple and the reports show how long each job took. 
+`runem` is designed to be simple to use and easy to learn, but powerful to use.
 
-The name "runem" is derived from the fusion of "run" and "them," encapsulating the essence of executing tasks seamlessly.
+Job definitions are declarative and simple and the reports show how long each job took, and how much time `runem` saved you.
+
+The name "runem" is derived from the fusion of "run" and "them," encapsulating the essence of executing tasks quickly.
 
 - [Run 'em: Run your developer-local tasks faster](#run-em-run-your-developer-local-tasks-faster)
   - [1. Overview](#1-overview)
   - [2. Features](#2-features)
   - [3. Installation](#3-installation)
-  - [4. Basic Usage](#4-basic-usage)
-    - [4.1. Tag filters](#41-tag-filters)
-      - [4.1.1. Run jobs only with the 'lint' tag:](#411-run-jobs-only-with-the-lint-tag)
-      - [4.1.2. If you want to lint all code _except_ nodejs code (and you have the appropriate tags):](#412-if-you-want-to-lint-all-code-except-nodejs-code-and-you-have-the-appropriate-tags)
-      - [4.1.3. Run fast checks on `pre-commit`](#413-run-fast-checks-on-pre-commit)
-    - [4.2. phase filters](#42-phase-filters)
-      - [4.2.1 Focus on a phase](#421-focus-on-a-phase)
-      - [4.2.2 Exclude slow phases temporarily](#422-exclude-slow-phases-temporarily)
-  - [5. Using Help to get an Overview of Your Jobs](#5-using-help-to-get-an-overview-of-your-jobs)
-  - [6. Configuration](#6-configuration)
-    - [6.1. `config` - Run 'em global config](#61-config---run-em-global-config)
-    - [6.2. `job` - Job config](#62-job---job-config)
+  - [4 Quick start](#4-quick-start)
+  - [4.1 A more complete Quick start](#41-a-more-complete-quick-start)
+  - [5. Basic Usage](#5-basic-usage)
+    - [5.1. Tag filters](#51-tag-filters)
+      - [5.1.1. Run jobs only with the 'lint' tag:](#511-run-jobs-only-with-the-lint-tag)
+      - [5.1.2. If you want to lint all code _except_ nodejs code (and you have the appropriate tags):](#512-if-you-want-to-lint-all-code-except-nodejs-code-and-you-have-the-appropriate-tags)
+      - [5.1.3. Run fast checks on `pre-commit`](#513-run-fast-checks-on-pre-commit)
+    - [5.2. phase filters](#52-phase-filters)
+      - [5.2.1 Focus on a phase](#521-focus-on-a-phase)
+      - [5.2.2 Exclude slow phases temporarily](#522-exclude-slow-phases-temporarily)
+  - [6 Reports on your tasks](#6-reports-on-your-tasks)
+    - [6.1 Task timings report](#61-task-timings-report)
+    - [6.2 Bar-graphs with \`termplotlib\`\`](#62-bar-graphs-with-termplotlib)
+  - [7. Using Help to get an Overview of Your Jobs](#7-using-help-to-get-an-overview-of-your-jobs)
+  - [8. Configuration](#8-configuration)
+    - [8.1. `config` - Run 'em global config](#81-config---run-em-global-config)
+    - [8.2. `job` - Job config](#82-job---job-config)
 - [Contributing to and supporting runem](#contributing-to-and-supporting-runem)
   - [Development](#development)
   - [Sponsor](#sponsor)
 
 
 ## 2. Features
+
+- **Declarative Tasks** Describe all your tasks once, and optionally describe how and when to run them.
 
 - **Tagged Jobs:** Use tagging to define which type of jobs you want to run, be it `pre-commit`, `lint`, `test` or in multi-project codebases to split between running `python`, `node.js` or `c++` jobs, depending on the context you are working in!
 
@@ -43,7 +52,177 @@ The name "runem" is derived from the fusion of "run" and "them," encapsulating t
 pip install runem
 ```
 
-## 4. Basic Usage
+## 4 Quick start
+
+Create the following `.runem.yml` file at the root of your project:
+
+```yml
+- job:
+    command: echo "hello world!"
+```
+
+Then anywhere in your project run, to see how and when that task is run, and how long it took.
+```sh
+runem
+
+# Or, to see "hello world!", use --verbose
+runem --verbose  # add --verbose to see the actual output
+```
+
+To see how you can control your job use
+```sh
+runem --help
+```
+
+## 4.1 A more complete Quick start
+
+Here's a simple setup for a python project.
+
+Notice that this specifies:
+-  The `phases` to use, and their order:
+   - This shows how we can control tasks that edit the files can go before analysis 
+   - This reduces any false-negatives the jobs may generate from running multiple jobs that may contend for write-access on the same files
+   - NOTE: `phases` are an early-stage way:
+     - To implement dependency chaining
+       - There is no dependency linking between jobs, yet.
+     - To manage resources
+       - For example, if you have a task which is threaded and/or memory heavy, you may want to put that into its own phase to get faster output.
+- `tags` to allow control over which jobs to run.
+  - Also which files to pass to jobs.
+- File-filters to detect which files the job operate on.
+  - NOTE: this is a WIP feature
+- Uses job-options:
+   - Allowing a python-function-job to control it's sub-task/processes.
+-  If you use `--help` you will see a summary of all controls available.
+
+```yml
+- config:
+    phases:
+      - edit
+      - analysis
+    files:
+      - filter:
+          tag: py
+          regex: ".*\\.py$"
+    options:
+      - option:
+          name: black
+          default: true
+          type: bool
+          desc: allow/disallows py-black from running
+      - option:
+          name: docformatter
+          default: true
+          type: bool
+          desc: formats docs and comments in whatever job can do so
+      - option:
+          name: check_only
+          alias: check
+          default: false
+          type: bool
+          desc: runs in check-mode, erroring if isort, black or any text-edits would occur
+- job:
+    command: pytest tests/
+    when:
+      phase: analysis
+      tags:
+        - py
+- job:
+    command: mypy my_project/ tests/
+    when:
+      phase: analysis
+      tags:
+        - py
+- job:
+    addr:
+      file: runem_hooks/py.py
+      function: _job_py_code_reformat
+    label: reformat py
+    when:
+      phase: edit
+      tags:
+        - py
+        - format
+        - py format
+```
+
+The following python file accompanies the above configuration and does slightly more advanced work. The file contains:
+- a single job.
+- the job linearises edit tasks that would otherwise contend for write-access to the files they operate on.
+  - formatting and doc-generation both edit files, conforming them to the coding standard.
+- uses `options` (see the config section) to control whether to:
+  - use `check-only` mode for CiCd, modifying the command-line switched passed down to the sub-commands.
+  - control whether `python-black` and/or/nor `docformatter` is run.
+- modifies the allowed-exit codes for `docformatter` to be `0` or `3`, matching the designed behaviour of that tool.
+
+```py
+# runem_hooks/py.py
+# A file to do more advanced and conditional checking using the `runem` infrastructure.
+import typing
+
+from runem.log import log
+from runem.run_command import RunCommandUnhandledError, run_command
+from runem.types import FilePathList, JobName, JobReturnData, Options
+
+
+def _job_py_code_reformat(
+    **kwargs: typing.Any,
+) -> None:
+    """Runs python formatting code in serial order as one influences the other."""
+    label: JobName = kwargs["label"]
+    options: Options = kwargs["options"]
+    python_files: FilePathList = kwargs["file_list"]
+
+    # put into 'check' mode if requested on the command line
+    extra_args = []
+    docformatter_extra_args = [
+        "--in-place",
+    ]
+    if "check_only" in options and options["check_only"]:
+        extra_args.append("--check")
+        docformatter_extra_args = []  # --inplace is not compatible with --check
+
+    if "black" in options and options["black"]:
+        black_cmd = [
+            "python3",
+            "-m",
+            "black",
+            *extra_args,
+            *python_files,
+        ]
+        kwargs["label"] = f"{label} black"
+        run_command(cmd=black_cmd, **kwargs)
+
+    if "docformatter" in options and options["docformatter"]:
+        docformatter_cmd = [
+            "python3",
+            "-m",
+            "docformatter",
+            "--wrap-summaries",
+            "88",
+            "--wrap-descriptions",
+            "88",
+            *docformatter_extra_args,
+            *extra_args,
+            *python_files,
+        ]
+        allowed_exits: typing.Tuple[int, ...] = (
+            0,  # no work/change required
+            3,  # no errors, but code was reformatted
+        )
+        if "check_only" in options and options["check_only"]:
+            # in check it is ONLY ok if no work/change was required
+            allowed_exits = (0,)
+        kwargs["label"] = f"{label} docformatter"
+        run_command(
+            cmd=docformatter_cmd,
+            ignore_fails=False,
+            valid_exit_ids=allowed_exits,
+            **kwargs,
+        )
+```
+
+## 5. Basic Usage
 
 ```bash
 $ runem [--tags tag1,tag2,tag3] [--not-tags tag1,tag2,tag3] \
@@ -55,7 +234,7 @@ $ python -m runem [--tags tag1,tag2,tag3] [--not-tags tag1,tag2,tag3] \
                   [--MY-OPTION] [--not-MY-OPTION] 
 ```
 
-### 4.1. Tag filters
+### 5.1. Tag filters
 Jobs are tagged in the .runem.yml config file. Each unique tags is made available on the command-line. To see which tags are available use `--help`. To add a new tag extend the `tags` field in the `job` config.
 
 You can control which types of jobs to run via tags. Just tag the job in the config and then from the command-line you can add `--tags` or `--not-tags` to refine exactly which jobs will be run. 
@@ -72,19 +251,19 @@ runem --tags python
 
 `--not-tags` are subtractive filter out, that is any job with these tags are not run, even if they have tags set via the `--tags` switch. Meaning you can choose to run `python` tagged job but not run the `lint` jobs with `--tags python --not-tags lint`, and so on.
 
-#### 4.1.1. Run jobs only with the 'lint' tag:
+#### 5.1.1. Run jobs only with the 'lint' tag:
 
 ```bash
 runem --tags lint
 ```
 
-#### 4.1.2. If you want to lint all code _except_ nodejs code (and you have the appropriate tags):
+#### 5.1.2. If you want to lint all code _except_ nodejs code (and you have the appropriate tags):
 
 ```bash
 runem --tags lint --not-tags deprecated
 ```
 
-#### 4.1.3. Run fast checks on `pre-commit`
+#### 5.1.3. Run fast checks on `pre-commit`
 
 If you have fast jobs that tagged as appropriate for pre-commit hooks.
 
@@ -97,11 +276,11 @@ echo "runem --tags pre-commit" > scripts/git-hooks/pre-commit
 #	  hooksPath = ./scripts/git-hooks/husky/
 ```
 
-### 4.2. phase filters
+### 5.2. phase filters
 
 Sometimes just want to run a specific phase, so you can focus on it and iterate quickly, within that context. 
 
-#### 4.2.1 Focus on a phase
+#### 5.2.1 Focus on a phase
 
 For example, if you have a `reformat` phase, you might want to run just `reformat` jobs phase whilst preparing a commit and are just preparing cosmetic changes e.g. updating comments, syntax, or docs.
 
@@ -109,7 +288,7 @@ For example, if you have a `reformat` phase, you might want to run just `reforma
 runem --phase reformat
 ```
 
-#### 4.2.2 Exclude slow phases temporarily
+#### 5.2.2 Exclude slow phases temporarily
 
 If you have 4 stages `bootstrap`, `pre-run`, `reformat`, `test` and `verify` phase, and are tightly iterating and focusing on the 'test-coverage' aspect of the test-phase, then you do not care about formatting as long as you can see your coverage results ASAP. However if your test-coverage starts passing then you will care about subsequent stages, so you can exclude the slower reformat-stage with the following and everything else will run.
 
@@ -119,8 +298,74 @@ runem --not-phase pre-run reformat
 
 **Note:** The `--tags` and `--not-tags` options can be used in combination to further refine task execution based on your requirements.
 
+## 6 Reports on your tasks
 
-## 5. Using Help to get an Overview of Your Jobs
+Runem has a built-in support for reporting on tasks
+
+### 6.1 Task timings report
+
+Runem will run the task and report how long the task took and whether it saved you any time, for example:
+
+```text
+# output from runem when run on runem's project, without `termplotlib`
+runem: Running 'pre-run' with 2 workers (of 8 max) processing 2 jobs
+runem: Running 'edit' with 1 workers (of 8 max) processing 1 jobs
+runem: Running 'analysis' with 7 workers (of 8 max) processing 7 jobs
+runem: reports:
+runem: runem: 8.820488s
+runem: ├runem.pre-build: 0.019031s
+runem: ├runem.run-phases: 8.801317s
+runem: ├pre-run (total): 0.00498s
+runem: │├pre-run.install python requirements: 2.6e-05s
+runem: │├pre-run.ls -alh runem: 0.004954s
+runem: ├edit (total): 0.557559s
+runem: │├edit.reformat py: 0.557559s
+runem: ├analysis (total): 21.526145s
+runem: │├analysis.pylint py: 7.457029s
+runem: │├analysis.flake8 py: 0.693754s
+runem: │├analysis.mypy py: 1.071956s
+runem: │├analysis.pytest: 6.780303s
+runem: │├analysis.json validate: 0.035359s
+runem: │├analysis.yarn run spellCheck: 4.482992s
+runem: │├analysis.prettier: 1.004752s
+runem: report: coverage html: ./reports/coverage_python/index.html
+runem: report: coverage cobertura: ./reports/coverage_python/cobertura.xml
+runem: DONE: runem took: 8.820488s, saving you 13.268196s
+```
+
+### 6.2 Bar-graphs with `termplotlib``
+
+If you have `termplotlib` installed you will see
+
+```text
+runem: Running 'pre-run' with 2 workers (of 8 max) processing 2 jobs
+runem: Running 'edit' with 1 workers (of 8 max) processing 1 jobs
+runem: Running 'analysis' with 7 workers (of 8 max) processing 7 jobs
+runem: reports:
+runem                                  [14.174612]  ███████████████▋
+├runem.pre-build                       [ 0.025858]
+├runem.run-phases                      [14.148587]  ███████████████▋
+├pre-run (total)                       [ 0.005825]
+│├pre-run.install python requirements  [ 0.000028]
+│├pre-run.ls -alh runem                [ 0.005797]
+├edit (total)                          [ 0.579153]  ▋
+│├edit.reformat py                     [ 0.579153]  ▋
+├analysis (total)                      [36.231034]  ████████████████████████████████████████
+│├analysis.pylint py                   [12.738303]  ██████████████▏
+│├analysis.flake8 py                   [ 0.798575]  ▉
+│├analysis.mypy py                     [ 0.335984]  ▍
+│├analysis.pytest                      [11.996717]  █████████████▎
+│├analysis.json validate               [ 0.050847]
+│├analysis.yarn run spellCheck         [ 8.809372]  █████████▊
+│├analysis.prettier                    [ 1.501236]  █▋
+runem: report: coverage html: ./reports/coverage_python/index.html
+runem: report: coverage cobertura: ./reports/coverage_python/cobertura.xml
+runem: DONE: runem took: 14.174612s, saving you 22.6414s
+```
+
+NOTE: each phase's total system-time is reported above the timing for the individual jobs ran in that phase. This is NOT wall-clock time.
+
+## 7. Using Help to get an Overview of Your Jobs
 
 The `--help` switch will show you a full list of all the configured job-tasks, the tags and the override options, describing how to configure a specific run.
 ```bash
@@ -207,7 +452,7 @@ job-param overrides:
 ```
 </details>
 
-## 6. Configuration
+## 8. Configuration
 
 `runem` searches for `.runem.yml` and will pre-load the command-line options with
 
@@ -216,7 +461,7 @@ Configuration is Yaml and consists of two main configurations, `config` and `job
 - `config` describes how the jobs should be run.
 - each `job`  entry describe a job-task, such and running unit-tests, linting or running any other type of command.
 
-### 6.1. `config` - Run 'em global config
+### 8.1. `config` - Run 'em global config
 
 - **phases:** 
   - *Description:* Specifies the different phases of the testing process, in the order they are to be run. Each job will be run under a specific phase.
@@ -236,7 +481,7 @@ Configuration is Yaml and consists of two main configurations, `config` and `job
   - **desc:** Provides a description of the option.
   - **alias:** (Optional) Provides an alias for the option if specified.
 
-### 6.2. `job` - Job config
+### 8.2. `job` - Job config
 - **job:**
   - *Description:* Represents a specific job task that is to be run asynchronously.
   - *Fields:*
