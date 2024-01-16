@@ -177,8 +177,10 @@ def test_get_jobs_matching_with_tags_to_avoid(
         assert run_command_stdout == [""]
     else:
         assert run_command_stdout == [
-            "runem: not running job 'Job1' because it isn't in the list of job names. See "
-            "--jobs and --not-jobs",
+            (
+                "runem: not running job 'intentionally not in job names' because it "
+                "isn't in the list of job names. See --jobs and --not-jobs"
+            ),
             "",
         ]
     mock_get_job_name.assert_called_once()

@@ -1,13 +1,16 @@
-usage: -c [-h] [--jobs JOBS [JOBS ...]]
-          [--not-jobs JOBS_EXCLUDED [JOBS_EXCLUDED ...]]
-          [--phases PHASES [PHASES ...]]
-          [--not-phases PHASES_EXCLUDED [PHASES_EXCLUDED ...]]
-          [--tags TAGS [TAGS ...]]
-          [--not-tags TAGS_EXCLUDED [TAGS_EXCLUDED ...]]
-          [--dummy-option-1---complete-option]
-          [--no-dummy-option-1---complete-option] [--dummy-option-2---minimal]
-          [--no-dummy-option-2---minimal] [--call-graphs | --no-call-graphs]
-          [--procs PROCS] [--root ROOT_DIR] [--verbose | --no-verbose | -v]
+runem: WARNING: no phase found for 'echo "hello world!"', using 'dummy phase 1'
+usage: __main__.py [-h] [--jobs JOBS [JOBS ...]]
+                   [--not-jobs JOBS_EXCLUDED [JOBS_EXCLUDED ...]]
+                   [--phases PHASES [PHASES ...]]
+                   [--not-phases PHASES_EXCLUDED [PHASES_EXCLUDED ...]]
+                   [--tags TAGS [TAGS ...]]
+                   [--not-tags TAGS_EXCLUDED [TAGS_EXCLUDED ...]]
+                   [--dummy-option-1---complete-option]
+                   [--no-dummy-option-1---complete-option]
+                   [--dummy-option-2---minimal]
+                   [--no-dummy-option-2---minimal]
+                   [--call-graphs | --no-call-graphs] [--procs PROCS]
+                   [--root ROOT_DIR] [--verbose | --no-verbose | -v]
 
 Runs the Lursight Lang test-suite
 
@@ -26,11 +29,12 @@ jobs:
   --jobs JOBS [JOBS ...]
                         List of job-names to run the given jobs. Other filters
                         will modify this list. Defaults to 'dummy job label
-                        1', 'dummy job label 2'
+                        1', 'dummy job label 2', 'echo "hello world!"', 'hello
+                        world'
   --not-jobs JOBS_EXCLUDED [JOBS_EXCLUDED ...]
                         List of job-names to NOT run. Defaults to empty.
                         Available options are: 'dummy job label 1', 'dummy job
-                        label 2'
+                        label 2', 'echo "hello world!"', 'hello world'
 
 phases:
   --phases PHASES [PHASES ...]

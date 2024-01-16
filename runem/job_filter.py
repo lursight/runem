@@ -72,11 +72,12 @@ def _get_jobs_matching(
         if _should_filter_out_by_tags(job, tags, tags_to_avoid, verbose):
             continue
 
-        if Job.get_job_name(job) not in job_names:
+        job_name: str = Job.get_job_name(job)
+        if job_name not in job_names:
             if verbose:
                 log(
                     (
-                        f"not running job '{job['label']}' because it isn't in the "
+                        f"not running job '{job_name}' because it isn't in the "
                         f"list of job names. See --jobs and --not-jobs"
                     )
                 )
