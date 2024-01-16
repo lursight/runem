@@ -1,70 +1,94 @@
-# Run 'em: Run your developer-local tasks faster
+# Run 'em
+
+## Reducing the wall-clock time running your developer-local tasks
+
+`runem` (run 'em) is an unopinionated way to declare and run the many command-line tools developers use regularly.
 
 ## 1. Overview
 
-`runem` (run 'em) is a declarative tools designed to optimise the running of developer jobs concurrently.
+The core objective of Run'em's (pronounced 'run them') is to minimize the wall-clock time required for executing whatever command-line tools a developer uses (or *should* use). Overall it is designed to enhance iteration speed and boost developer productivity.
 
-`runem` is designed to be simple to use and easy to learn, but powerful to use.
+`runem` is also designed to be easy to learn and simple to use, but `runem` also has many powerful tools for advanced users.
 
-Job definitions are declarative and simple and the reports show how long each job took, and how much time `runem` saved you.
+Job definitions are declarative and simple.
 
-The name "runem" is derived from the fusion of "run" and "them," encapsulating the essence of executing tasks quickly.
+The in-built reports show how long each job took and how much time `runem` saved you.
 
-- [Run 'em: Run your developer-local tasks faster](#run-em-run-your-developer-local-tasks-faster)
+Jobs can be filtered in or out very easily.
+
+Multiple projects can be supported in a single `.runem.yml` config, support workspaces and mono-repos. Also multiple task types, working on multiple file-types can be supported.
+
+Finally, because of how it's built, job definitions are auto-documented via `runem --help`. This help onboarding new developers by making tool-discovery easier. Therefore it also helps maintenance of developer tools.
+
+### 1.1. Why is it called `runem`?
+
+Primarily `runem`, as a command line tool, is quick to type and tries to just get out of the way when running your developer-local tools.
+
+The name "runem" is derived from the fusion of "run" and "them," encapsulating the essence of doing the same things, but slightly faster.
+
+## 2. Contents
+- [Run 'em](#run-em)
+  - [Reducing the wall-clock time running your developer-local tasks](#reducing-the-wall-clock-time-running-your-developer-local-tasks)
   - [1. Overview](#1-overview)
-  - [2. Features](#2-features)
-  - [3. Installation](#3-installation)
-  - [4 Quick start](#4-quick-start)
-  - [4.1 A more complete Quick start](#41-a-more-complete-quick-start)
-  - [5. Basic Usage](#5-basic-usage)
-    - [5.1. Tag filters](#51-tag-filters)
-      - [5.1.1. Run jobs only with the 'lint' tag:](#511-run-jobs-only-with-the-lint-tag)
-      - [5.1.2. If you want to lint all code _except_ nodejs code (and you have the appropriate tags):](#512-if-you-want-to-lint-all-code-except-nodejs-code-and-you-have-the-appropriate-tags)
-      - [5.1.3. Run fast checks on `pre-commit`](#513-run-fast-checks-on-pre-commit)
-    - [5.2. phase filters](#52-phase-filters)
-      - [5.2.1 Focus on a phase](#521-focus-on-a-phase)
-      - [5.2.2 Exclude slow phases temporarily](#522-exclude-slow-phases-temporarily)
-  - [6 Reports on your tasks](#6-reports-on-your-tasks)
-    - [6.1 Task timings report](#61-task-timings-report)
-    - [6.2 Bar-graphs with \`termplotlib\`\`](#62-bar-graphs-with-termplotlib)
-  - [7. Using Help to get an Overview of Your Jobs](#7-using-help-to-get-an-overview-of-your-jobs)
-  - [8. Configuration](#8-configuration)
-    - [8.1. `config` - Run 'em global config](#81-config---run-em-global-config)
-    - [8.2. `job` - Job config](#82-job---job-config)
-  - [9. Troubleshooting \& Known issues](#9-troubleshooting--known-issues)
-    - [9.1 I don't see bar graph timing reports!](#91-i-dont-see-bar-graph-timing-reports)
+    - [1.1. Why is it called `runem`?](#11-why-is-it-called-runem)
+  - [2. Contents](#2-contents)
+  - [3. Feature overview](#3-feature-overview)
+  - [4. Installation](#4-installation)
+  - [5. Quick-start](#5-quick-start)
+  - [5.1. Basic quick-start](#51-basic-quick-start)
+    - [5.2. A more complete quick-start](#52-a-more-complete-quick-start)
+      - [5.2.1. A simple `.runem.yml`](#521-a-simple-runemyml)
+      - [5.2.2. A simple python task](#522-a-simple-python-task)
+  - [6. Basic usage](#6-basic-usage)
+    - [6.1. Tag filters](#61-tag-filters)
+      - [6.1.1. Run jobs only with the 'lint' tag:](#611-run-jobs-only-with-the-lint-tag)
+      - [6.1.2. If you want to lint all code _except_ nodejs code (and you have the appropriate tags):](#612-if-you-want-to-lint-all-code-except-nodejs-code-and-you-have-the-appropriate-tags)
+      - [6.1.3. Run fast checks on `pre-commit`](#613-run-fast-checks-on-pre-commit)
+    - [6.2. Phase filters](#62-phase-filters)
+      - [6.2.1. Focus on a phase](#621-focus-on-a-phase)
+      - [6.2.2. Exclude slow phases temporarily](#622-exclude-slow-phases-temporarily)
+  - [7. Reports on your tasks](#7-reports-on-your-tasks)
+    - [7.1. Task timings report](#71-task-timings-report)
+    - [7.2. Bar-graphs with `termplotlib`](#72-bar-graphs-with-termplotlib)
+  - [8. Using \`--help\`\` to get an overview of your Jobs](#8-using---help-to-get-an-overview-of-your-jobs)
+  - [9. Configuration](#9-configuration)
+    - [9.1. `config` - Run 'em global config](#91-config---run-em-global-config)
+    - [9.2. `job` - Job config](#92-job---job-config)
+  - [10. Troubleshooting \& Known issues](#10-troubleshooting--known-issues)
+    - [9.1. I don't see bar graph timing reports!](#91-i-dont-see-bar-graph-timing-reports)
       - [Solution:](#solution)
-    - [9.2 I can't specify a dependency!](#92-i-cant-specify-a-dependency)
+    - [10.2. I can't specify a dependency!](#102-i-cant-specify-a-dependency)
       - [Solution](#solution-1)
-    - [9.3 Why is there so much output on errors, it looks duplicated?](#93-why-is-there-so-much-output-on-errors-it-looks-duplicated)
+    - [10.3. Why is there so much output on errors, it looks duplicated?](#103-why-is-there-so-much-output-on-errors-it-looks-duplicated)
       - [Solution](#solution-2)
-    - [9.4 I can't see reports for job when errors happen!](#94-i-cant-see-reports-for-job-when-errors-happen)
+    - [10.4. When errors happen I don't see reports for jobs!](#104-when-errors-happen-i-dont-see-reports-for-jobs)
       - [Solution](#solution-3)
-    - [9.5 I want to see log output for tasks in real-time, as they're happening!](#95-i-want-to-see-log-output-for-tasks-in-real-time-as-theyre-happening)
+    - [10.5. I want to see log output for tasks in real-time, as they're happening!](#105-i-want-to-see-log-output-for-tasks-in-real-time-as-theyre-happening)
       - [Solution](#solution-4)
 - [Contributing to and supporting runem](#contributing-to-and-supporting-runem)
   - [Development](#development)
   - [Sponsor](#sponsor)
 
 
-## 2. Features
+## 3. Feature overview
 
 - **Declarative Tasks** Describe all your tasks once, and optionally describe how and when to run them.
 
 - **Tagged Jobs:** Use tagging to define which type of jobs you want to run, be it `pre-commit`, `lint`, `test` or in multi-project codebases to split between running `python`, `node.js` or `c++` jobs, depending on the context you are working in!
 
 - **Multiprocess Execution:** Leverage the power of multiprocessing for concurrent test job execution, optimizing efficiency and reducing runtime.
-  
+
 - **Data-Driven Test Management:** Drive your tests with data, making it easy to adapt and scale your testing suite to various scenarios, allowing you to execute, track, and analyze your dev-ops suite with ease.
 
-## 3. Installation
+## 4. Installation
 
 ```bash
 pip install runem
 ```
 
-## 4 Quick start
+## 5. Quick-start
 
+## 5.1. Basic quick-start
 Create the following `.runem.yml` file at the root of your project:
 
 ```yml
@@ -72,39 +96,27 @@ Create the following `.runem.yml` file at the root of your project:
     command: echo "hello world!"
 ```
 
-Then anywhere in your project run, to see how and when that task is run, and how long it took.
-```sh
+Then anywhere in your project run `runem` to see how and when that task is run, and how long it took:
+```bash
 runem
+```
 
+To see the actual log output you will need to use `--verbose` as `runem` hides anything that isn't important. Only failures and reports are considered important.
+```bash
 # Or, to see "hello world!", use --verbose
 runem --verbose  # add --verbose to see the actual output
 ```
 
-To see how you can control your job use
-```sh
+To see how you can control your job use `--help`:
+```bash
 runem --help
 ```
 
-## 4.1 A more complete Quick start
+### 5.2. A more complete quick-start
 
 Here's a simple setup for a python project.
 
-Notice that this specifies:
--  The `phases` to use, and their order:
-   - This shows how we can control tasks that edit the files can go before analysis 
-   - This reduces any false-negatives the jobs may generate from running multiple jobs that may contend for write-access on the same files
-   - NOTE: `phases` are an early-stage way:
-     - To implement dependency chaining
-       - There is no dependency linking between jobs, yet.
-     - To manage resources
-       - For example, if you have a task which is threaded and/or memory heavy, you may want to put that into its own phase to get faster output.
-- `tags` to allow control over which jobs to run.
-  - Also which files to pass to jobs.
-- File-filters to detect which files the job operate on.
-  - NOTE: this is a WIP feature
-- Uses job-options:
-   - Allowing a python-function-job to control it's sub-task/processes.
--  If you use `--help` you will see a summary of all controls available.
+#### 5.2.1. A simple `.runem.yml`
 
 ```yml
 - config:
@@ -157,14 +169,26 @@ Notice that this specifies:
         - py format
 ```
 
-The following python file accompanies the above configuration and does slightly more advanced work. The file contains:
-- a single job.
-- the job linearises edit tasks that would otherwise contend for write-access to the files they operate on.
-  - formatting and doc-generation both edit files, conforming them to the coding standard.
-- uses `options` (see the config section) to control whether to:
-  - use `check-only` mode for CiCd, modifying the command-line switched passed down to the sub-commands.
-  - control whether `python-black` and/or/nor `docformatter` is run.
-- modifies the allowed-exit codes for `docformatter` to be `0` or `3`, matching the designed behaviour of that tool.
+Notice that this specifies:
+-  The `phases` to use, and their order:
+   - This shows how we can control tasks that edit the files can go before analysis
+   - This reduces any false-negatives the jobs may generate from running multiple jobs that may contend for write-access on the same files
+   - NOTE: `phases` are an early-stage way:
+     - To implement dependency chaining
+       - There is no dependency linking between jobs, yet.
+     - To manage resources
+       - For example, if you have a task which is threaded and/or memory heavy, you may want to put that into its own phase to get faster output.
+- `tags` to allow control over which jobs to run.
+  - Also which files to pass to jobs.
+- File-filters to detect which files the job operate on.
+  - NOTE: this is a WIP feature
+- Uses job-options:
+   - Allowing a python-function-job to control it's sub-task/processes.
+-  If you use `--help` you will see a summary of all controls available.
+
+#### 5.2.2. A simple python task
+
+Here's a simple python file describing a job. This accompanies the above `.runem.yml`.
 
 ```py
 # runem_hooks/py.py
@@ -232,23 +256,40 @@ def _job_py_code_reformat(
             **kwargs,
         )
 ```
+The above python file accompanies the above `.runem.yml` configuration and does slightly more advanced work. The file contains:
+- a single job.
+- the job itself linearises edit tasks that would otherwise contend for write-access to the files they operate on.
+  - formatting and doc-generation both edit files, conforming them to the coding standard.
+- uses `options` (see the config section) to control whether to:
+  - use `check-only` mode for CiCd, modifying the command-line switched passed down to the sub-commands.
+  - control whether `python-black` and/or/nor `docformatter` is run.
+- modifies the allowed-exit codes for `docformatter` to be `0` or `3`, matching the designed behaviour of that tool.
 
-## 5. Basic Usage
+## 6. Basic usage
 
 ```bash
-$ runem [--tags tag1,tag2,tag3] [--not-tags tag1,tag2,tag3] \
-        [--phases phaseX, phaseY] \
-        [--MY-OPTION] [--not-MY-OPTION] 
-#or
-$ python -m runem [--tags tag1,tag2,tag3] [--not-tags tag1,tag2,tag3] \
-                  [--phases phaseX, phaseY] \
-                  [--MY-OPTION] [--not-MY-OPTION] 
+# run all configured default jobs
+runem
+
+# ---- or ----
+
+# apply filters and controls
+runem [--tags tag1,tag2,tag3] [--not-tags tag1,tag2,tag3] \
+      [--phases phaseX, phaseY] \
+      [--MY-OPTION] [--not-MY-OPTION]
+
+# ---- or ----
+
+# run as a module
+python3 -m runem [--tags tag1,tag2,tag3] [--not-tags tag1,tag2,tag3] \
+                 [--phases phaseX, phaseY] \
+                 [--MY-OPTION] [--not-MY-OPTION]
 ```
 
-### 5.1. Tag filters
+### 6.1. Tag filters
 Jobs are tagged in the .runem.yml config file. Each unique tags is made available on the command-line. To see which tags are available use `--help`. To add a new tag extend the `tags` field in the `job` config.
 
-You can control which types of jobs to run via tags. Just tag the job in the config and then from the command-line you can add `--tags` or `--not-tags` to refine exactly which jobs will be run. 
+You can control which types of jobs to run via tags. Just tag the job in the config and then from the command-line you can add `--tags` or `--not-tags` to refine exactly which jobs will be run.
 
 To debug why a job is not selected pass `--verbose`.
 
@@ -262,19 +303,19 @@ runem --tags python
 
 `--not-tags` are subtractive filter out, that is any job with these tags are not run, even if they have tags set via the `--tags` switch. Meaning you can choose to run `python` tagged job but not run the `lint` jobs with `--tags python --not-tags lint`, and so on.
 
-#### 5.1.1. Run jobs only with the 'lint' tag:
+#### 6.1.1. Run jobs only with the 'lint' tag:
 
 ```bash
 runem --tags lint
 ```
 
-#### 5.1.2. If you want to lint all code _except_ nodejs code (and you have the appropriate tags):
+#### 6.1.2. If you want to lint all code _except_ nodejs code (and you have the appropriate tags):
 
 ```bash
 runem --tags lint --not-tags deprecated
 ```
 
-#### 5.1.3. Run fast checks on `pre-commit`
+#### 6.1.3. Run fast checks on `pre-commit`
 
 If you have fast jobs that tagged as appropriate for pre-commit hooks.
 
@@ -287,11 +328,11 @@ echo "runem --tags pre-commit" > scripts/git-hooks/pre-commit
 #	  hooksPath = ./scripts/git-hooks/husky/
 ```
 
-### 5.2. phase filters
+### 6.2. Phase filters
 
-Sometimes just want to run a specific phase, so you can focus on it and iterate quickly, within that context. 
+Sometimes just want to run a specific phase, so you can focus on it and iterate quickly, within that context.
 
-#### 5.2.1 Focus on a phase
+#### 6.2.1. Focus on a phase
 
 For example, if you have a `reformat` phase, you might want to run just `reformat` jobs phase whilst preparing a commit and are just preparing cosmetic changes e.g. updating comments, syntax, or docs.
 
@@ -299,7 +340,7 @@ For example, if you have a `reformat` phase, you might want to run just `reforma
 runem --phase reformat
 ```
 
-#### 5.2.2 Exclude slow phases temporarily
+#### 6.2.2. Exclude slow phases temporarily
 
 If you have 4 stages `bootstrap`, `pre-run`, `reformat`, `test` and `verify` phase, and are tightly iterating and focusing on the 'test-coverage' aspect of the test-phase, then you do not care about formatting as long as you can see your coverage results ASAP. However if your test-coverage starts passing then you will care about subsequent stages, so you can exclude the slower reformat-stage with the following and everything else will run.
 
@@ -309,11 +350,11 @@ runem --not-phase pre-run reformat
 
 **Note:** The `--tags` and `--not-tags` options can be used in combination to further refine task execution based on your requirements.
 
-## 6 Reports on your tasks
+## 7. Reports on your tasks
 
 Runem has a built-in support for reporting on tasks
 
-### 6.1 Task timings report
+### 7.1. Task timings report
 
 Runem will run the task and report how long the task took and whether it saved you any time, for example:
 
@@ -344,9 +385,9 @@ runem: report: coverage cobertura: ./reports/coverage_python/cobertura.xml
 runem: DONE: runem took: 8.820488s, saving you 13.268196s
 ```
 
-### 6.2 Bar-graphs with `termplotlib``
+### 7.2. Bar-graphs with `termplotlib`
 
-If you have `termplotlib` installed you will see
+If you have `termplotlib` installed you will see something like:
 
 ```text
 runem: Running 'pre-run' with 2 workers (of 8 max) processing 2 jobs
@@ -376,9 +417,10 @@ runem: DONE: runem took: 14.174612s, saving you 22.6414s
 
 NOTE: each phase's total system-time is reported above the timing for the individual jobs ran in that phase. This is NOT wall-clock time.
 
-## 7. Using Help to get an Overview of Your Jobs
+## 8. Using `--help`` to get an overview of your Jobs
 
-The `--help` switch will show you a full list of all the configured job-tasks, the tags and the override options, describing how to configure a specific run.
+The `--help` switch will show you a full list of all the configured job-tasks, the tags, and the override options. `--help` describes how to configure a specific run for *your* `.runem.yml` setup, and does NOT just document `runem` itself; it documents *your* workflow.
+
 ```bash
 $ python -m runem --help
 #or
@@ -463,7 +505,7 @@ job-param overrides:
 ```
 </details>
 
-## 8. Configuration
+## 9. Configuration
 
 `runem` searches for `.runem.yml` and will pre-load the command-line options with
 
@@ -472,9 +514,9 @@ Configuration is Yaml and consists of two main configurations, `config` and `job
 - `config` describes how the jobs should be run.
 - each `job`  entry describe a job-task, such and running unit-tests, linting or running any other type of command.
 
-### 8.1. `config` - Run 'em global config
+### 9.1. `config` - Run 'em global config
 
-- **phases:** 
+- **phases:**
   - *Description:* Specifies the different phases of the testing process, in the order they are to be run. Each job will be run under a specific phase.
   - *Values:* A list of strings representing "phases" such as pre-run (e.g. bootstrapping), edit (running py-black or prettifier or clang-tools), and analysis (unit-tests, coverage, linting).
 
@@ -492,12 +534,28 @@ Configuration is Yaml and consists of two main configurations, `config` and `job
   - **desc:** Provides a description of the option.
   - **alias:** (Optional) Provides an alias for the option if specified.
 
-### 8.2. `job` - Job config
+### 9.2. `job` - Job config
 - **job:**
   - *Description:* Represents a specific job task that is to be run asynchronously.
   - *Fields:*
+    - **command:**
+      - *Description:* a simple command line to be run. Commands will be run by the system exactly as they are written. Use `addr` for more complicated jobs. Commands are run in their associate `context`.
+      - *Example:
+        ```yaml
+        command: yarn run pretty
+        ```
+        ```yaml
+        command: python3 -m pylint **/*.py
+        ```
+        ```yaml
+        command: bash scripts/build_wrapper.sh
+        ```
+        ```yaml
+        command: clang-tidy -checks='*' -fix -header-filter='.*' your_file.cpp
+        ```
+
     - **addr:**
-      - *Description:* Specifies the address details of the job, including the file and function.
+      - *Description:* Specifies where a python function can be found. The python function will be loaded at runtime by `runem` and called with the `context`. The function recieves all information needed to run the job, including `label`, `JobConfig`, `verbose`, `options` and other run-time context.
       - *Subkeys:*
         - **file:** Indicates the file path of the job.
         - **function:** Indicates the function within the file that represents the job.
@@ -550,7 +608,7 @@ Configuration is Yaml and consists of two main configurations, `config` and `job
           cwd: src/subproject_4
           params:
             limitFilesToGroup: true
-        label: reformat 
+        label: reformat
         when:
           phase: edit
           tags:
@@ -558,34 +616,34 @@ Configuration is Yaml and consists of two main configurations, `config` and `job
             - subproject4
             - pretty
 
-## 9. Troubleshooting & Known issues
+## 10. Troubleshooting & Known issues
 
-### 9.1 I don't see bar graph timing reports!
+### 9.1. I don't see bar graph timing reports!
 We don't specify it in the output to reduce dependency installation for ci/cd. We may change this decision, especially as `halo` is a first-order dependency now.
 
 #### Solution:
-install `termplotlib`, 
+install `termplotlib`,
 
-### 9.2 I can't specify a dependency!
+### 10.2. I can't specify a dependency!
 Outside of `phases` we don't support direct dependency-chaining between tasks. We would like to do this at some point. PRs gladly accepted for this.
 
 #### Solution
 Use `phases` instead, or contribute a PR.
 
-### 9.3 Why is there so much output on errors, it looks duplicated?
+### 10.3. Why is there so much output on errors, it looks duplicated?
 We haven't looked at how we manage exception-handling with the python `multiprocessing` library, yet. Errors in `multiprocessing` procs tend to be re-reported in the calling process. PRs welcome.
 
 #### Solution
 Just look at one of the outputs.
 
-### 9.4 I can't see reports for job when errors happen!
-We try to show reports for completed tasks. If the task you're interested in doesn't show it probably hasn't been executed yet. Otherwise scroll up and you should see the reports and timings of *completed* tasks, if not, you may need to increase your buffer size.
+### 10.4. When errors happen I don't see reports for jobs!
+We try to show reports for completed tasks. If the task you're interested in doesn't show, it probably hasn't been executed yet. Otherwise scroll up and you should see the reports and timings of *completed* tasks, if not, you may need to increase your terminal's view-buffer size.
 
 #### Solution
-If you are focusing on one task and are only interested in how that task is performing/operating, use one of the many filtering options e.g. `--jobs "your job name" "another job name"`.
+If you are focusing on one task and are only interested in how that task is performing/operating, use one of the many filtering options e.g. `--jobs "your job name" "another job name"` or `--tags unittest`.
 
-### 9.5 I want to see log output for tasks in real-time, as they're happening!
-We don't stream stdout/stderr direct to console, or provide functionality for doing so, yet. Yes it would be a nice feature and we welcome PRs for it.
+### 10.5. I want to see log output for tasks in real-time, as they're happening!
+We don't stream stdout/stderr direct to console, or provide functionality for doing so, yet. However, we also believe that it would be a nice feature and welcome PRs.
 
 #### Solution
 On failure and with `--verbose` mode, the exact command is logged to console along with the environment that job was run in. You can copy/paste that command line to a terminal and run the command manually. The stdout/stderr will then be as you would get for that command. Refer to the documentation for that command.
