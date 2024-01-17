@@ -1110,7 +1110,19 @@ def create_mock_print_sleep() -> typing.Generator[typing.Tuple[Mock, Mock], None
         yield mock_sleep
 
 
-def test_progress_updater_with_running_jobs(mock_sleep: Mock) -> None:
+@pytest.mark.parametrize(
+    # parametrize the spinner logic so we hit the various states where we use
+    # 'halo' and where we don't.
+    "show_spinner",
+    [
+        True,
+        False,
+    ],
+)
+def test_progress_updater_with_running_jobs(
+    mock_sleep: Mock,
+    show_spinner: bool,
+) -> None:
     running_jobs: typing.Dict[str, str] = {"job1": "running", "job2": "pending"}
     with pytest.raises(SleepCalledError), multiprocessing.Manager() as manager:
         _update_progress(
@@ -1120,7 +1132,7 @@ def test_progress_updater_with_running_jobs(mock_sleep: Mock) -> None:
             all_jobs=[],
             is_running=manager.Value("b", True),
             num_workers=1,
-            show_spinner=False,
+            show_spinner=show_spinner,
         )
     mock_sleep.assert_called()
 
@@ -1192,7 +1204,16 @@ def test_progress_updater_with_empty_running_jobs(mock_sleep: Mock) -> None:
     mock_sleep.assert_called()
 
 
-def test_progress_updater_with_false() -> None:
+@pytest.mark.parametrize(
+    # parametrize the spinner logic so we hit the various states where we use
+    # 'halo' and where we don't.
+    "show_spinner",
+    [
+        True,
+        False,
+    ],
+)
+def test_progress_updater_with_false(show_spinner: bool) -> None:
     running_jobs: typing.Dict[str, str] = {"job1": ""}
     with multiprocessing.Manager() as manager:
         _update_progress(
@@ -1202,7 +1223,7 @@ def test_progress_updater_with_false() -> None:
             [],
             manager.Value("b", False),
             1,
-            show_spinner=False,
+            show_spinner=show_spinner,
         )
 
 
