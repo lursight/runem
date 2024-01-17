@@ -47,7 +47,8 @@
     "stefanzweifel", // the author of the temnplate used for runem's github
     "termplotlib", // python module for graphing on the terminal
     "venv", // abreviation of virtual-env
-    "virtualenv" // python module for managing virtual-environments
+    "virtualenv", // python module for managing virtual-environments
+    "xdist" // a multi-threading util used to run pytest faster, concurrently
   ],
   // flagWords - list of words to be always considered incorrect
   // This is useful for offensive words and common spelling errors.

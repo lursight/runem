@@ -28,13 +28,10 @@ class Job:
         if "when" not in job or "tags" not in job["when"]:
             # handle the special case where we have No tags
             return None
-        when: JobWhen = job.get("when", {})
-        try:
-            job_tags: JobTags = when["tags"]
-        except KeyError:
-            # no tags, return None
-            return None
+
         # have valid tags, coerce them to be a set-type and return
+        when: JobWhen = job.get("when", {})
+        job_tags: JobTags = when["tags"]
         return set(job_tags)
 
     @staticmethod

@@ -555,7 +555,7 @@ Configuration is Yaml and consists of two main configurations, `config` and `job
         ```
 
     - **addr:**
-      - *Description:* Specifies where a python function can be found. The python function will be loaded at runtime by `runem` and called with the `context`. The function recieves all information needed to run the job, including `label`, `JobConfig`, `verbose`, `options` and other run-time context.
+      - *Description:* Specifies where a python function can be found. The python function will be loaded at runtime by `runem` and called with the `context`. The function receives all information needed to run the job, including `label`, `JobConfig`, `verbose`, `options` and other run-time context.
       - *Subkeys:*
         - **file:** Indicates the file path of the job.
         - **function:** Indicates the function within the file that represents the job.
