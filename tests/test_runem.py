@@ -276,7 +276,10 @@ def _run_full_config_runem(
         except BaseException as err:  # pylint: disable=broad-exception-caught
             error_raised = err
         runem_stdout = (
-            buf.getvalue().replace(str(mocked_config_path), "[CONFIG PATH]").split("\n")
+            # replace the config path as it's different on different systems
+            buf.getvalue()
+            .replace(str(mocked_config_path), "[CONFIG PATH]")
+            .split("\n")
         )
     # job_runner_mock.assert_called()
     got_to_reports: typing.Optional[int] = None
@@ -465,13 +468,20 @@ def _remove_first_line_and_split_along_whitespace(
     """
     lines: typing.List[str] = input_string.split("\n")
 
-    # remove the usage line as it is something like one of the following:
+    # remove the usage line as it is something like one of the following,
+    # depending on whether we're running in xdist(threaded) or single-threaded
+    # contexts:
     # usage: __main__.py [-h] [--jobs JOBS [JOBS ...]]
     # usage: -c [-h] [--jobs JOBS [JOBS ...]]
-    usage_line: str = lines.pop(1)
+    index_of_usage_line: int = 1
+    usage_line: str = lines[index_of_usage_line]
     assert "usage:" in usage_line
-    first_line_removed: str = "\n".join(lines)
-    conformed_whitespace: str = _replace_whitespace_with_new_line(first_line_removed)
+    first_brace: int = usage_line.index("[")
+    usage_line = usage_line[first_brace:]
+    lines[index_of_usage_line] = usage_line
+
+    first_line_edited: str = "\n".join(lines)
+    conformed_whitespace: str = _replace_whitespace_with_new_line(first_line_edited)
     as_list: typing.List[str] = conformed_whitespace.split("\n")
     return as_list
 
