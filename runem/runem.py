@@ -254,6 +254,8 @@ def _process_jobs_by_phase(
             config_metadata, file_lists, in_out_job_run_metadatas, phase, jobs
         )
         if failure_exception is not None:
+            if config_metadata.args.verbose:
+                log(f"ERROR: running phase {phase}: aborting run")
             return failure_exception
 
     # ALl phases completed aok.

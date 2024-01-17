@@ -5,6 +5,7 @@ import os
 import pathlib
 import re
 import typing
+from argparse import Namespace
 from collections import defaultdict
 from contextlib import redirect_stdout
 from datetime import timedelta
@@ -14,13 +15,21 @@ from unittest.mock import Mock, patch
 # Assuming that the modified _progress_updater function is in a module named runem
 import pytest
 
-from runem.runem import _update_progress, timed_main
+from runem.config_metadata import ConfigMetadata
+from runem.runem import (
+    _process_jobs,
+    _process_jobs_by_phase,
+    _update_progress,
+    timed_main,
+)
 from runem.types import (
     Config,
+    FilePathListLookup,
     GlobalSerialisedConfig,
     JobConfig,
     Jobs,
     JobSerialisedConfig,
+    PhaseGroupedJobs,
 )
 from tests.intentional_test_error import IntentionalTestError
 
@@ -1240,3 +1249,228 @@ def test_runem_re_raises_after_reporting(
 ) -> None:
     with pytest.raises(IntentionalTestError):
         timed_main([])
+
+
+@pytest.mark.parametrize(
+    "verbosity",
+    [
+        True,
+        False,
+    ],
+)
+@patch("runem.runem._process_jobs", return_value=IntentionalTestError())
+def test_process_jobs_by_phase_early_exits_with_exceptions(
+    mock_process_jobs: Mock,
+    verbosity: bool,
+) -> None:
+    job_phase_1_raises: JobConfig = {
+        "addr": {
+            "file": __file__,
+            "function": "test_parse_config",
+        },
+        "label": "a job that should be attempted",
+        "when": {
+            "phase": "dummy phase 1",
+            "tags": set(
+                (
+                    "dummy tag 1",
+                    "dummy tag 2",
+                )
+            ),
+        },
+    }
+    job_phase_2_not_executed: JobConfig = {
+        "addr": {
+            "file": __file__,
+            "function": "test_parse_config",
+        },
+        "label": "not executed because of previous failure",
+        "when": {
+            "phase": "dummy phase 1",
+            "tags": set(
+                (
+                    "dummy tag 1",
+                    "dummy tag 2",
+                )
+            ),
+        },
+    }
+
+    jobs_by_phase: PhaseGroupedJobs = defaultdict(list)
+    jobs_by_phase.update(
+        {
+            "dummy phase 1": [job_phase_1_raises],
+            "dummy phase 2": [job_phase_2_not_executed],
+        }
+    )
+
+    all_job_names = (
+        "not executed because of previous failure",
+        "a job that should be attempted",
+    )
+    all_phase_names = (
+        "dummy phase 1",
+        "dummy phase 2",
+    )
+    config_metadata: ConfigMetadata = ConfigMetadata(
+        cfg_filepath=pathlib.Path(__file__),
+        phases=all_phase_names,
+        options_config=tuple(),
+        file_filters={
+            # "dummy tag": {
+            #     "tag": "dummy tag",
+            #     "regex": ".*1.txt",  # should match just one file
+            # }
+        },
+        jobs=jobs_by_phase,
+        all_job_names=set(all_job_names),
+        all_job_phases=set(("dummy phase 1",)),
+        all_job_tags=set(
+            (
+                "dummy tag 2",
+                "dummy tag 1",
+            )
+        ),
+        # global_config,
+        # job_phase_2_not_executed,
+        # job_phase_1_raises,
+    )
+
+    config_metadata.set_cli_data(
+        args=Namespace(verbose=verbosity, procs=1),
+        jobs_to_run=set(all_job_names),  # JobNames,
+        phases_to_run=set(all_phase_names),  # JobPhases,
+        tags_to_run=set(),  # ignored JobTags,
+        tags_to_avoid=set(),  # ignored  JobTags,
+        options={},  # Options,
+    )
+
+    file_lists: FilePathListLookup = defaultdict(list)
+    file_lists["dummy tag"] = [__file__]
+
+    with io.StringIO() as buf, redirect_stdout(buf):
+        error: typing.Optional[BaseException] = _process_jobs_by_phase(
+            config_metadata=config_metadata,  # ConfigMetadata,
+            file_lists=file_lists,  # FilePathListLookup,
+            filtered_jobs_by_phase=jobs_by_phase,  # PhaseGroupedJobs,
+            in_out_job_run_metadatas={},  # JobRunMetadatasByPhase,
+        )
+        runem_stdout = buf.getvalue().split("\n")
+    assert mock_process_jobs.call_count == 1
+    assert isinstance(error, IntentionalTestError)
+    if not verbosity:
+        assert runem_stdout == [
+            "",
+        ]
+    else:
+        assert runem_stdout == [
+            "runem: Running Phase dummy phase 1",
+            "runem: ERROR: running phase dummy phase 1: aborting run",
+            "",
+        ]
+
+
+@patch("runem.runem.multiprocessing.Pool", side_effect=IntentionalTestError())
+def test_process_jobs_early_exits_with_exceptions(
+    mock_process_jobs: Mock,
+) -> None:
+    job_phase_1_raises: JobConfig = {
+        "addr": {
+            "file": __file__,
+            "function": "test_parse_config",
+        },
+        "label": "a job that should be attempted",
+        "when": {
+            "phase": "dummy phase 1",
+            "tags": set(
+                (
+                    "dummy tag 1",
+                    "dummy tag 2",
+                )
+            ),
+        },
+    }
+    job_phase_2_not_executed: JobConfig = {
+        "addr": {
+            "file": __file__,
+            "function": "test_parse_config",
+        },
+        "label": "not executed because of previous failure",
+        "when": {
+            "phase": "dummy phase 1",
+            "tags": set(
+                (
+                    "dummy tag 1",
+                    "dummy tag 2",
+                )
+            ),
+        },
+    }
+
+    jobs_by_phase: PhaseGroupedJobs = defaultdict(list)
+    jobs_by_phase.update(
+        {
+            "dummy phase 1": [job_phase_1_raises],
+            "dummy phase 2": [job_phase_2_not_executed],
+        }
+    )
+
+    all_job_names = (
+        "not executed because of previous failure",
+        "a job that should be attempted",
+    )
+    all_phase_names = (
+        "dummy phase 1",
+        "dummy phase 2",
+    )
+    config_metadata: ConfigMetadata = ConfigMetadata(
+        cfg_filepath=pathlib.Path(__file__),
+        phases=all_phase_names,
+        options_config=tuple(),
+        file_filters={
+            # "dummy tag": {
+            #     "tag": "dummy tag",
+            #     "regex": ".*1.txt",  # should match just one file
+            # }
+        },
+        jobs=jobs_by_phase,
+        all_job_names=set(all_job_names),
+        all_job_phases=set(("dummy phase 1",)),
+        all_job_tags=set(
+            (
+                "dummy tag 2",
+                "dummy tag 1",
+            )
+        ),
+        # global_config,
+        # job_phase_2_not_executed,
+        # job_phase_1_raises,
+    )
+
+    config_metadata.set_cli_data(
+        args=Namespace(verbose=True, procs=1),
+        jobs_to_run=set(all_job_names),  # JobNames,
+        phases_to_run=set(all_phase_names),  # JobPhases,
+        tags_to_run=set(),  # ignored JobTags,
+        tags_to_avoid=set(),  # ignored  JobTags,
+        options={},  # Options,
+    )
+
+    file_lists: FilePathListLookup = defaultdict(list)
+    file_lists["dummy tag"] = [__file__]
+
+    with io.StringIO() as buf, redirect_stdout(buf):
+        error: typing.Optional[BaseException] = _process_jobs(
+            config_metadata=config_metadata,  # ConfigMetadata,
+            file_lists=file_lists,  # FilePathListLookup,
+            in_out_job_run_metadatas=defaultdict(list),  # JobRunMetadatasByPhase,
+            phase="dummy phase 1",
+            jobs=[job_phase_1_raises],  # Jobs
+        )
+        runem_stdout = buf.getvalue().split("\n")
+    assert mock_process_jobs.call_count == 1
+    assert isinstance(error, IntentionalTestError)
+    assert runem_stdout == [
+        "runem: Running 'dummy phase 1' with 1 workers (of 1 max) processing 1 jobs",
+        "",
+    ]
