@@ -30,8 +30,11 @@ from datetime import timedelta
 from itertools import repeat
 from multiprocessing.managers import DictProxy, ListProxy, ValueProxy
 from timeit import default_timer as timer
+from types import TracebackType
 
-from halo import Halo
+from rich.console import Console, ConsoleOptions, ConsoleRenderable, RenderResult
+from rich.spinner import Spinner
+from rich.text import Text
 
 from runem.command_line import parse_args
 from runem.config import load_project_config, load_user_configs
@@ -57,6 +60,8 @@ from runem.types import (
     PhaseName,
 )
 from runem.utils import printable_set
+
+rich_console = Console()
 
 
 def _determine_run_parameters(argv: typing.List[str]) -> ConfigMetadata:
@@ -85,6 +90,36 @@ def _determine_run_parameters(argv: typing.List[str]) -> ConfigMetadata:
     return config_metadata
 
 
+class DummySpinner(ConsoleRenderable):  # pragma: no cover
+    """A dummy spinner for when spinners are disabled."""
+
+    def __init__(self) -> None:
+        self.text = ""
+
+    def __rich__(self) -> Text:
+        """Return a rich Text object for rendering."""
+        return Text(self.text)
+
+    def __rich_console__(
+        self, console: Console, options: ConsoleOptions
+    ) -> RenderResult:
+        """Yield an empty string or placeholder text."""
+        yield Text(self.text)
+
+    def __enter__(self) -> None:
+        """Support for context manager."""
+        pass
+
+    def __exit__(
+        self,
+        exc_type: typing.Optional[typing.Type[BaseException]],
+        exc_value: typing.Optional[BaseException],
+        traceback: typing.Optional[TracebackType],
+    ) -> None:
+        """Support for context manager."""
+        pass
+
+
 def _update_progress(
     label: str,
     running_jobs: typing.Dict[str, str],
@@ -104,52 +139,55 @@ def _update_progress(
         is_running (ValueProxy[bool]): Flag indicating if jobs are still running.
         num_workers (int): Indicates the number of workers performing the jobs.
     """
-    # Using Halo library to show a loading spinner on console
+    # Using the `rich` module to show a loading spinner on console
+    spinner: typing.Union[Spinner, DummySpinner]
     if show_spinner:
-        spinner = Halo(text="", spinner="dots")
-        spinner.start()
+        spinner = Spinner("dots", text="Starting tasks...")
+    else:
+        spinner = DummySpinner()
 
-    # The set of all job labels, and the set of completed jobs
-    all_job_names: typing.Set[str] = {Job.get_job_name(job) for job in all_jobs}
-    completed_jobs: typing.Set[str] = set()
+    with rich_console.status(spinner):
 
-    # This dataset is used to track changes between iterations
-    last_running_jobs_set: typing.Set[str] = set()
+        # The set of all job labels, and the set of completed jobs
+        all_job_names: typing.Set[str] = {Job.get_job_name(job) for job in all_jobs}
+        completed_jobs: typing.Set[str] = set()
 
-    while is_running.value:
-        running_jobs_set: typing.Set[str] = set(running_jobs.values())
-        seen_jobs = list(running_jobs_set.union(seen_jobs))  # Update the seen jobs
+        # This dataset is used to track changes between iterations
+        last_running_jobs_set: typing.Set[str] = set()
 
-        # Jobs that have disappeared since last check
-        disappeared_jobs: typing.Set[str] = last_running_jobs_set - running_jobs_set
+        while is_running.value:
+            running_jobs_set: typing.Set[str] = set(running_jobs.values())
+            seen_jobs = list(running_jobs_set.union(seen_jobs))  # Update the seen jobs
 
-        # Jobs that have not yet completed
-        remaining_jobs: typing.Set[str] = all_job_names - completed_jobs
+            # Jobs that have disappeared since last check
+            disappeared_jobs: typing.Set[str] = last_running_jobs_set - running_jobs_set
 
-        # Check if we're closing to completion
-        workers_retiring: bool = len(remaining_jobs) <= num_workers
+            # Jobs that have not yet completed
+            remaining_jobs: typing.Set[str] = all_job_names - completed_jobs
 
-        if workers_retiring:
-            # Handle edge case: a task may have disappeared whilst process was sleeping
-            all_completed_jobs: typing.Set[str] = all_job_names - remaining_jobs
-            disappeared_jobs.update(all_completed_jobs - running_jobs_set)
+            # Check if we're closing to completion
+            workers_retiring: bool = len(remaining_jobs) <= num_workers
 
-        completed_jobs.update(disappeared_jobs)
+            if workers_retiring:
+                # Handle edge case: a task may have disappeared whilst process was sleeping
+                all_completed_jobs: typing.Set[str] = all_job_names - remaining_jobs
+                disappeared_jobs.update(all_completed_jobs - running_jobs_set)
 
-        # Prepare progress report
-        progress: str = f"{len(completed_jobs)}/{len(all_jobs)}"
-        running_jobs_list = printable_set(running_jobs_set)
-        if show_spinner:
-            spinner.text = f"{label}: {progress}({num_workers}): {running_jobs_list}"
+            completed_jobs.update(disappeared_jobs)
 
-        # Update the tracked dataset for the next iteration
-        last_running_jobs_set = running_jobs_set
+            # Prepare progress report
+            progress: str = f"{len(completed_jobs)}/{len(all_jobs)}"
+            running_jobs_list = printable_set(running_jobs_set)
+            if show_spinner:
+                spinner.text = (
+                    f"{label}: {progress}({num_workers}): {running_jobs_list}"
+                )
 
-        # Sleep to decrease frequency of updates and reduce CPU usage
-        time.sleep(0.1)
+            # Update the tracked dataset for the next iteration
+            last_running_jobs_set = running_jobs_set
 
-    if show_spinner:
-        spinner.stop()
+            # Sleep to decrease frequency of updates and reduce CPU usage
+            time.sleep(0.1)
 
 
 def _process_jobs(
