@@ -4,6 +4,178 @@ Changelog
 
 (unreleased)
 ------------
+- Merge pull request #24 from lursight/feat/add_ctx_dir_as_tag. [Frank
+  Harrison]
+
+  feat(ctx-dir-tag): add the last directory name from the 'cwd' path as a tag
+- Feat(ctx-dir-tag): add the last directory name from the 'cwd' path as
+  a tag. [Frank Harrison]
+- Merge pull request #23 from lursight/chore/update_docs. [Frank
+  Harrison]
+
+  chore(docs): improves docs slightly
+- Chore(docs): improves docs slightly. [Frank Harrison]
+- Merge pull request #22 from lursight/fix/help_text_test. [Frank
+  Harrison]
+
+  Fix/help text test
+- Chore(cover-report-on-error): covers missed cases. [Frank Harrison]
+
+  We weren't testing the exception handling-and-return cases of the code.
+- Chore(fix-spinner-coverage): parameterises a test to cover no-show
+  cases. [Frank Harrison]
+
+  We didn't have coverage on the no-show-spinner cases. These parameters add
+  that coverage.
+- Chore(fix-tags-coverage): removed redundant code in get_tags. [Frank
+  Harrison]
+
+  This fixes coverage in get_tags by removing a case already covered.
+
+  The case is one where we have already tested for the existence of valid
+  tags and returned 'None', we were doing it twice.
+- Fix(help-text-test): fixes the help output, again. [Frank Harrison]
+
+  Adding more switches to runem cli changes the usage line significantly.
+  This addresses that by only removing the problematic bit __main__ or -c
+  and not the rest of the switches.
+
+  We do this because the rest of the switches might be on the 'usage:'
+  line or wrapped on the line below.
+
+  The differences come from when running via xdist or single-threaded
+  pytest and would presumably also manifest in other threaded environs
+- Feat(one-line-commands): fixes typo in README. [Frank Harrison]
+- Merge pull request #21 from lursight/feat/one_liners. [Frank Harrison]
+- Feat(one-line-commands): Update README.md reflecting all new features.
+  [Frank Harrison]
+
+  ... also clarifies various aspects and improves the "sell" i.e. why
+  runem is useful.
+- Feat(one-line-commands): adds troubleshooting documentation. [Frank
+  Harrison]
+- Feat(one-line-commands): documents oneliners. [Frank Harrison]
+- Feat(one-line-commands): simplifies the default tags. [Frank Harrison]
+
+  ... mainly removing the unused 'UNTAGGED_TAG' flag as we favour 'None' now.
+- Feat(one-line-commands): adds simple-command to the e2e tests. [Frank
+  Harrison]
+
+  This captures many more issues wit the new changes, enureing we 'know'
+  what the output and behaviour is with these new types of jobs
+
+  Also ensure tag tests work on ci/cd
+- Feat(one-line-commands): adds simple-commands support to runem. [Frank
+  Harrison]
+
+  This is quite a big refactor to add one-liners to .runem.yml, improving
+  the speed of on-boarding.
+
+  This means that the quick route to use should be a .runem.yml file that
+  looks something like:
+
+  ```yml
+  - job:
+      command: echo "hello world!"
+  ```
+
+  instead of needing the following two files
+  ```yml
+  - job:
+      addr:
+        file: path/to/file.py
+        function: _function_name
+      label: Job Label
+      when:
+        phase: some_phase
+        tags:
+          - tag
+  ```
+
+  ```py
+  from runem.run_command import run_command
+  from typing import Any
+
+  def _function_name(*kwargs:Any) -> None:
+    run_command(["echo", "hello world"], **kwargs)
+  ```
+
+  So, that's 2 lines instead of 15 so 87% less code just to get started.
+
+  Note that the key difference the 'address' and 'command' entries.
+
+  Also note that almost all of the options are now optional. This means
+  that the above function-addressed config can just be the following:
+
+  ```yml
+  - job:
+      addr:
+        file: path/to/file.py
+        function: _function_name
+      label: Job Label
+  ```
+
+  We use 'shlex' to avoid the word splitting problem when parsing commands
+  to be run.
+
+  There are some rough edges around tag handling, that we should tackle
+  before releasing.
+- Feat(one-line-commands): makes config-parsing unit-test explicit.
+  [Frank Harrison]
+
+  Adds specific exception checking for the case we are looking for ahead
+  of changing the behaviour in this section.
+- Feat(one-line-commands): moves the get_job_wrapper() manager to own
+  file. [Frank Harrison]
+
+  Clarifying that we have job-function variants move the selection
+  function to its own file.
+- Feat(one-line-commands): prepares get_job_wrapper() to support
+  variants. [Frank Harrison]
+
+  We are going to want to support multiple types of job-functions, so here
+  we split out the get_job_wrapper() into the get_job_wrapper_py_func()
+  variant ahead of adding a simple-command variant.
+- Merge pull request #20 from lursight/chore/tidy. [Frank Harrison]
+
+  chore(tidy): removes lursight specific env variables
+- Chore(tidy): removes lursight specific env variables. [Frank Harrison]
+- Merge pull request #19 from lursight/feat/improve_log_output. [Frank
+  Harrison]
+
+  Feat/improve log output
+- Fix(align-bar-graphs): aligns floats with varying orders of magnitude.
+  [Frank Harrison]
+
+  Without this, when we have a task that take 1s and another that takes
+  120, the bar graphs don't align and it's hard to see the comparison
+- Fix(align-bar-graphs): changes tests to show the key issue with
+  floats. [Frank Harrison]
+- Feat(less-logging): reduce the amount of logging in verbose=False.
+  [Frank Harrison]
+
+  Most of the time you don't want lots of logging, you just want to
+  run-and-done.
+- Merge pull request #18 from
+  lursight/feat/show_reports_even_on_failure. [Frank Harrison]
+
+  Feat/show reports even on failure
+- Fix(logging-consistency): adds a test against the output when a job-
+  function raises. [Frank Harrison]
+- Fix(logging-consistency): adds stdout tests to the job_execute()
+  tests. [Frank Harrison]
+
+  This allows me to add a test to ensure the error output isn't shown
+  twice in failed-command cases
+- Feat(report-before-error): shows the available reports on error,
+  before re-raising the error. [Frank Harrison]
+- Fix(logging-consistency): puts first stdout line with prefix. [Frank
+  Harrison]
+
+
+0.0.20 (2024-01-12)
+-------------------
+- Release: version 0.0.20 🚀 [Frank Harrison]
 - Merge pull request #17 from lursight/feat/multiple_cwd. [Frank
   Harrison]
 
