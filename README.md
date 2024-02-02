@@ -6,7 +6,7 @@
 
 ## 1. Overview
 
-The core objective of Run'em's (pronounced 'run them') is to minimize the wall-clock time required for executing whatever command-line tools a developer uses (or *should* use). Overall it is designed to enhance iteration speed and boost developer productivity.
+The core objective of Run'em's is to minimize the wall-clock time required for executing whatever command-line tools a developer uses (or *should* use). Overall it is designed to enhance iteration speed and boost developer productivity.
 
 `runem` is also designed to be easy to learn and simple to use, but `runem` also has many powerful tools for advanced users.
 
@@ -24,7 +24,7 @@ Finally, because of how it's built, job definitions are auto-documented via `run
 
 Primarily `runem`, as a command line tool, is quick to type and tries to just get out of the way when running your developer-local tools.
 
-The name "runem" is derived from the fusion of "run" and "them," encapsulating the essence of doing the same things, but slightly faster.
+The name "runem" is a portmanteau of "run" and "them", encapsulating that runem "runs them", but slightly faster.
 
 ## 2. Contents
 - [Run 'em](#run-em)
