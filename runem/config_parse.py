@@ -19,6 +19,7 @@ from runem.types import (
     JobPhases,
     JobSerialisedConfig,
     JobTags,
+    JobWhen,
     OptionConfigs,
     OrderedPhases,
     PhaseGroupedJobs,
@@ -138,6 +139,16 @@ def parse_job_config(
                     and specialised_job_for_cwd["ctx"]["cwd"]
                 ), specialised_job_for_cwd["ctx"].keys()
                 specialised_job_for_cwd["ctx"]["cwd"] = cwd
+
+                # add the last directory name from the 'cwd' path as a tag for
+                # easy reference to the job-task by its path
+                when: JobWhen = specialised_job_for_cwd.get("when", {})
+                when["tags"] = set(when.get("tags", set()))
+                cwd_path: pathlib.Path = pathlib.Path(cwd)
+                when["tags"].add(cwd_path.name)
+                specialised_job_for_cwd["when"] = when
+                specialised_job_for_cwd["ctx"]["cwd"] = cwd
+
                 # update the label to reflect the specialisation
                 specialised_job_for_cwd["label"] = f"{job['label']}({cwd})"
                 generated_jobs.append(specialised_job_for_cwd)
