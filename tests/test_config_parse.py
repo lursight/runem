@@ -110,7 +110,7 @@ def test_parse_job_config_handles_multiple_cwd() -> None:
         in_out_phases=phases,
         phase_order=phase_order,
     )
-    assert tags == {"format", "py"}
+    assert tags == {"a", "b", "format", "py"}, "tags should include the explicit"
     assert jobs_by_phase == {
         "edit": [
             {
@@ -120,7 +120,7 @@ def test_parse_job_config_handles_multiple_cwd() -> None:
                 },
                 "ctx": {"cwd": "path/a"},
                 "label": "reformat py(path/a)",
-                "when": {"phase": "edit", "tags": set(("py", "format"))},
+                "when": {"phase": "edit", "tags": set(("a", "py", "format"))},
             },
             {
                 "addr": {
@@ -129,7 +129,7 @@ def test_parse_job_config_handles_multiple_cwd() -> None:
                 },
                 "ctx": {"cwd": "path/b"},
                 "label": "reformat py(path/b)",
-                "when": {"phase": "edit", "tags": set(("py", "format"))},
+                "when": {"phase": "edit", "tags": set(("b", "py", "format"))},
             },
         ]
     }
