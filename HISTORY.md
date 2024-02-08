@@ -4,6 +4,27 @@ Changelog
 
 (unreleased)
 ------------
+- Merge pull request #27 from lursight/feat/add_cwd_to_run_command.
+  [Frank Harrison]
+
+  feat(cwd_in_run_command): allows cwd to be passed to run_command
+- Feat(cwd_in_run_command): allows cwd to be passed to run_command.
+  [Frank Harrison]
+
+  This is despite the fact that runem already manually sets the cwd when running tasks
+- Merge pull request #26 from
+  lursight/chore/reudce_complexity_of_run_command. [Frank Harrison]
+
+  chore(simplify-run_command): reduces the complexity of run_command
+- Chore(simplify-run_command): reduces the complexity of run_command.
+  [Frank Harrison]
+
+  This is ahead of adding a cwd paramter to it
+
+
+0.0.21 (2024-02-02)
+-------------------
+- Release: version 0.0.21 🚀 [Frank Harrison]
 - Merge pull request #24 from lursight/feat/add_ctx_dir_as_tag. [Frank
   Harrison]
 
