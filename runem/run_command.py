@@ -32,7 +32,43 @@ def get_stdout(process: CompletedProcess[bytes], prefix: str) -> str:
     return stdout
 
 
-def run_command(  # noqa: C901 # pylint: disable=too-many-branches
+def _prepare_environment(
+    env_overrides: typing.Optional[typing.Dict[str, str]],
+) -> typing.Dict[str, str]:
+    """Returns a consolidated environment merging os.environ and overrides."""
+    # first and always, copy in the environment
+    run_env: typing.Dict[str, str] = {
+        **os.environ,  # copy in the environment
+    }
+    if env_overrides:
+        # overload the os.environ with overrides
+        run_env.update(env_overrides)
+    return run_env
+
+
+def _log_command_execution(
+    cmd_string: str,
+    label: str,
+    env_overrides: typing.Optional[typing.Dict[str, str]],
+    valid_exit_ids: typing.Optional[typing.Tuple[int, ...]],
+    verbose: bool,
+) -> None:
+    """Logs out useful debug information on '--verbose'."""
+    if verbose:
+        log(f"running: start: {label}: {cmd_string}")
+        if valid_exit_ids is not None:
+            valid_exit_strs = ",".join(str(exit_code) for exit_code in valid_exit_ids)
+            log(f"\tallowed return ids are: {valid_exit_strs}")
+
+    if verbose:
+        if env_overrides:
+            env_overrides_as_string = " ".join(
+                [f"{key}='{value}'" for key, value in env_overrides.items()]
+            )
+            log(f"ENV OVERRIDES: {env_overrides_as_string} {cmd_string}")
+
+
+def run_command(
     cmd: typing.List[str],  # 'cmd' is the only thing that can't be optionally kwargs
     label: str,
     verbose: bool,
@@ -42,47 +78,21 @@ def run_command(  # noqa: C901 # pylint: disable=too-many-branches
     **kwargs: typing.Any,
 ) -> str:
     """Runs the given command, returning stdout or throwing on any error."""
-    cmd_string: str = " ".join(cmd)
-    if verbose:
-        log(f"running: start: {label}: {cmd_string}")
-        if valid_exit_ids is not None:
-            valid_exit_strs = ",".join([str(exit_code) for exit_code in valid_exit_ids])
-            log(f"\tallowed return ids are: {valid_exit_strs}")
+    cmd_string = " ".join(cmd)
+
+    run_env: typing.Dict[str, str] = _prepare_environment(
+        env_overrides,
+    )
+    _log_command_execution(
+        cmd_string,
+        label,
+        env_overrides,
+        valid_exit_ids,
+        verbose,
+    )
 
     if valid_exit_ids is None:
         valid_exit_ids = (0,)
-
-    # create a new env with overrides
-    run_env: typing.Dict[str, str] = {"LANG_DO_PRINTS": "False"}
-
-    if verbose:
-        run_env = {"LANG_DO_PRINTS": "True"}
-
-    if verbose:
-        run_env_as_string = " ".join(
-            [f"{key}='{value}'" for key, value in run_env.items()]
-        )
-        log(f"RUN ENV OVERRIDES: {run_env_as_string } {cmd_string}")
-
-        if env_overrides:
-            env_overrides_as_string = " ".join(
-                [f"{key}='{value}'" for key, value in env_overrides.items()]
-            )
-            log(f"ENV OVERRIDES: {env_overrides_as_string} {cmd_string}")
-
-    env_overrides_dict = {}
-    if env_overrides:
-        env_overrides_dict = env_overrides
-    # merge the overrides into the env
-    run_env = {
-        **run_env,
-        **os.environ.copy(),
-        **env_overrides_dict,
-    }
-
-    run_env_param: typing.Optional[typing.Dict[str, str]] = None
-    if run_env:  # pragma: FIXME: add code coverage
-        run_env_param = run_env
 
     # init the process in case it throws for things like not being able to
     # convert the command to a list of strings.
@@ -91,10 +101,10 @@ def run_command(  # noqa: C901 # pylint: disable=too-many-branches
         process = subprocess_run(
             cmd,
             check=False,  # Do NOT throw on non-zero exit
-            env=run_env_param,
+            env=run_env,
             stdout=SUBPROCESS_PIPE,
             stderr=SUBPROCESS_STDOUT,
-        )  # raise on non-zero
+        )
         if process.returncode not in valid_exit_ids:
             valid_exit_strs = ",".join([str(exit_code) for exit_code in valid_exit_ids])
             raise RunCommandBadExitCode(
