@@ -101,7 +101,6 @@ def test_run_command_basic_call_verbose(run_mock: Mock) -> None:
     # check the log output hasn't changed. Update as needed.
     assert run_command_stdout == (
         "runem: running: start: test command: ls\n"
-        "runem: RUN ENV OVERRIDES: LANG_DO_PRINTS='True' ls\n"
         "runem: test command: test output\n"
         "runem: running: done: test command: ls\n"
     )
@@ -304,7 +303,6 @@ def test_run_command_basic_call_non_standard_exit_ok_code_verbose(
     assert run_command_stdout == (
         "runem: running: start: test command: ls\n"
         "runem: 	allowed return ids are: 3\n"
-        "runem: RUN ENV OVERRIDES: LANG_DO_PRINTS='True' ls\n"
         "runem: test command: test output\n"
         "runem: running: done: test command: ls\n"
     )
@@ -360,7 +358,6 @@ def test_run_command_with_env_verbose(run_mock: Mock) -> None:
     assert output == "test command: test output"
     assert run_command_stdout == (
         "runem: running: start: test command: ls\n"
-        "runem: RUN ENV OVERRIDES: LANG_DO_PRINTS='True' ls\n"
         "runem: ENV OVERRIDES: TEST_ENV_1='1' TEST_ENV_2='2' ls\n"
         "runem: test command: test output\n"
         "runem: running: done: test command: ls\n"
