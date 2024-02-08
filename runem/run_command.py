@@ -1,4 +1,5 @@
 import os
+import pathlib
 import typing
 from subprocess import PIPE as SUBPROCESS_PIPE
 from subprocess import STDOUT as SUBPROCESS_STDOUT
@@ -75,6 +76,7 @@ def run_command(
     env_overrides: typing.Optional[typing.Dict[str, str]] = None,
     ignore_fails: bool = False,
     valid_exit_ids: typing.Optional[typing.Tuple[int, ...]] = None,
+    cwd: typing.Optional[pathlib.Path] = None,
     **kwargs: typing.Any,
 ) -> str:
     """Runs the given command, returning stdout or throwing on any error."""
@@ -104,6 +106,7 @@ def run_command(
             env=run_env,
             stdout=SUBPROCESS_PIPE,
             stderr=SUBPROCESS_STDOUT,
+            cwd=cwd,
         )
         if process.returncode not in valid_exit_ids:
             valid_exit_strs = ",".join([str(exit_code) for exit_code in valid_exit_ids])
