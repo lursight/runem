@@ -53,6 +53,7 @@ def _log_command_execution(
     env_overrides: typing.Optional[typing.Dict[str, str]],
     valid_exit_ids: typing.Optional[typing.Tuple[int, ...]],
     verbose: bool,
+    cwd: typing.Optional[pathlib.Path] = None,
 ) -> None:
     """Logs out useful debug information on '--verbose'."""
     if verbose:
@@ -61,12 +62,14 @@ def _log_command_execution(
             valid_exit_strs = ",".join(str(exit_code) for exit_code in valid_exit_ids)
             log(f"\tallowed return ids are: {valid_exit_strs}")
 
-    if verbose:
         if env_overrides:
             env_overrides_as_string = " ".join(
                 [f"{key}='{value}'" for key, value in env_overrides.items()]
             )
             log(f"ENV OVERRIDES: {env_overrides_as_string} {cmd_string}")
+
+        if cwd:
+            log(f"cwd: {str(cwd)}")
 
 
 def run_command(
@@ -91,6 +94,7 @@ def run_command(
         env_overrides,
         valid_exit_ids,
         verbose,
+        cwd,
     )
 
     if valid_exit_ids is None:
