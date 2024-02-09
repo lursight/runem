@@ -4,6 +4,16 @@ Changelog
 
 (unreleased)
 ------------
+- Merge pull request #28 from lursight/feat/add_cwd_to_run_command.
+  [Frank Harrison]
+
+  feat(cwd): adds cwd to run_command
+- Feat(cwd): adds cwd to run_command. [Frank Harrison]
+
+
+0.0.22 (2024-02-08)
+-------------------
+- Release: version 0.0.22 🚀 [Frank Harrison]
 - Merge pull request #27 from lursight/feat/add_cwd_to_run_command.
   [Frank Harrison]
 
