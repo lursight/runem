@@ -1354,6 +1354,7 @@ def test_process_jobs_by_phase_early_exits_with_exceptions(
             file_lists=file_lists,  # FilePathListLookup,
             filtered_jobs_by_phase=jobs_by_phase,  # PhaseGroupedJobs,
             in_out_job_run_metadatas={},  # JobRunMetadatasByPhase,
+            show_spinner=False,
         )
         runem_stdout = buf.getvalue().split("\n")
     assert mock_process_jobs.call_count == 1
@@ -1466,6 +1467,7 @@ def test_process_jobs_early_exits_with_exceptions(
             in_out_job_run_metadatas=defaultdict(list),  # JobRunMetadatasByPhase,
             phase="dummy phase 1",
             jobs=[job_phase_1_raises],  # Jobs
+            show_spinner=False,
         )
         runem_stdout = buf.getvalue().split("\n")
     assert mock_process_jobs.call_count == 1

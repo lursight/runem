@@ -88,7 +88,7 @@ def _update_progress(
     all_jobs: Jobs,
     is_running: ValueProxy[bool],
     num_workers: int,
-    show_spinner: bool = True,
+    show_spinner: bool,
 ) -> None:
     """Updates progress report periodically for running tasks.
 
@@ -154,6 +154,7 @@ def _process_jobs(
     in_out_job_run_metadatas: JobRunMetadatasByPhase,
     phase: PhaseName,
     jobs: Jobs,
+    show_spinner: bool,
 ) -> typing.Optional[BaseException]:
     """Execute each given job asynchronously.
 
@@ -195,6 +196,7 @@ def _process_jobs(
                 jobs,
                 is_running,
                 num_concurrent_procs,
+                show_spinner,
             ),
         )
         terminal_writer_process.start()
@@ -226,6 +228,7 @@ def _process_jobs_by_phase(
     file_lists: FilePathListLookup,
     filtered_jobs_by_phase: PhaseGroupedJobs,
     in_out_job_run_metadatas: JobRunMetadatasByPhase,
+    show_spinner: bool,
 ) -> typing.Optional[BaseException]:
     """Execute each job asynchronously, grouped by phase.
 
@@ -251,7 +254,12 @@ def _process_jobs_by_phase(
             log(f"Running Phase {phase}")
 
         failure_exception: typing.Optional[BaseException] = _process_jobs(
-            config_metadata, file_lists, in_out_job_run_metadatas, phase, jobs
+            config_metadata,
+            file_lists,
+            in_out_job_run_metadatas,
+            phase,
+            jobs,
+            show_spinner,
         )
         if failure_exception is not None:
             if config_metadata.args.verbose:
@@ -296,7 +304,11 @@ def _main(
     start = timer()
 
     failure_exception: typing.Optional[BaseException] = _process_jobs_by_phase(
-        config_metadata, file_lists, filtered_jobs_by_phase, job_run_metadatas
+        config_metadata,
+        file_lists,
+        filtered_jobs_by_phase,
+        job_run_metadatas,
+        show_spinner=config_metadata.args.show_spinner,
     )
 
     end = timer()

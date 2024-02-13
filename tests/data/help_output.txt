@@ -1,16 +1,15 @@
 runem: WARNING: no phase found for 'echo "hello world!"', using 'dummy phase 1'
-usage: __main__.py [-h] [--jobs JOBS [JOBS ...]]
-                   [--not-jobs JOBS_EXCLUDED [JOBS_EXCLUDED ...]]
-                   [--phases PHASES [PHASES ...]]
-                   [--not-phases PHASES_EXCLUDED [PHASES_EXCLUDED ...]]
-                   [--tags TAGS [TAGS ...]]
-                   [--not-tags TAGS_EXCLUDED [TAGS_EXCLUDED ...]]
-                   [--dummy-option-1---complete-option]
-                   [--no-dummy-option-1---complete-option]
-                   [--dummy-option-2---minimal]
-                   [--no-dummy-option-2---minimal]
-                   [--call-graphs | --no-call-graphs] [--procs PROCS]
-                   [--root ROOT_DIR] [--verbose | --no-verbose | -v]
+usage: -c [-h] [--jobs JOBS [JOBS ...]]
+          [--not-jobs JOBS_EXCLUDED [JOBS_EXCLUDED ...]]
+          [--phases PHASES [PHASES ...]]
+          [--not-phases PHASES_EXCLUDED [PHASES_EXCLUDED ...]]
+          [--tags TAGS [TAGS ...]]
+          [--not-tags TAGS_EXCLUDED [TAGS_EXCLUDED ...]]
+          [--dummy-option-1---complete-option]
+          [--no-dummy-option-1---complete-option] [--dummy-option-2---minimal]
+          [--no-dummy-option-2---minimal] [--call-graphs | --no-call-graphs]
+          [--procs PROCS] [--root ROOT_DIR] [--spinner | --no-spinner]
+          [--verbose | --no-verbose | -v]
 
 Runs the Lursight Lang test-suite
 
@@ -23,6 +22,9 @@ Runs the Lursight Lang test-suite
   --root ROOT_DIR       which dir to use as the base-dir for testing, defaults
                         to directory containing the config
                         '[TEST_REPLACED_DIR]'
+  --spinner, --no-spinner
+                        Whether to show the progress spinner or not. Helps
+                        reduce log-spam in ci/cd. (default: True)
   --verbose, --no-verbose, -v
 
 jobs:
