@@ -137,6 +137,18 @@ def parse_args(
     )
 
     parser.add_argument(
+        "--spinner",
+        dest="show_spinner",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help=(
+            "Whether to show the progress spinner or not. "
+            "Helps reduce log-spam in ci/cd."
+        ),
+        required=False,
+    )
+
+    parser.add_argument(
         "--verbose",
         "-v",
         dest="verbose",
