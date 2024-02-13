@@ -4,6 +4,32 @@ Changelog
 
 (unreleased)
 ------------
+- Feat(spinner-visibility-option): adds option to hide spinner. [Frank
+  Harrison]
+- Merge pull request #25 from
+  lursight/dependabot/github_actions/codecov/codecov-action-4. [Frank
+  Harrison]
+
+  chore(deps): bump codecov/codecov-action from 3 to 4
+- Chore(deps): bump codecov/codecov-action from 3 to 4.
+  [dependabot[bot]]
+
+  Bumps [codecov/codecov-action](https://github.com/codecov/codecov-action) from 3 to 4.
+  - [Release notes](https://github.com/codecov/codecov-action/releases)
+  - [Changelog](https://github.com/codecov/codecov-action/blob/main/CHANGELOG.md)
+  - [Commits](https://github.com/codecov/codecov-action/compare/v3...v4)
+
+  ---
+  updated-dependencies:
+  - dependency-name: codecov/codecov-action
+    dependency-type: direct:production
+    update-type: version-update:semver-major
+  ...
+
+
+0.0.23 (2024-02-09)
+-------------------
+- Release: version 0.0.23 🚀 [Frank Harrison]
 - Merge pull request #28 from lursight/feat/add_cwd_to_run_command.
   [Frank Harrison]
 
