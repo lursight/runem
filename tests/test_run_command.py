@@ -1,7 +1,6 @@
 import io
-import subprocess
-import typing
 from contextlib import redirect_stdout
+from typing import Optional, Tuple, Type
 from unittest.mock import Mock, patch
 
 import pytest
@@ -9,59 +8,44 @@ import pytest
 import runem.run_command
 
 
-def test_get_stdout() -> None:
-    """Tests that get_std_out returns a non bytes string."""
+class MockPopen:
+    """Mock Popen object."""
 
-    class DummyProcess(subprocess.CompletedProcess[bytes]):
-        """A dummy process to mimic a process that ran at all.
+    def __init__(self, returncode: int = 0, stdout: str = "test output") -> None:
+        self.returncode: int = returncode
+        self.stdout: io.StringIO = io.StringIO(stdout)
 
-        ... in this case all we want is to mimic generated stdout
-        """
+    def communicate(self) -> Tuple[str, bytes]:
+        """Mock the communicate method if you use it."""
+        # Assuming the stdout StringIO object's content should be returned as str
+        return self.stdout.getvalue(), b""
 
-        def __init__(self) -> None:  # pylint: disable=super-init-not-called
-            self.stdout = str.encode("test string")
+    def __enter__(self) -> "MockPopen":
+        """Mimic the behaviour of the context manager."""
+        return self
 
-    dummy_process: subprocess.CompletedProcess[bytes] = DummyProcess()
-    assert "test: test string" == runem.run_command.get_stdout(dummy_process, "test: ")
+    def __exit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_val: Optional[BaseException],
+        exc_tb: Optional[Type[BaseException]],
+    ) -> None:
+        pass
+
+    def wait(self) -> int:
+        """Mimic wait() if used in your implementation."""
+        return self.returncode
 
 
-def test_get_stdout_handles_non_started_processes() -> None:
-    """Tests that get_std_out returns a non bytes string, even for partially created
-    processes."""
-
-    class DummyString:
-        def decode(self, *args: typing.Any) -> str:
-            """Coerce 'decode' to raise an UnboundLocalError.
-
-            We do this because the command that was attempted to be run contained some
-            sort of bad configuration ahead of actually invoking the command; this
-            leaves the Process object in a bad state with partially define members like
-            stdout.
-            """
-            raise UnboundLocalError()
-
-    class DummyProcess(subprocess.CompletedProcess[bytes]):
-        """A dummy process to coerce the error we see in production.
-
-        ... in this case a process that failed to start and generate stdout
-        """
-
-        def __init__(self) -> None:  # pylint: disable=super-init-not-called
-            self.stdout = DummyString()  # type: ignore  # "mocking" bytes string
-
-    dummy_process: subprocess.CompletedProcess[bytes] = DummyProcess()
-    assert "test: No process started, does it exist?" == runem.run_command.get_stdout(
-        dummy_process, "test: "
+def test_parse_stdout() -> None:
+    """Tests that parse_stdout returns a non bytes string."""
+    assert "test: test string" == runem.run_command.parse_stdout(
+        "test string", "test: "
     )
 
 
-@patch(
-    "runem.run_command.subprocess_run",
-    return_value=subprocess.CompletedProcess(
-        args=[], returncode=0, stdout=str.encode("test output")
-    ),
-)
-def test_run_command_basic_call(run_mock: Mock) -> None:
+@patch("runem.run_command.Popen", autospec=True, return_value=MockPopen())
+def test_run_command_basic_call(mock_popen: Mock) -> None:
     """Test normal operation of the run_command.
 
     That is, that we can run a successful command and set the run-context for it
@@ -72,31 +56,27 @@ def test_run_command_basic_call(run_mock: Mock) -> None:
             cmd=["ls"], label="test command", verbose=False
         )
         run_command_stdout = buf.getvalue()
-    assert output == "test command: test output"
+    assert output == "test output"
     assert "" == run_command_stdout, "expected empty output when verbosity is off"
-    run_mock.assert_called_once()
-    assert len(run_mock.call_args) == 2
-    assert run_mock.call_args[0] == (["ls"],)
-    call_ctx = run_mock.call_args[1]
+    mock_popen.assert_called_once()
+    assert len(mock_popen.call_args) == 2
+    assert mock_popen.call_args[0] == (["ls"],)
+    call_ctx = mock_popen.call_args[1]
     env = call_ctx["env"]
     assert len(env.keys()) > 0, "expected the calling env to be passed to the command"
 
 
-@patch(
-    "runem.run_command.subprocess_run",
-    return_value=subprocess.CompletedProcess(
-        args=[], returncode=0, stdout=str.encode("test output")
-    ),
-)
-def test_run_command_basic_call_verbose(run_mock: Mock) -> None:
+@patch("runem.run_command.Popen", autospec=True, return_value=MockPopen())
+def test_run_command_basic_call_verbose(mock_popen: Mock) -> None:
     """Test that we get extra output when the verbose flag is set."""
+
     # capture any prints the run_command() does, should be informative in verbose=True mode
     with io.StringIO() as buf, redirect_stdout(buf):
-        output = runem.run_command.run_command(
+        raw_output = runem.run_command.run_command(
             cmd=["ls"], label="test command", verbose=True
         )
         run_command_stdout = buf.getvalue()
-    assert output == "test command: test output"
+    assert raw_output == "test output"
 
     # check the log output hasn't changed. Update as needed.
     assert run_command_stdout == (
@@ -104,18 +84,17 @@ def test_run_command_basic_call_verbose(run_mock: Mock) -> None:
         "runem: test command: test output\n"
         "runem: running: done: test command: ls\n"
     )
-    run_mock.assert_called_once()
+    mock_popen.assert_called_once()
 
 
 @patch(
-    "runem.run_command.subprocess_run",
-    return_value=subprocess.CompletedProcess(
-        args=[],
+    "runem.run_command.Popen",
+    autospec=True,
+    return_value=MockPopen(
         returncode=1,  # use an error-code of 1, FAIL
-        stdout=str.encode("test output"),
     ),
 )
-def test_run_command_basic_call_non_zero_exit_code(run_mock: Mock) -> None:
+def test_run_command_basic_call_non_zero_exit_code(mock_popen: Mock) -> None:
     """Mimic non-zero exit code."""
     # capture any prints the run_command() does, should be informative in verbose=True mode
     with io.StringIO() as buf, redirect_stdout(buf):
@@ -128,19 +107,15 @@ def test_run_command_basic_call_non_zero_exit_code(run_mock: Mock) -> None:
 
     # check the log output hasn't changed. Update as needed.
     assert run_command_stdout == ""
-    run_mock.assert_called_once()
+    mock_popen.assert_called_once()
 
 
 @patch(
-    "runem.run_command.subprocess_run",
+    "runem.run_command.Popen",
+    autospec=True,
     side_effect=ValueError,
-    return_value=subprocess.CompletedProcess(
-        args=[],
-        returncode=1,  # use an error-code of 1, FAIL
-        stdout=str.encode(""),
-    ),
 )
-def test_run_command_handles_throwing_command(run_mock: Mock) -> None:
+def test_run_command_handles_throwing_command(mock_popen: Mock) -> None:
     """Mimic non-zero exit code."""
     # capture any prints the run_command() does, should be informative in verbose=True mode
     with io.StringIO() as buf, redirect_stdout(buf):
@@ -153,19 +128,12 @@ def test_run_command_handles_throwing_command(run_mock: Mock) -> None:
 
     # check the log output hasn't changed. Update as needed.
     assert run_command_stdout == ""
-    run_mock.assert_called_once()
+    mock_popen.assert_called_once()
 
 
-@patch(
-    "runem.run_command.subprocess_run",
-    return_value=subprocess.CompletedProcess(
-        args=[],
-        returncode=1,  # use an error-code of 1, FAIL
-        stdout=str.encode("test output"),
-    ),
-)
+@patch("runem.run_command.Popen", autospec=True, return_value=MockPopen(returncode=1))
 def test_run_command_ignore_fails_skips_failures_for_non_zero_exit_code(
-    run_mock: Mock,
+    mock_popen: Mock,
 ) -> None:
     """Mimic non-zero exit code, but ensure we do NOT raise when ignore_fails=True."""
     # capture any prints the run_command() does, should be informative in verbose=True mode
@@ -184,19 +152,18 @@ def test_run_command_ignore_fails_skips_failures_for_non_zero_exit_code(
 
     # check the log output hasn't changed. Update as needed.
     assert run_command_stdout == ""
-    run_mock.assert_called_once()
+    mock_popen.assert_called_once()
 
 
 @patch(
-    "runem.run_command.subprocess_run",
-    return_value=subprocess.CompletedProcess(
-        args=[],
+    "runem.run_command.Popen",
+    autospec=True,
+    return_value=MockPopen(
         returncode=0,  # leave valid_exit_ids param at default of 0, no-error
-        stdout=str.encode("test output"),
     ),
 )
 def test_run_command_ignore_fails_skips_no_side_effects_on_success(
-    run_mock: Mock,
+    mock_popen: Mock,
 ) -> None:
     """Mimic non-zero exit code, but ensure we do NOT raise when ignore_fails=True."""
     # capture any prints the run_command() does, should be informative in verbose=True mode
@@ -208,26 +175,25 @@ def test_run_command_ignore_fails_skips_no_side_effects_on_success(
             ignore_fails=True,
         )
         assert (
-            output == "test command: test output"
+            output == "test output"
         ), "expected empty output on failed run with 'ignore_fails=True'"
 
         run_command_stdout = buf.getvalue()
 
     # check the log output hasn't changed. Update as needed.
     assert run_command_stdout == ""
-    run_mock.assert_called_once()
+    mock_popen.assert_called_once()
 
 
 @patch(
-    "runem.run_command.subprocess_run",
-    return_value=subprocess.CompletedProcess(
-        args=[],
+    "runem.run_command.Popen",
+    autospec=True,
+    return_value=MockPopen(
         returncode=3,  # use 3, aka error code, but we will allow this later
-        stdout=str.encode("test output"),
     ),
 )
 def test_run_command_ignore_fails_skips_no_side_effects_on_success_with_valid_exit_ids(
-    run_mock: Mock,
+    mock_popen: Mock,
 ) -> None:
     """Mimic non-zero exit code, but ensure we do NOT raise when ignore_fails=True."""
     # capture any prints the run_command() does, should be informative in verbose=True mode
@@ -240,25 +206,24 @@ def test_run_command_ignore_fails_skips_no_side_effects_on_success_with_valid_ex
             ignore_fails=True,
         )
         assert (
-            output == "test command: test output"
+            output == "test output"
         ), "expected empty output on failed run with 'ignore_fails=True'"
 
         run_command_stdout = buf.getvalue()
 
     # check the log output hasn't changed. Update as needed.
     assert run_command_stdout == ""
-    run_mock.assert_called_once()
+    mock_popen.assert_called_once()
 
 
 @patch(
-    "runem.run_command.subprocess_run",
-    return_value=subprocess.CompletedProcess(
-        args=[],
+    "runem.run_command.Popen",
+    autospec=True,
+    return_value=MockPopen(
         returncode=3,  # set to 3 to mimic tools that return non-zero in aok modes
-        stdout=str.encode("test output"),
     ),
 )
-def test_run_command_basic_call_non_standard_exit_ok_code(run_mock: Mock) -> None:
+def test_run_command_basic_call_non_standard_exit_ok_code(mock_popen: Mock) -> None:
     """Tests the feature that handles non-standard exit codes."""
     # capture any prints the run_command() does, should be informative in verbose=True mode
     with io.StringIO() as buf, redirect_stdout(buf):
@@ -269,23 +234,22 @@ def test_run_command_basic_call_non_standard_exit_ok_code(run_mock: Mock) -> Non
             valid_exit_ids=(3,),  # matches the monkey-patch config about
         )
         run_command_stdout = buf.getvalue()
-    assert output == "test command: test output"
+    assert output == "test output"
 
     # check the log output hasn't changed. Update as needed.
     assert run_command_stdout == ""
-    run_mock.assert_called_once()
+    mock_popen.assert_called_once()
 
 
 @patch(
-    "runem.run_command.subprocess_run",
-    return_value=subprocess.CompletedProcess(
-        args=[],
+    "runem.run_command.Popen",
+    autospec=True,
+    return_value=MockPopen(
         returncode=3,  # set to 3 to mimic tools that return non-zero in aok modes
-        stdout=str.encode("test output"),
     ),
 )
 def test_run_command_basic_call_non_standard_exit_ok_code_verbose(
-    run_mock: Mock,
+    mock_popen: Mock,
 ) -> None:
     """Tests we handle non-standard exit codes & log out extra relevant information."""
     # capture any prints the run_command() does, should be informative in verbose=True mode
@@ -297,7 +261,7 @@ def test_run_command_basic_call_non_standard_exit_ok_code_verbose(
             valid_exit_ids=(3,),  # matches the monkey-patch config about
         )
         run_command_stdout = buf.getvalue()
-    assert output == "test command: test output"
+    assert output == "test output"
 
     # check the log output hasn't changed. Update as needed.
     assert run_command_stdout == (
@@ -306,16 +270,11 @@ def test_run_command_basic_call_non_standard_exit_ok_code_verbose(
         "runem: test command: test output\n"
         "runem: running: done: test command: ls\n"
     )
-    run_mock.assert_called_once()
+    mock_popen.assert_called_once()
 
 
-@patch(
-    "runem.run_command.subprocess_run",
-    return_value=subprocess.CompletedProcess(
-        args=[], returncode=0, stdout=str.encode("test output")
-    ),
-)
-def test_run_command_with_env(run_mock: Mock) -> None:
+@patch("runem.run_command.Popen", autospec=True, return_value=MockPopen())
+def test_run_command_with_env(mock_popen: Mock) -> None:
     """Tests that the env is passed to the subprocess."""
     # capture any prints the run_command() does, should be none in verbose=False mode
     with io.StringIO() as buf, redirect_stdout(buf):
@@ -326,11 +285,11 @@ def test_run_command_with_env(run_mock: Mock) -> None:
             env_overrides={"TEST_ENV_1": "1", "TEST_ENV_2": "2"},
         )
         run_command_stdout = buf.getvalue()
-    assert output == "test command: test output"
+    assert output == "test output"
     assert "" == run_command_stdout, "expected empty output when verbosity is off"
-    assert len(run_mock.call_args) == 2
-    assert run_mock.call_args[0] == (["ls"],)
-    call_ctx = run_mock.call_args[1]
+    assert len(mock_popen.call_args) == 2
+    assert mock_popen.call_args[0] == (["ls"],)
+    call_ctx = mock_popen.call_args[1]
     env = call_ctx["env"]
     assert "TEST_ENV_1" in env
     assert "TEST_ENV_2" in env
@@ -338,13 +297,8 @@ def test_run_command_with_env(run_mock: Mock) -> None:
     assert env["TEST_ENV_2"] == "2"
 
 
-@patch(
-    "runem.run_command.subprocess_run",
-    return_value=subprocess.CompletedProcess(
-        args=[], returncode=0, stdout=str.encode("test output")
-    ),
-)
-def test_run_command_with_env_verbose(run_mock: Mock) -> None:
+@patch("runem.run_command.Popen", autospec=True, return_value=MockPopen())
+def test_run_command_with_env_verbose(mock_popen: Mock) -> None:
     """Tests that the env is handled and logged out in verbose mode."""
     # capture any prints the run_command() does, should be none in verbose=False mode
     with io.StringIO() as buf, redirect_stdout(buf):
@@ -355,16 +309,16 @@ def test_run_command_with_env_verbose(run_mock: Mock) -> None:
             env_overrides={"TEST_ENV_1": "1", "TEST_ENV_2": "2"},
         )
         run_command_stdout = buf.getvalue()
-    assert output == "test command: test output"
+    assert output == "test output"
     assert run_command_stdout == (
         "runem: running: start: test command: ls\n"
         "runem: ENV OVERRIDES: TEST_ENV_1='1' TEST_ENV_2='2' ls\n"
         "runem: test command: test output\n"
         "runem: running: done: test command: ls\n"
     )
-    assert len(run_mock.call_args) == 2
-    assert run_mock.call_args[0] == (["ls"],)
-    call_ctx = run_mock.call_args[1]
+    assert len(mock_popen.call_args) == 2
+    assert mock_popen.call_args[0] == (["ls"],)
+    call_ctx = mock_popen.call_args[1]
     env = call_ctx["env"]
     assert "TEST_ENV_1" in env
     assert "TEST_ENV_2" in env
@@ -373,12 +327,13 @@ def test_run_command_with_env_verbose(run_mock: Mock) -> None:
 
 
 @patch(
-    "runem.run_command.subprocess_run",
-    return_value=subprocess.CompletedProcess(
-        args=[], returncode=1, stdout=str.encode("test output")
+    "runem.run_command.Popen",
+    autospec=True,
+    return_value=MockPopen(
+        returncode=1,
     ),
 )
-def test_run_command_with_env_on_error(run_mock: Mock) -> None:
+def test_run_command_with_env_on_error(mock_popen: Mock) -> None:
     """Tests that the env is passed to the subprocess and prints on error."""
     # capture any prints the run_command() does, should be none in verbose=False mode
     with io.StringIO() as buf, redirect_stdout(buf):
@@ -394,9 +349,9 @@ def test_run_command_with_env_on_error(run_mock: Mock) -> None:
     assert "TEST_ENV_1='1' TEST_ENV_2='2'" in str(err_info.value)
 
     assert "" == run_command_stdout, "expected empty output when verbosity is off"
-    assert len(run_mock.call_args) == 2
-    assert run_mock.call_args[0] == (["ls"],)
-    call_ctx = run_mock.call_args[1]
+    assert len(mock_popen.call_args) == 2
+    assert mock_popen.call_args[0] == (["ls"],)
+    call_ctx = mock_popen.call_args[1]
     env = call_ctx["env"]
     assert "TEST_ENV_1" in env
     assert "TEST_ENV_2" in env

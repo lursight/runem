@@ -6,7 +6,8 @@
 # W503 is no-longer a pep8 standard warning
 #  It is now considered best practice to have binary operators on separate
 #  lines instead of lining up the variables starts.
-ignore = E203, W503, E231
+#  B036 seems to have cause false-positive in flake 7.0.0 and bugbear 24.2.6
+ignore = E203, W503, E231, B036
 
 # match python-black 80 + 10%, causes much shorter files
 max-line-length = 88
