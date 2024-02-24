@@ -4,6 +4,20 @@ Changelog
 
 (unreleased)
 ------------
+- Merge pull request #30 from lursight/feat/stream_stdout. [Frank
+  Harrison]
+
+  Feat/stream stdout
+- Feat(stream-stdout): supports larger sub-process buffer sizes by using
+  Popen. [Frank Harrison]
+
+  This also allows us to stream the stdout to the console on verbose mode
+- Chore(flake8): upgrades to latest flake8. [Frank Harrison]
+
+
+0.0.24 (2024-02-13)
+-------------------
+- Release: version 0.0.24 🚀 [Frank Harrison]
 - Feat(spinner-visibility-option): adds option to hide spinner. [Frank
   Harrison]
 - Merge pull request #25 from
