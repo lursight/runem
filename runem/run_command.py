@@ -3,8 +3,7 @@ import pathlib
 import typing
 from subprocess import PIPE as SUBPROCESS_PIPE
 from subprocess import STDOUT as SUBPROCESS_STDOUT
-from subprocess import CompletedProcess
-from subprocess import run as subprocess_run
+from subprocess import Popen
 
 from runem.log import log
 
@@ -19,16 +18,8 @@ class RunCommandUnhandledError(RuntimeError):
     pass
 
 
-def get_stdout(process: CompletedProcess[bytes], prefix: str) -> str:
-    """Gets stdout from the given process, handling badly configured process objects.
-
-    Additionally prefixes each line of the output with a label.
-    """
-    stdout: str
-    try:
-        stdout = str(process.stdout.decode("utf-8"))
-    except UnboundLocalError:
-        stdout = "No process started, does it exist?"
+def parse_stdout(stdout: str, prefix: str) -> str:
+    """Prefixes each line of the output with a label."""
     stdout = prefix + stdout.replace("\n", f"\n{prefix}")
     return stdout
 
@@ -72,7 +63,7 @@ def _log_command_execution(
             log(f"cwd: {str(cwd)}")
 
 
-def run_command(
+def run_command(  # noqa: C901
     cmd: typing.List[str],  # 'cmd' is the only thing that can't be optionally kwargs
     label: str,
     verbose: bool,
@@ -102,28 +93,46 @@ def run_command(
 
     # init the process in case it throws for things like not being able to
     # convert the command to a list of strings.
-    process: typing.Optional[CompletedProcess[bytes]] = None
+    process: typing.Optional[Popen[str]] = None
+    stdout: str = ""
     try:
-        process = subprocess_run(
+        with Popen(
             cmd,
-            check=False,  # Do NOT throw on non-zero exit
             env=run_env,
             stdout=SUBPROCESS_PIPE,
             stderr=SUBPROCESS_STDOUT,
             cwd=cwd,
-        )
-        if process.returncode not in valid_exit_ids:
-            valid_exit_strs = ",".join([str(exit_code) for exit_code in valid_exit_ids])
-            raise RunCommandBadExitCode(
-                (
-                    f"non-zero exit {process.returncode} (allowed are "
-                    f"{valid_exit_strs}) from {cmd_string}"
+            text=True,
+            bufsize=1,  # buffer it for every character return
+            universal_newlines=True,
+        ) as process:
+            # Read output line by line as it becomes available
+            assert process.stdout is not None
+            for line in process.stdout:
+                stdout += line
+                if verbose:
+                    # print each line of output
+                    log(parse_stdout(line, prefix=f"{label}: "))
+
+            # Wait for the subprocess to finish and get the exit code
+            process.wait()
+
+            if process.returncode not in valid_exit_ids:
+                valid_exit_strs = ",".join(
+                    [str(exit_code) for exit_code in valid_exit_ids]
                 )
-            )
+                raise RunCommandBadExitCode(
+                    (
+                        f"non-zero exit {process.returncode} (allowed are "
+                        f"{valid_exit_strs}) from {cmd_string}"
+                    )
+                )
     except BaseException as err:
         if ignore_fails:
             return ""
-        stdout: str = get_stdout(process, prefix=f"{label}: ERROR: ") if process else ""
+        parsed_stdout: str = (
+            parse_stdout(stdout, prefix=f"{label}: ERROR: ") if process else ""
+        )
         env_overrides_as_string = ""
         if env_overrides:
             env_overrides_as_string = " ".join(
@@ -134,7 +143,7 @@ def run_command(
             f"runem: test: FATAL: command failed: {label}"
             f"\n\t{env_overrides_as_string}{cmd_string}"
             f"\nERROR"
-            f"\n{str(stdout)}"
+            f"\n{str(parsed_stdout)}"
             f"\nERROR END"
         )
 
@@ -143,9 +152,6 @@ def run_command(
         # fallback to raising a RunCommandUnhandledError
         raise RunCommandUnhandledError(error_string) from err
 
-    assert process is not None
-    cmd_stdout: str = get_stdout(process, prefix=f"{label}: ")
     if verbose:
-        log(cmd_stdout)
         log(f"running: done: {label}: {cmd_string}")
-    return cmd_stdout
+    return stdout
