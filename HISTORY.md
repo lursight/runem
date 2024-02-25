@@ -4,6 +4,21 @@ Changelog
 
 (unreleased)
 ------------
+- Merge pull request #31 from
+  lursight/fix/exceptions_on_non_blocking_print. [Frank Harrison]
+
+  fix(blocked-print): adds a 'blocking_print' function
+- Fix(blocked-print): adds a 'blocking_print' function. [Frank Harrison]
+
+  Sometimes in long-lasting jobs, that produce lots of output, we hit
+  BlockingIOError where we can't print to screen because the buffer is full or
+  already being written to (for example), i.e. the  would need to be a
+  'blocking' call, which it is not.
+
+
+0.0.25 (2024-02-24)
+-------------------
+- Release: version 0.0.25 🚀 [Frank Harrison]
 - Merge pull request #30 from lursight/feat/stream_stdout. [Frank
   Harrison]
 
