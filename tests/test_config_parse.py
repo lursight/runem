@@ -157,9 +157,23 @@ def test_parse_job_config_throws_on_dupe_name() -> None:
     }
     tags: JobTags = set(["py"])
     jobs_by_phase: PhaseGroupedJobs = defaultdict(list)
-    job_names: JobNames = set(("reformat py",))
+    job_names: JobNames = set()
     phases: JobPhases = set()
     phase_order: OrderedPhases = ()
+
+    # first call should be fine
+    parse_job_config(
+        cfg_filepath=pathlib.Path(__file__),
+        job=job_config,
+        in_out_tags=tags,
+        in_out_jobs_by_phase=jobs_by_phase,
+        in_out_job_names=job_names,
+        in_out_phases=phases,
+        phase_order=phase_order,
+    )
+    assert job_config["label"] in job_names
+
+    # second call should error
     with pytest.raises(SystemExit):
         parse_job_config(
             cfg_filepath=pathlib.Path(__file__),
@@ -215,6 +229,7 @@ def test_parse_global_config_empty() -> None:
     """Test the global config parse handles empty data."""
     dummy_global_config: GlobalConfig = {
         "phases": tuple(),
+        "min_version": None,
         "options": [],
         "files": [],
     }
@@ -241,6 +256,7 @@ def test_parse_global_config_full() -> None:
     """Test the global config parse handles missing data."""
     dummy_global_config: GlobalConfig = {
         "phases": tuple(),
+        "min_version": None,
         "options": [
             {
                 "option": {
@@ -274,6 +290,7 @@ def test_parse_config() -> None:
         "config": {
             "phases": ("dummy phase 1",),
             "files": [],
+            "min_version": None,
             "options": [],
         }
     }
@@ -362,6 +379,7 @@ def test_parse_config_duplicated_global_raises() -> None:
     dummy_global_config: GlobalSerialisedConfig = {
         "config": {
             "phases": ("dummy phase 1",),
+            "min_version": None,
             "options": [
                 {
                     "option": {
@@ -390,6 +408,7 @@ def test_parse_config_empty_phases_raises() -> None:
     dummy_global_config: GlobalSerialisedConfig = {
         "config": {
             "phases": (),
+            "min_version": None,
             "options": [
                 {
                     "option": {

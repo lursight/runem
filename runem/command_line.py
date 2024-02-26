@@ -6,6 +6,7 @@ import typing
 
 from runem.config_metadata import ConfigMetadata
 from runem.log import log
+from runem.runem_version import get_runem_version
 from runem.types import JobNames, OptionConfig, Options
 from runem.utils import printable_set
 
@@ -150,14 +151,29 @@ def parse_args(
 
     parser.add_argument(
         "--verbose",
-        "-v",
         dest="verbose",
+        help="runs runem in in verbose mode, and streams jobs stdout/stderr to console",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        required=False,
+    )
+
+    parser.add_argument(
+        "--version",
+        "-v",
+        dest="show_version_and_exit",
+        help="show the version of runem and exit",
         action=argparse.BooleanOptionalAction,
         default=False,
         required=False,
     )
 
     args = parser.parse_args(argv[1:])
+
+    if args.show_version_and_exit:
+        log(str(get_runem_version()), decorate=False)
+        # cleanly exit
+        sys.exit(0)
 
     options: Options = initialise_options(config_metadata, args)
 

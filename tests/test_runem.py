@@ -94,6 +94,7 @@ def test_runem_basic_with_config(
             "phases": ("mock phase",),
             "files": [],
             "options": [],
+            "min_version": None,
         }
     }
     empty_config: Config = [
@@ -171,6 +172,7 @@ def _run_full_config_runem(
         "config": {
             "phases": ("dummy phase 1", "dummy phase 2"),
             "files": [],
+            "min_version": None,
             "options": [
                 {
                     "option": {
@@ -535,7 +537,7 @@ def test_runem_help() -> None:
     help_dump: pathlib.Path = (
         pathlib.Path(__file__).parent / "data" / "help_output.txt"
     ).absolute()
-    # help_dump.write_text(runem_stdout_str)
+    help_dump.write_text(runem_stdout_str)
 
     # we have to strip all whitespace as help adapts to the terminal width
     stripped_expected_help_output: typing.List[
@@ -545,6 +547,39 @@ def test_runem_help() -> None:
         str
     ] = _remove_first_line_and_split_along_whitespace(runem_stdout_str)
     assert stripped_expected_help_output == stripped_actual_help_output
+
+
+@pytest.mark.parametrize(
+    "switch_to_test",
+    [
+        "--version",
+        "-v",
+    ],
+)
+def test_runem_version(switch_to_test: str) -> None:
+    """End-2-end test check that the --version switch works."""
+    runem_cli_switches: typing.List[str] = [
+        switch_to_test,
+    ]
+    runem_stdout: typing.List[str]
+    error_raised: typing.Optional[BaseException]
+    (
+        runem_stdout,
+        error_raised,
+    ) = _run_full_config_runem(  # pylint: disable=no-value-for-parameter
+        runem_cli_switches=runem_cli_switches,
+        add_command_one_liner=False,
+    )
+    assert runem_stdout
+    assert error_raised
+
+    # grab the expected output
+    version_file: pathlib.Path = (
+        pathlib.Path(__file__).parent.parent / "runem" / "VERSION"
+    ).absolute()
+
+    expected_version_output: typing.List[str] = [version_file.read_text().strip(), ""]
+    assert runem_stdout == expected_version_output
 
 
 @pytest.mark.parametrize(

@@ -41,6 +41,9 @@ setup(
     long_description_content_type="text/markdown",
     author="lursight",
     packages=find_packages(exclude=["tests", ".github"]),
+    package_data={
+        "runem": ["VERSION"],  # Specify the path to VERSION within the package
+    },
     install_requires=read_requirements("requirements.txt"),
     entry_points={"console_scripts": ["runem = runem.__main__:main"]},
     extras_require={"test": read_requirements("requirements-test.txt")},
