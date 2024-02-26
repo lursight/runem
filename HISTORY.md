@@ -4,6 +4,20 @@ Changelog
 
 (unreleased)
 ------------
+- Merge pull request #32 from lursight/feat/min-version_check. [Frank
+  Harrison]
+
+  Feat/min version check
+- Feat(min-version): adds support to check for minimum required runem
+  version in config. [Frank Harrison]
+- Feat(min-version): adds --version switch. [Frank Harrison]
+
+  and changes -v to be an alias for --version and not --verbose
+
+
+0.0.26 (2024-02-25)
+-------------------
+- Release: version 0.0.26 🚀 [Frank Harrison]
 - Merge pull request #31 from
   lursight/fix/exceptions_on_non_blocking_print. [Frank Harrison]
 
