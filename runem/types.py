@@ -159,6 +159,9 @@ class GlobalConfig(typing.TypedDict):
     # Job will receive the super-set of files for all that job's tags.
     files: typing.Optional[typing.List[TagFileFilterSerialised]]
 
+    # Which minimal version of runem does this config support?
+    min_version: typing.Optional[str]
+
 
 class GlobalSerialisedConfig(typing.TypedDict):
     """Intended to make reading a config file easier.

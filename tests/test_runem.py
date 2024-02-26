@@ -94,6 +94,7 @@ def test_runem_basic_with_config(
             "phases": ("mock phase",),
             "files": [],
             "options": [],
+            "min_version": None,
         }
     }
     empty_config: Config = [
@@ -171,6 +172,7 @@ def _run_full_config_runem(
         "config": {
             "phases": ("dummy phase 1", "dummy phase 2"),
             "files": [],
+            "min_version": None,
             "options": [
                 {
                     "option": {
@@ -535,7 +537,7 @@ def test_runem_help() -> None:
     help_dump: pathlib.Path = (
         pathlib.Path(__file__).parent / "data" / "help_output.txt"
     ).absolute()
-    # help_dump.write_text(runem_stdout_str)
+    help_dump.write_text(runem_stdout_str)
 
     # we have to strip all whitespace as help adapts to the terminal width
     stripped_expected_help_output: typing.List[

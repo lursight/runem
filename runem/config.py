@@ -3,9 +3,11 @@ import sys
 import typing
 
 import yaml
+from packaging.version import Version
 
 from runem.log import log
-from runem.types import Config, GlobalSerialisedConfig
+from runem.runem_version import get_runem_version
+from runem.types import Config, GlobalConfig, GlobalSerialisedConfig
 
 CFG_FILE_YAML = pathlib.Path(".runem.yml")
 
@@ -52,23 +54,27 @@ def _find_cfg() -> pathlib.Path:
     sys.exit(1)
 
 
-def _conform_global_config_types(all_config: Config) -> Config:
+def _conform_global_config_types(
+    all_config: Config,
+) -> typing.Tuple[Config, typing.Optional[GlobalConfig]]:
     """Ensure that the types match the type-spec."""
     assert isinstance(all_config, list)
     # NOTE: A note of performance. This extra loop over the config should have
     #       minimal impact as the global config should _normally_ be first in
     #       the file.
+    global_config: typing.Optional[GlobalConfig] = None
     for idx, config in enumerate(all_config):
         # Notice the 'continue' statement.
         g_config: GlobalSerialisedConfig = config  # type: ignore
         if "config" not in g_config:
             # keep searching
             continue
-        if "phases" in g_config["config"]:
+        global_config = g_config["config"]
+        if "phases" in global_config:
             all_config[idx]["config"]["phases"] = tuple(  # type: ignore
-                g_config["config"]["phases"]
+                global_config["phases"]
             )
-    return all_config
+    return all_config, global_config
 
 
 def load_config() -> typing.Tuple[Config, pathlib.Path]:
@@ -77,4 +83,26 @@ def load_config() -> typing.Tuple[Config, pathlib.Path]:
     with cfg_filepath.open("r+", encoding="utf-8") as config_file_handle:
         all_config = yaml.full_load(config_file_handle)
 
-    return _conform_global_config_types(all_config), cfg_filepath
+    conformed_config: Config
+    global_config: typing.Optional[GlobalConfig]
+    conformed_config, global_config = _conform_global_config_types(all_config)
+
+    # is the config pinned to a version of runem?
+    if (
+        global_config is not None
+        and ("min_version" in global_config)
+        and (global_config["min_version"] is not None)
+    ):
+        # check that the version of runem is supported by the config file
+        runem_version = get_runem_version()
+        min_required_version: Version = Version(global_config["min_version"].strip())
+        if min_required_version > runem_version:
+            log(
+                (
+                    f".runem.yml config requires runem '{min_required_version}', "
+                    f"you have '{runem_version}'. You need to update runem."
+                )
+            )
+            sys.exit(1)
+
+    return conformed_config, cfg_filepath
