@@ -9,7 +9,7 @@ usage: -c [-h] [--jobs JOBS [JOBS ...]]
           [--no-dummy-option-1---complete-option] [--dummy-option-2---minimal]
           [--no-dummy-option-2---minimal] [--call-graphs | --no-call-graphs]
           [--procs PROCS] [--root ROOT_DIR] [--spinner | --no-spinner]
-          [--verbose | --no-verbose | -v]
+          [--verbose | --no-verbose] [--version | --no-version | -v]
 
 Runs the Lursight Lang test-suite
 
@@ -25,7 +25,11 @@ Runs the Lursight Lang test-suite
   --spinner, --no-spinner
                         Whether to show the progress spinner or not. Helps
                         reduce log-spam in ci/cd. (default: True)
-  --verbose, --no-verbose, -v
+  --verbose, --no-verbose
+                        runs runem in in verbose mode, and streams jobs
+                        stdout/stderr to console (default: False)
+  --version, --no-version, -v
+                        show the version of runem and exit (default: False)
 
 jobs:
   --jobs JOBS [JOBS ...]
