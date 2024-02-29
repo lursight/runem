@@ -37,11 +37,33 @@ class MockPopen:
         return self.returncode
 
 
-def test_parse_stdout() -> None:
-    """Tests that parse_stdout returns a non bytes string."""
-    assert "test: test string" == runem.run_command.parse_stdout(
-        "test string", "test: "
-    )
+@pytest.mark.parametrize(
+    "stdout, expected",
+    [
+        ("Line1\nLine2", "Prefix: Line1\nPrefix: Line2"),
+        ("SingleLine", "Prefix: SingleLine"),
+        ("Line1\nLine2\n", "Prefix: Line1\nPrefix: Line2\n"),
+        ("\n", "Prefix: \n"),
+        ("", "Prefix: "),
+        ("Line1\n\nLine3", "Prefix: Line1\nPrefix: \nPrefix: Line3"),
+        ("Line1\nLine2\n\n", "Prefix: Line1\nPrefix: Line2\nPrefix: \n"),
+    ],
+    ids=[
+        "multiple_lines",
+        "single_line",
+        "multiple_lines_with_trailing_newline",
+        "single_newline",
+        "empty_string",
+        "lines_with_empty_line_in_between",
+        "multiple_lines_with_multiple_trailing_newlines",
+    ],
+)
+def test_parse_stdout(stdout: str, expected: str) -> None:
+    """Test various scenarios for the parse_stdout function.
+
+    NOTE: we assume non-bytes strings here.
+    """
+    assert runem.run_command.parse_stdout(stdout, "Prefix: ") == expected
 
 
 @patch("runem.run_command.Popen", autospec=True, return_value=MockPopen())
