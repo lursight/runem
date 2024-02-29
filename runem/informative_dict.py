@@ -18,3 +18,25 @@ class InformativeDict(typing.Dict[K, V], typing.Generic[K, V]):
             raise KeyError(
                 f"Key '{key}' not found. Available keys: {', '.join(available_keys)}"
             ) from None
+
+
+class ReadOnlyInformativeDict(InformativeDict[K, V], typing.Generic[K, V]):
+    """A read-only variant of the above."""
+
+    def __setitem__(self, key: K, value: V) -> None:
+        raise NotImplementedError("This dictionary is read-only")
+
+    def __delitem__(self, key: K) -> None:
+        raise NotImplementedError("This dictionary is read-only")
+
+    def pop(self, *args: typing.Any, **kwargs: typing.Any) -> V:
+        raise NotImplementedError("This dictionary is read-only")
+
+    def popitem(self) -> typing.Tuple[K, V]:
+        raise NotImplementedError("This dictionary is read-only")
+
+    def clear(self) -> None:
+        raise NotImplementedError("This dictionary is read-only")
+
+    def update(self, *args: typing.Any, **kwargs: typing.Any) -> None:
+        raise NotImplementedError("This dictionary is read-only")
