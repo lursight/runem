@@ -15,7 +15,7 @@ from runem.types import (
     FilePathList,
     FilePathListLookup,
     JobConfig,
-    Options,
+    OptionsWritable,
     PhaseGroupedJobs,
 )
 from tests.intentional_test_error import IntentionalTestError
@@ -31,7 +31,7 @@ def intentionally_raising_function(**kwargs: typing.Any) -> None:
 
 
 def old_style_function(
-    args: Namespace, options: Options, file_list: FilePathList
+    args: Namespace, options: OptionsWritable, file_list: FilePathList
 ) -> None:
     """Does nothing called by runner."""
 

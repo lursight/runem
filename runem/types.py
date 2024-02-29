@@ -55,8 +55,9 @@ OptionName = str
 OptionValue = bool
 
 OptionConfigs = typing.Tuple[OptionConfig, ...]
-Options = InformativeDict[OptionName, OptionValue]
+OptionsWritable = InformativeDict[OptionName, OptionValue]
 OptionsReadOnly = ReadOnlyInformativeDict[OptionName, OptionValue]
+Options = OptionsReadOnly
 
 # P1: bool for verbose, P2: list of file paths to work on
 
@@ -73,7 +74,7 @@ FilePathListLookup = typing.DefaultDict[JobTag, FilePathList]
 
 # FIXME: this type is no-longer the actual spec of the test-functions
 JobFunction = typing.Union[
-    typing.Callable[[argparse.Namespace, Options, FilePathList], None],
+    typing.Callable[[argparse.Namespace, OptionsWritable, FilePathList], None],
     typing.Callable[[typing.Any], None],
 ]
 

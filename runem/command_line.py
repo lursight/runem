@@ -8,7 +8,7 @@ from runem.config_metadata import ConfigMetadata
 from runem.informative_dict import InformativeDict
 from runem.log import log
 from runem.runem_version import get_runem_version
-from runem.types import JobNames, OptionConfig, Options
+from runem.types import JobNames, OptionConfig, OptionsWritable
 from runem.utils import printable_set
 
 
@@ -176,7 +176,7 @@ def parse_args(
         # cleanly exit
         sys.exit(0)
 
-    options: Options = initialise_options(config_metadata, args)
+    options: OptionsWritable = initialise_options(config_metadata, args)
 
     if not _validate_filters(config_metadata, args):
         sys.exit(1)
@@ -246,13 +246,13 @@ def _validate_filters(
 def initialise_options(
     config_metadata: ConfigMetadata,
     args: argparse.Namespace,
-) -> Options:
+) -> OptionsWritable:
     """Initialises and returns the set of options to use for this run.
 
     Returns the options dictionary
     """
 
-    options: Options = InformativeDict(
+    options: OptionsWritable = InformativeDict(
         {option["name"]: option["default"] for option in config_metadata.options_config}
     )
     if config_metadata.options_config and args.overrides_on:  # pragma: no branch

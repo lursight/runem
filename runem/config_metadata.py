@@ -7,7 +7,7 @@ from runem.types import (
     JobPhases,
     JobTags,
     OptionConfigs,
-    Options,
+    OptionsWritable,
     OrderedPhases,
     PhaseGroupedJobs,
     TagFileFilters,
@@ -25,7 +25,7 @@ class ConfigMetadata:
     all_job_phases: JobPhases  # the set of job-phases (should be subset of 'phases')
     all_job_tags: JobTags  # the set of job-tags (used for filtering)
 
-    options: Options  # the final configured options to pass to jobs
+    options: OptionsWritable  # the final configured options to pass to jobs
 
     args: argparse.Namespace  # the raw cli args, probably missing information
     jobs_to_run: JobNames  # superset of job-name candidates to run, from cli+config
@@ -70,7 +70,7 @@ class ConfigMetadata:
         phases_to_run: JobPhases,
         tags_to_run: JobTags,
         tags_to_avoid: JobTags,
-        options: Options,
+        options: OptionsWritable,
     ) -> None:
         self.options = options
         self.args = args
