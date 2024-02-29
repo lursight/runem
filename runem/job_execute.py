@@ -24,7 +24,7 @@ def job_execute_inner(
     """
     label = Job.get_job_name(job_config)
     if config_metadata.args.verbose:
-        log(f"START: {label}")
+        log(f"START: '{label}'")
     root_path: pathlib.Path = config_metadata.cfg_filepath.parent
     function: JobFunction
     job_tags: typing.Optional[JobTags] = Job.get_job_tags(job_config)
@@ -53,27 +53,35 @@ def job_execute_inner(
     start = timer()
     func_signature = inspect.signature(function)
     if config_metadata.args.verbose:
-        log(f"job: running {Job.get_job_name(job_config)}")
+        log(f"job: running: '{Job.get_job_name(job_config)}'")
     reports: JobReturn
-    if "args" in func_signature.parameters:
-        reports = function(  # type: ignore  # FIXME: which function do we have?
-            config_metadata.args, config_metadata.options, file_list
-        )
-    else:
-        reports = function(
-            options=config_metadata.options,  # type: ignore
-            file_list=file_list,
-            procs=config_metadata.args.procs,
-            root_path=root_path,
-            verbose=config_metadata.args.verbose,
-            # unpack useful data points from the job_config
-            label=Job.get_job_name(job_config),
-            job=job_config,
-        )
+    try:
+        if "args" in func_signature.parameters:
+            reports = function(  # type: ignore  # FIXME: which function do we have?
+                config_metadata.args, config_metadata.options, file_list
+            )
+        else:
+            reports = function(
+                options=config_metadata.options,  # type: ignore
+                file_list=file_list,
+                procs=config_metadata.args.procs,
+                root_path=root_path,
+                verbose=config_metadata.args.verbose,
+                # unpack useful data points from the job_config
+                label=Job.get_job_name(job_config),
+                job=job_config,
+            )
+    except BaseException:  # pylint: disable=broad-exception-caught
+        # log that we hit an error on this job and re-raise
+        log(decorate=False)
+        log(f"job: ERROR: job '{Job.get_job_name(job_config)}' failed to complete!")
+        # re-raise
+        raise
+
     end = timer()
     time_taken: timedelta = timedelta(seconds=end - start)
     if config_metadata.args.verbose:
-        log(f"DONE: {label}: {time_taken}")
+        log(f"job: DONE: '{label}': {time_taken}")
     timing_data = (label, time_taken)
     return (timing_data, reports)
 

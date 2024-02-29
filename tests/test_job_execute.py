@@ -180,9 +180,9 @@ def test_job_execute_basic_call_verbose() -> None:
         file_lists,
     )
     assert stdout == (
-        "runem: START: reformat py\n"
-        "runem: job: running reformat py\n"
-        "runem: DONE: reformat py: 0:00:00\n"
+        "runem: START: 'reformat py'\n"
+        "runem: job: running: 'reformat py'\n"
+        "runem: job: DONE: 'reformat py': 0:00:00\n"
     )
 
 
@@ -242,10 +242,10 @@ def test_job_execute_empty_files() -> None:
         file_lists,
     )
     assert stdout == (
-        "runem: START: reformat py\n"
+        "runem: START: 'reformat py'\n"
         "runem: WARNING: skipping job 'reformat py', no files for job\n"
-        # "runem: job: running reformat py\n"
-        # "runem: DONE: reformat py: 0:00:00\n"
+        # "runem: job: running: 'reformat py'\n"
+        # "runem: job: DONE: 'reformat py': 0:00:00\n"
     )
 
 
@@ -309,9 +309,9 @@ def test_job_execute_with_ctx_cwd() -> None:
         file_lists,
     )
     assert stdout == (
-        "runem: START: reformat py\n"
-        "runem: job: running reformat py\n"
-        "runem: DONE: reformat py: 0:00:00\n"
+        "runem: START: 'reformat py'\n"
+        "runem: job: running: 'reformat py'\n"
+        "runem: job: DONE: 'reformat py': 0:00:00\n"
     )
 
 
@@ -375,9 +375,9 @@ def test_job_execute_with_old_style_func() -> None:
         file_lists,
     )
     assert stdout == (
-        "runem: START: reformat py\n"
-        "runem: job: running reformat py\n"
-        "runem: DONE: reformat py: 0:00:00\n"
+        "runem: START: 'reformat py'\n"
+        "runem: job: running: 'reformat py'\n"
+        "runem: job: DONE: 'reformat py': 0:00:00\n"
     )
 
 
@@ -451,7 +451,10 @@ def test_job_execute_with_raising_func() -> None:
         file_lists,
     )
     assert isinstance(err, IntentionalTestError)
-    assert stdout == (
-        "runem: START: intentionally throwing\n"
-        "runem: job: running intentionally throwing\n"
-    )
+    assert stdout.split("\n") == [
+        "runem: START: 'intentionally throwing'",
+        "runem: job: running: 'intentionally throwing'",
+        "",
+        "runem: job: ERROR: job 'intentionally throwing' failed to complete!",
+        "",
+    ]

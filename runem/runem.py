@@ -334,9 +334,12 @@ def timed_main(argv: typing.List[str]) -> None:
     end = timer()
     time_taken: timedelta = timedelta(seconds=end - start)
     time_saved = report_on_run(phase_run_oder, job_run_metadatas, time_taken)
+    message: str = "DONE: runem took"
+    if failure_exception:
+        message = "FAILED: your jobs failed after"
     log(
         (
-            f"DONE: runem took: {time_taken.total_seconds()}s, "
+            f"{message}: {time_taken.total_seconds()}s, "
             f"saving you {time_saved.total_seconds()}s"
         )
     )
