@@ -9,6 +9,7 @@ from unittest.mock import Mock, patch
 import pytest
 
 from runem.config_metadata import ConfigMetadata
+from runem.informative_dict import InformativeDict
 from runem.job_filter import _get_jobs_matching, _should_filter_out_by_tags, filter_jobs
 from runem.types import JobConfig, JobTags, PhaseGroupedJobs
 
@@ -60,7 +61,7 @@ def test_runem_job_filters_work_with_no_tags(verbosity: bool) -> None:
         phases_to_run=set(),  # ignored JobPhases,
         tags_to_run=set(),  # ignored JobTags,
         tags_to_avoid=set(),  # ignored  JobTags,
-        options={},  # Options,
+        options=InformativeDict({}),  # Options,
     )
     with io.StringIO() as buf, redirect_stdout(buf):
         filter_jobs(config_metadata)

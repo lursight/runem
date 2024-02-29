@@ -5,6 +5,7 @@ import sys
 import typing
 
 from runem.config_metadata import ConfigMetadata
+from runem.informative_dict import InformativeDict
 from runem.log import log
 from runem.runem_version import get_runem_version
 from runem.types import JobNames, OptionConfig, Options
@@ -251,9 +252,9 @@ def initialise_options(
     Returns the options dictionary
     """
 
-    options: Options = {
-        option["name"]: option["default"] for option in config_metadata.options_config
-    }
+    options: Options = InformativeDict(
+        {option["name"]: option["default"] for option in config_metadata.options_config}
+    )
     if config_metadata.options_config and args.overrides_on:  # pragma: no branch
         for option_name in args.overrides_on:  # pragma: no branch
             options[option_name] = True

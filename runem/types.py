@@ -3,6 +3,8 @@ import pathlib
 import typing
 from datetime import timedelta
 
+from runem.informative_dict import InformativeDict
+
 
 class FunctionNotFound(ValueError):
     """Thrown when the test-function cannot be found."""
@@ -53,7 +55,7 @@ OptionName = str
 OptionValue = bool
 
 OptionConfigs = typing.Tuple[OptionConfig, ...]
-Options = typing.Dict[OptionName, OptionValue]
+Options = InformativeDict[OptionName, OptionValue]
 
 # P1: bool for verbose, P2: list of file paths to work on
 

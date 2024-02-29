@@ -1,6 +1,7 @@
 import argparse
 import pathlib
 
+from runem.informative_dict import InformativeDict
 from runem.types import (
     JobNames,
     JobPhases,
@@ -52,7 +53,7 @@ class ConfigMetadata:
         self.all_job_phases = all_job_phases
         self.all_job_tags = all_job_tags
 
-        self.options = {}  # will be defined after cli argument parsing
+        self.options = InformativeDict()  # shows useful errors on bad-option lookups
 
         self.args = (
             argparse.Namespace()

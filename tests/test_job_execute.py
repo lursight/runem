@@ -9,6 +9,7 @@ from unittest.mock import patch
 import pytest
 
 from runem.config_metadata import ConfigMetadata
+from runem.informative_dict import InformativeDict
 from runem.job_execute import job_execute
 from runem.types import (
     FilePathList,
@@ -110,7 +111,7 @@ def test_job_execute_basic_call() -> None:
         phases_to_run=set(),  # ignored JobPhases,
         tags_to_run=set(),  # ignored JobTags,
         tags_to_avoid=set(),  # ignored  JobTags,
-        options={},  # Options,
+        options=InformativeDict({}),  # Options,
     )
 
     file_lists: FilePathListLookup = defaultdict(list)
@@ -168,7 +169,7 @@ def test_job_execute_basic_call_verbose() -> None:
         phases_to_run=set(),  # ignored JobPhases,
         tags_to_run=set(),  # ignored JobTags,
         tags_to_avoid=set(),  # ignored  JobTags,
-        options={},  # Options,
+        options=InformativeDict({}),  # Options,
     )
 
     file_lists: FilePathListLookup = defaultdict(list)
@@ -230,7 +231,7 @@ def test_job_execute_empty_files() -> None:
         phases_to_run=set(),  # ignored JobPhases,
         tags_to_run=set(),  # ignored JobTags,
         tags_to_avoid=set(),  # ignored  JobTags,
-        options={},  # Options,
+        options=InformativeDict({}),  # Options,
     )
 
     file_lists: FilePathListLookup = defaultdict(list)
@@ -297,7 +298,7 @@ def test_job_execute_with_ctx_cwd() -> None:
         phases_to_run=set(),  # ignored JobPhases,
         tags_to_run=set(),  # ignored JobTags,
         tags_to_avoid=set(),  # ignored  JobTags,
-        options={},  # Options,
+        options=InformativeDict({}),  # Options,
     )
 
     file_lists: FilePathListLookup = defaultdict(list)
@@ -363,7 +364,7 @@ def test_job_execute_with_old_style_func() -> None:
         phases_to_run=set(),  # ignored JobPhases,
         tags_to_run=set(),  # ignored JobTags,
         tags_to_avoid=set(),  # ignored  JobTags,
-        options={},  # Options,
+        options=InformativeDict({}),  # Options,
     )
 
     file_lists: FilePathListLookup = defaultdict(list)
@@ -438,7 +439,7 @@ def test_job_execute_with_raising_func() -> None:
         phases_to_run=set(),  # ignored JobPhases,
         tags_to_run=set(),  # ignored JobTags,
         tags_to_avoid=set(),  # ignored  JobTags,
-        options={},  # Options,
+        options=InformativeDict({}),  # Options,
     )
 
     file_lists: FilePathListLookup = defaultdict(list)
