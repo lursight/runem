@@ -7,6 +7,7 @@ from datetime import timedelta
 from timeit import default_timer as timer
 
 from runem.config_metadata import ConfigMetadata
+from runem.informative_dict import ReadOnlyInformativeDict
 from runem.job import Job
 from runem.job_wrapper import get_job_wrapper
 from runem.log import log
@@ -62,7 +63,7 @@ def job_execute_inner(
             )
         else:
             reports = function(
-                options=config_metadata.options,  # type: ignore
+                options=ReadOnlyInformativeDict(config_metadata.options),  # type: ignore
                 file_list=file_list,
                 procs=config_metadata.args.procs,
                 root_path=root_path,

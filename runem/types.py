@@ -3,7 +3,7 @@ import pathlib
 import typing
 from datetime import timedelta
 
-from runem.informative_dict import InformativeDict
+from runem.informative_dict import InformativeDict, ReadOnlyInformativeDict
 
 
 class FunctionNotFound(ValueError):
@@ -56,6 +56,7 @@ OptionValue = bool
 
 OptionConfigs = typing.Tuple[OptionConfig, ...]
 Options = InformativeDict[OptionName, OptionValue]
+OptionsReadOnly = ReadOnlyInformativeDict[OptionName, OptionValue]
 
 # P1: bool for verbose, P2: list of file paths to work on
 
