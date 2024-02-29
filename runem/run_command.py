@@ -19,9 +19,29 @@ class RunCommandUnhandledError(RuntimeError):
 
 
 def parse_stdout(stdout: str, prefix: str) -> str:
-    """Prefixes each line of the output with a label."""
-    stdout = prefix + stdout.replace("\n", f"\n{prefix}")
-    return stdout
+    """Prefixes each line of the output with a given label, except trailing new
+    lines."""
+    # Edge case: Return the prefix immediately for an empty string
+    if not stdout:
+        return prefix
+
+    # Split stdout into lines, noting if it ends with a newline
+    ends_with_newline = stdout.endswith("\n")
+    lines = stdout.split("\n")
+
+    # Apply prefix to all lines except the last if it's empty (due to a trailing newline)
+    modified_lines = [f"{prefix}{line}" for line in lines[:-1]] + (
+        [lines[-1]]
+        if lines[-1] == "" and ends_with_newline
+        else [f"{prefix}{lines[-1]}"]
+    )
+
+    # Join the lines back together, appropriately handling the final newline
+    modified_stdout = "\n".join(modified_lines)
+    # if ends_with_newline:
+    #     modified_stdout += "\n"
+
+    return modified_stdout
 
 
 def _prepare_environment(
@@ -111,7 +131,7 @@ def run_command(  # noqa: C901
             for line in process.stdout:
                 stdout += line
                 if verbose:
-                    # print each line of output
+                    # print each line of output, assuming that each has a newline
                     log(parse_stdout(line, prefix=f"{label}: "))
 
             # Wait for the subprocess to finish and get the exit code
