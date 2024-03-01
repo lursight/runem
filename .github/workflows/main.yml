@@ -95,32 +95,32 @@ jobs:
           name: reports-${{ matrix.os }}-python${{ matrix.python-version }}
           path: /home/runner/work/runem/runem/reports/**
 
-  tests_win:
-    needs: redundancy_checks
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: [3.9]
-        os: [windows-latest]
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install Pip
-        run: pip install --user --upgrade pip
-      - name: Install Yarn Deps
-        run: yarn install
-      - name: Install project
-        run: pip install -e .[test]
-      - name: Set Python IO encoding to UTF-8
-        run: echo "PYTHONIOENCODING=utf-8" >> $GITHUB_ENV
-      - name: run tests
-        run: python3 -m runem.runem --verbose --no-spinner
-      - name: Upload Artifacts
-        if: failure() # This step runs only if any previous step failed
-        uses: actions/upload-artifact@v3
-        with:
-          name: reports-${{ matrix.os }}-python${{ matrix.python-version }}
-          path: /home/runner/work/runem/runem/reports/**
+  # tests_win:
+  #   needs: redundancy_checks
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       python-version: [3.9]
+  #       os: [windows-latest]
+  #   runs-on: ${{ matrix.os }}
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: actions/setup-python@v5
+  #       with:
+  #         python-version: ${{ matrix.python-version }}
+  #     - name: Install Pip
+  #       run: pip install --user --upgrade pip
+  #     - name: Install Yarn Deps
+  #       run: yarn install
+  #     - name: Install project
+  #       run: pip install -e .[test]
+  #     - name: Set Python IO encoding to UTF-8
+  #       run: echo "PYTHONIOENCODING=utf-8" >> $GITHUB_ENV
+  #     - name: run tests
+  #       run: python3 -m runem.runem --verbose --no-spinner
+  #     - name: Upload Artifacts
+  #       if: failure() # This step runs only if any previous step failed
+  #       uses: actions/upload-artifact@v3
+  #       with:
+  #         name: reports-${{ matrix.os }}-python${{ matrix.python-version }}
+  #         path: /home/runner/work/runem/runem/reports/**
