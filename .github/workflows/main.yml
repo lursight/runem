@@ -14,25 +14,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  linter:
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: [3.9]
-        os: [ubuntu-latest]
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install project
-        run: make install
-      - name: Run linter
-        run: make lint
-
   tests_linux:
-    needs: linter
     strategy:
       fail-fast: false
       matrix:
@@ -44,17 +26,19 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Install Pip
+        run: pip install --user --upgrade pip
       - name: Install project
-        run: make install
+        run: pip install -e .[test]
       - name: Run tests
-        run: make test
+        run: python3 -m runem.runem --verbose
       - name: "Upload coverage to Codecov"
         uses: codecov/codecov-action@v4
         # with:
         #   fail_ci_if_error: true
 
   tests_mac:
-    needs: linter
+    needs: tests_linux
     strategy:
       fail-fast: false
       matrix:
@@ -66,13 +50,15 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Install Pip
+        run: pip install --user --upgrade pip
       - name: Install project
-        run: make install
+        run: pip install -e .[test]
       - name: Run tests
-        run: make test
+        run: python3 -m runem.runem --verbose
 
   tests_win:
-    needs: linter
+    needs: tests_linux
     strategy:
       fail-fast: false
       matrix:
@@ -89,4 +75,4 @@ jobs:
       - name: Install project
         run: pip install -e .[test]
       - name: run tests
-        run: pytest -s -vvvv -l --tb=long tests
+        run: python3 -m runem.runem --verbose
