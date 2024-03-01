@@ -65,6 +65,10 @@ def _get_jobs_matching(
     filtered_jobs: PhaseGroupedJobs,
     verbose: bool,
 ) -> None:
+    """Via filtered_jobs, filters 'jobs' that match the given phase and and tags.
+
+    Warns if the job-name isn't found in list of valid job-names.
+    """
     phase_jobs: typing.List[JobConfig] = jobs[phase]
 
     job: JobConfig

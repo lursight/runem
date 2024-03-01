@@ -1,5 +1,6 @@
 import io
 import pathlib
+import typing
 from argparse import Namespace
 from collections import defaultdict
 from contextlib import redirect_stdout
@@ -152,36 +153,44 @@ def test_should_filter_out_by_tags_without_tags_to_avoid(verbosity: bool) -> Non
 @patch(
     "runem.job_filter.Job.get_job_name", return_value=("intentionally not in job names")
 )
-def test_get_jobs_matching_with_tags_to_avoid(
+def test_get_jobs_matching_when_job_not_in_valid_job_names(
     mock_get_job_name: Mock,
     mock_should_filter: Mock,
     verbosity: bool,
 ) -> None:
     """Test case where has_tags_to_avoid is not empty."""
     job: JobConfig = {
-        "label": "Job1",
-        "when": {"phase": "phase", "tags": {"tag1", "tag2"}},
+        "label": "job name not in job_names",
+        "when": {"phase": "phase", "tags": set()},
     }
-    tags: JobTags = {"tag1"}
-    tags_to_avoid: JobTags = {"tag1", "tag2"}
+    unused_tags: JobTags = set()
+    unused_tags_to_avoid: JobTags = set()
     jobs: PhaseGroupedJobs = defaultdict(list)
     jobs.update({"phase": [job]})
 
     with io.StringIO() as buf, redirect_stdout(buf):
         _get_jobs_matching(
-            "phase", {"job name 1"}, tags, tags_to_avoid, jobs, jobs, verbosity
+            phase="phase",
+            job_names={"a name that does not match the above job"},
+            tags=unused_tags,
+            tags_to_avoid=unused_tags_to_avoid,
+            jobs=jobs,
+            filtered_jobs=jobs,
+            verbose=verbosity,
         )
         run_command_stdout = buf.getvalue().split("\n")
 
+    expected_stdout: typing.List[str]
     if not verbosity:
-        assert run_command_stdout == [""]
+        expected_stdout = [""]
     else:
-        assert run_command_stdout == [
+        expected_stdout = [
             (
                 "runem: not running job 'intentionally not in job names' because it "
                 "isn't in the list of job names. See --jobs and --not-jobs"
             ),
             "",
         ]
+    assert run_command_stdout == expected_stdout
     mock_get_job_name.assert_called_once()
     mock_should_filter.assert_called_once()
