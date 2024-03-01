@@ -55,7 +55,7 @@ jobs:
       - name: Install project
         run: pip install -e .[test]
       - name: Run tests
-        run: python3 -m runem.runem --verbose
+        run: python3 -m runem.runem --verbose --no-spinner
       - name: "Upload coverage to Codecov"
         uses: codecov/codecov-action@v4
 
@@ -77,7 +77,7 @@ jobs:
       - name: Install project
         run: pip install -e .[test]
       - name: Run tests
-        run: python3 -m runem.runem --verbose
+        run: python3 -m runem.runem --verbose --no-spinner
 
   tests_win:
     needs: redundancy_checks
@@ -97,4 +97,4 @@ jobs:
       - name: Install project
         run: pip install -e .[test]
       - name: run tests
-        run: python3 -m runem.runem --verbose
+        run: python3 -m runem.runem --verbose --no-spinner
