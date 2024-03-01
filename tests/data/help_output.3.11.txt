@@ -1,0 +1,71 @@
+runem: WARNING: no phase found for 'echo "hello world!"', using 'dummy phase 1'
+usage: -c [-h] [--jobs JOBS [JOBS ...]]
+          [--not-jobs JOBS_EXCLUDED [JOBS_EXCLUDED ...]]
+          [--phases PHASES [PHASES ...]]
+          [--not-phases PHASES_EXCLUDED [PHASES_EXCLUDED ...]]
+          [--tags TAGS [TAGS ...]]
+          [--not-tags TAGS_EXCLUDED [TAGS_EXCLUDED ...]]
+          [--dummy-option-1---complete-option]
+          [--no-dummy-option-1---complete-option] [--dummy-option-2---minimal]
+          [--no-dummy-option-2---minimal] [--call-graphs | --no-call-graphs]
+          [--procs PROCS] [--root ROOT_DIR] [--spinner | --no-spinner]
+          [--verbose | --no-verbose] [--version | --no-version | -v]
+
+Runs the Lursight Lang test-suite
+
+[TEST_REPLACED_OPTION_HEADER]
+  -h, --help            show this help message and exit
+  --call-graphs, --no-call-graphs
+  --procs PROCS, -j PROCS
+                        the number of concurrent test jobs to run, -1 runs all
+                        test jobs at the same time ([TEST_REPLACED_CORES] cores available)
+  --root ROOT_DIR       which dir to use as the base-dir for testing, defaults
+                        to directory containing the config
+                        '[TEST_REPLACED_DIR]'
+  --spinner, --no-spinner
+                        Whether to show the progress spinner or not. Helps
+                        reduce log-spam in ci/cd.
+  --verbose, --no-verbose
+                        runs runem in in verbose mode, and streams jobs
+                        stdout/stderr to console
+  --version, --no-version, -v
+                        show the version of runem and exit
+
+jobs:
+  --jobs JOBS [JOBS ...]
+                        List of job-names to run the given jobs. Other filters
+                        will modify this list. Defaults to 'dummy job label
+                        1', 'dummy job label 2', 'echo "hello world!"', 'hello
+                        world'
+  --not-jobs JOBS_EXCLUDED [JOBS_EXCLUDED ...]
+                        List of job-names to NOT run. Defaults to empty.
+                        Available options are: 'dummy job label 1', 'dummy job
+                        label 2', 'echo "hello world!"', 'hello world'
+
+phases:
+  --phases PHASES [PHASES ...]
+                        Run only the phases passed in, and can be used to
+                        change the phase order. Phases are run in the order
+                        given. Defaults to 'dummy phase 1', 'dummy phase 2'.
+  --not-phases PHASES_EXCLUDED [PHASES_EXCLUDED ...]
+                        List of phases to NOT run. This option does not change
+                        the phase run order. Options are '['dummy phase 1',
+                        'dummy phase 2']'.
+
+tags:
+  --tags TAGS [TAGS ...]
+                        Only jobs with the given tags. Defaults to '['dummy
+                        tag 1', 'dummy tag 2', 'tag only on job 1', 'tag only
+                        on job 2']'.
+  --not-tags TAGS_EXCLUDED [TAGS_EXCLUDED ...]
+                        Removes one or more tags from the list of job tags to
+                        be run. Options are '['dummy tag 1', 'dummy tag 2',
+                        'tag only on job 1', 'tag only on job 2']'.
+
+job-param overrides:
+  --dummy-option-1---complete-option, --dummy option 1 multi alias 1, --dummy option 1 multi alias 2, -x, --dummy option alias 1
+                        a dummy option description
+  --no-dummy-option-1---complete-option, --no-dummy option 1 multi alias 1, --no-dummy option 1 multi alias 2, --no-x, --no-dummy option alias 1
+                        turn off a dummy option description
+  --dummy-option-2---minimal
+  --no-dummy-option-2---minimal
