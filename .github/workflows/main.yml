@@ -52,6 +52,8 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install Pip
         run: pip install --user --upgrade pip
+      - name: Install Yarn Deps
+        run: yarn install
       - name: Install project
         run: pip install -e .[test]
       - name: Run tests
@@ -74,6 +76,8 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install Pip
         run: pip install --user --upgrade pip
+      - name: Install Yarn Deps
+        run: yarn install
       - name: Install project
         run: pip install -e .[test]
       - name: Run tests
@@ -94,6 +98,8 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install Pip
         run: pip install --user --upgrade pip
+      - name: Install Yarn Deps
+        run: yarn install
       - name: Install project
         run: pip install -e .[test]
       - name: run tests
