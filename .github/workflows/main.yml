@@ -114,6 +114,8 @@ jobs:
         run: yarn install
       - name: Install project
         run: pip install -e .[test]
+      - name: Set Python IO encoding to UTF-8
+        run: echo "PYTHONIOENCODING=utf-8" >> $GITHUB_ENV
       - name: run tests
         run: python3 -m runem.runem --verbose --no-spinner
       - name: Upload Artifacts
