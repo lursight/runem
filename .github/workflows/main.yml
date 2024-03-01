@@ -60,6 +60,12 @@ jobs:
         run: python3 -m runem.runem --verbose --no-spinner
       - name: "Upload coverage to Codecov"
         uses: codecov/codecov-action@v4
+      - name: Upload Artifacts
+        if: failure() # This step runs only if any previous step failed
+        uses: actions/upload-artifact@v3
+        with:
+          name: reports-${{ matrix.os }}-python${{ matrix.python-version }}
+          path: /home/runner/work/runem/runem/reports/**
 
   tests_mac:
     needs: redundancy_checks
@@ -82,6 +88,12 @@ jobs:
         run: pip install -e .[test]
       - name: Run tests
         run: python3 -m runem.runem --verbose --no-spinner
+      - name: Upload Artifacts
+        if: failure() # This step runs only if any previous step failed
+        uses: actions/upload-artifact@v3
+        with:
+          name: reports-${{ matrix.os }}-python${{ matrix.python-version }}
+          path: /home/runner/work/runem/runem/reports/**
 
   tests_win:
     needs: redundancy_checks
@@ -104,3 +116,9 @@ jobs:
         run: pip install -e .[test]
       - name: run tests
         run: python3 -m runem.runem --verbose --no-spinner
+      - name: Upload Artifacts
+        if: failure() # This step runs only if any previous step failed
+        uses: actions/upload-artifact@v3
+        with:
+          name: reports-${{ matrix.os }}-python${{ matrix.python-version }}
+          path: /home/runner/work/runem/runem/reports/**
