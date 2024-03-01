@@ -537,7 +537,7 @@ def test_runem_help() -> None:
     help_dump: pathlib.Path = (
         pathlib.Path(__file__).parent / "data" / "help_output.txt"
     ).absolute()
-    help_dump.write_text(runem_stdout_str)
+    # help_dump.write_text(runem_stdout_str)
 
     # we have to strip all whitespace as help adapts to the terminal width
     stripped_expected_help_output: typing.List[
