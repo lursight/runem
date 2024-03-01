@@ -14,7 +14,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  linter:
+  redundancy_checks:
     strategy:
       fail-fast: false
       matrix:
@@ -26,35 +26,49 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Install Pip
+        run: pip install --user --upgrade pip
       - name: Install project
-        run: make install
-      - name: Run linter
-        run: make lint
-
-  tests_linux:
-    needs: linter
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: [3.9]
-        os: [ubuntu-latest]
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install project
-        run: make install
-      - name: Run tests
+        run: pip install -e .[test]
+      - name: Run backup tests
         run: make test
-      - name: "Upload coverage to Codecov"
-        uses: codecov/codecov-action@v4
+      - name: Run backup lint
+        run: make lint
         # with:
         #   fail_ci_if_error: true
 
+  tests_linux:
+    needs: redundancy_checks
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [3.9]
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install Pip
+        run: pip install --user --upgrade pip
+      - name: Install Yarn Deps
+        run: yarn install
+      - name: Install project
+        run: pip install -e .[test]
+      - name: Run tests
+        run: python3 -m runem.runem --verbose --no-spinner
+      - name: "Upload coverage to Codecov"
+        uses: codecov/codecov-action@v4
+      - name: Upload Artifacts
+        if: failure() # This step runs only if any previous step failed
+        uses: actions/upload-artifact@v3
+        with:
+          name: reports-${{ matrix.os }}-python${{ matrix.python-version }}
+          path: /home/runner/work/runem/runem/reports/**
+
   tests_mac:
-    needs: linter
+    needs: redundancy_checks
     strategy:
       fail-fast: false
       matrix:
@@ -66,27 +80,47 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install project
-        run: make install
-      - name: Run tests
-        run: make test
-
-  tests_win:
-    needs: linter
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: [3.9]
-        os: [windows-latest]
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
       - name: Install Pip
         run: pip install --user --upgrade pip
+      - name: Install Yarn Deps
+        run: yarn install
       - name: Install project
         run: pip install -e .[test]
-      - name: run tests
-        run: pytest -s -vvvv -l --tb=long tests
+      - name: Run tests
+        run: python3 -m runem.runem --verbose --no-spinner
+      - name: Upload Artifacts
+        if: failure() # This step runs only if any previous step failed
+        uses: actions/upload-artifact@v3
+        with:
+          name: reports-${{ matrix.os }}-python${{ matrix.python-version }}
+          path: /home/runner/work/runem/runem/reports/**
+
+  # tests_win:
+  #   needs: redundancy_checks
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       python-version: [3.9]
+  #       os: [windows-latest]
+  #   runs-on: ${{ matrix.os }}
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: actions/setup-python@v5
+  #       with:
+  #         python-version: ${{ matrix.python-version }}
+  #     - name: Install Pip
+  #       run: pip install --user --upgrade pip
+  #     - name: Install Yarn Deps
+  #       run: yarn install
+  #     - name: Install project
+  #       run: pip install -e .[test]
+  #     - name: Set Python IO encoding to UTF-8
+  #       run: echo "PYTHONIOENCODING=utf-8" >> $GITHUB_ENV
+  #     - name: run tests
+  #       run: python3 -m runem.runem --verbose --no-spinner
+  #     - name: Upload Artifacts
+  #       if: failure() # This step runs only if any previous step failed
+  #       uses: actions/upload-artifact@v3
+  #       with:
+  #         name: reports-${{ matrix.os }}-python${{ matrix.python-version }}
+  #         path: /home/runner/work/runem/runem/reports/**

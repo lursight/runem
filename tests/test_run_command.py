@@ -1,4 +1,5 @@
 import io
+import pathlib
 from contextlib import redirect_stdout
 from typing import Optional, Tuple, Type
 from unittest.mock import Mock, patch
@@ -15,7 +16,7 @@ class MockPopen:
         self.returncode: int = returncode
         self.stdout: io.StringIO = io.StringIO(stdout)
 
-    def communicate(self) -> Tuple[str, bytes]:
+    def communicate(self) -> Tuple[str, bytes]:  # pragma: no cover
         """Mock the communicate method if you use it."""
         # Assuming the stdout StringIO object's content should be returned as str
         return self.stdout.getvalue(), b""
@@ -379,3 +380,29 @@ def test_run_command_with_env_on_error(mock_popen: Mock) -> None:
     assert "TEST_ENV_2" in env
     assert env["TEST_ENV_1"] == "1"
     assert env["TEST_ENV_2"] == "2"
+
+
+@patch("runem.run_command.Popen", autospec=True, return_value=MockPopen())
+def test_run_command_basic_call_verbose_with_cwd(mock_popen: Mock) -> None:
+    """Test that we get extra output when the verbose flag is set."""
+
+    # capture any prints the run_command() does, should be informative in verbose=True mode
+    with io.StringIO() as buf, redirect_stdout(buf):
+        raw_output = runem.run_command.run_command(
+            cmd=["ls"],
+            label="test command",
+            verbose=True,
+            cwd=pathlib.Path("./some/test/path"),
+        )
+        run_command_stdout = buf.getvalue()
+    assert raw_output == "test output"
+
+    # check the log output hasn't changed. Update as needed.
+    assert run_command_stdout.split("\n") == [
+        "runem: running: start: test command: ls",
+        "runem: cwd: some/test/path",
+        "runem: test command: test output",
+        "runem: running: done: test command: ls",
+        "",
+    ]
+    mock_popen.assert_called_once()
