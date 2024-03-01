@@ -4,6 +4,7 @@ import multiprocessing
 import os
 import pathlib
 import re
+import sys
 import typing
 from argparse import Namespace
 from collections import defaultdict
@@ -534,9 +535,18 @@ def test_runem_help() -> None:
 
     runem_stdout_str: str = _conform_help_output(runem_stdout)
 
+    # can't cover code for multiple versions of python
+    version_str: str
+    if sys.version_info < (3, 11):  # pragma: no cover
+        version_str = "3.10"
+    else:  # pragma: no cover
+        # above 3.11 seems to be stable, for now at least
+        version_str = "3.11"
+        # version_str = f"{sys.version_info.major}.{sys.version_info.minor}"
+
     # grab the expected output
     help_dump: pathlib.Path = (
-        pathlib.Path(__file__).parent / "data" / "help_output.txt"
+        pathlib.Path(__file__).parent / "data" / f"help_output.{version_str}.txt"
     ).absolute()
     # help_dump.write_text(runem_stdout_str)
 
