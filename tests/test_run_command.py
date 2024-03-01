@@ -15,7 +15,7 @@ class MockPopen:
         self.returncode: int = returncode
         self.stdout: io.StringIO = io.StringIO(stdout)
 
-    def communicate(self) -> Tuple[str, bytes]:
+    def communicate(self) -> Tuple[str, bytes]:  # pragma: no cover
         """Mock the communicate method if you use it."""
         # Assuming the stdout StringIO object's content should be returned as str
         return self.stdout.getvalue(), b""
