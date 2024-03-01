@@ -4,6 +4,77 @@ Changelog
 
 (unreleased)
 ------------
+- Merge pull request #35 from lursight/fix/aliases_not_setting_options.
+  [Frank Harrison]
+
+  Fix/aliases not setting options
+- Switches the API so 'read-only' Options are the prominent type. [Frank
+  Harrison]
+
+  ... and Writable are the recessive type, making it easier for API users to ensure they're using the correct type
+- Uses OptionsReadOnly, stopping accidentally overwritting options by
+  individual jobs. [Frank Harrison]
+- Adds a read-only version of the Options dict. [Frank Harrison]
+- Ports Options type to an InformativeDict. [Frank Harrison]
+
+  This shows you what options are available in the options dict if you
+  look up a value that doesn't exist.
+- Updates logging for clarity. [Frank Harrison]
+- Merge pull request #34 from lursight/chore/github-actions. [Frank
+  Harrison]
+
+  Chore/GitHub actions
+- Chore(github-ci): knocks out windows ci/cd for now. [Frank Harrison]
+- Chore(github-ci): sets the windows ci to use utf-8. [Frank Harrison]
+- Chore(github-ci): HACK ignore coverage in tested code. [Frank
+  Harrison]
+
+  It's not cler why the ci/cd thinks this isn't being hit, it is locally
+  and I can't figure out why it wouldn't be on the ci/cd, perhaps it's
+  down to the multithreaded pytest runs, but that would be
+  non-deterministic. This will probably need looking into at some point.
+- Chore(ci-coverage): updates the _get_jobs_matching test case. [Frank
+  Harrison]
+
+  Making it more explicit and easier to follow
+- Chore(ci-coverage): fixes the help-test false-positive. [Frank
+  Harrison]
+
+  We were always writing the help"
+- Chore(ci-coverage): adds test for
+  test_run_command_basic_call_verbose_with_cwd. [Frank Harrison]
+- Chore(ci-coverage): ignores un-hit 'communicate' mock function. [Frank
+  Harrison]
+- Chore(github-ci): upload reports on failures. [Frank Harrison]
+- Chore(github-ci): revert back to using the makefile for the redundant
+  checks. [Frank Harrison]
+- Chore(github-ci): installs yarn deps for ci job. [Frank Harrison]
+- Chore(github-ci): makes the log output less verbose by using --no-
+  spinner. [Frank Harrison]
+- Chore(github-ci): moves the redundancy checks first to own job. [Frank
+  Harrison]
+- Chore(github-ci): runs two basic checks for redunancy during ci.
+  [Frank Harrison]
+
+  This should help catch errors where runem has been broken and returns a
+  false-positive when run against itself.
+- Chore(github-ci): runs runem against itself. [Frank Harrison]
+
+  This could have drawbacks later so we will think about adding some
+  redundancy to the ci checks.
+- Merge pull request #33 from lursight/fix/mutiline_stdout. [Frank
+  Harrison]
+
+  fix(stdout-parsing): ensures that trailing newlines are handled
+- Fix(stdout-parsing): ensures that trailing newlines are handled.
+  [Frank Harrison]
+
+  There will be a slight performance cost to this, hopefully not too much.
+
+
+0.0.27 (2024-02-26)
+-------------------
+- Release: version 0.0.27 🚀 [Frank Harrison]
 - Merge pull request #32 from lursight/feat/min-version_check. [Frank
   Harrison]
 
