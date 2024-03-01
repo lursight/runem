@@ -2,13 +2,15 @@ import pathlib
 import shutil
 import typing
 
+from typing_extensions import Unpack
+
 from runem.log import log
 from runem.run_command import RunCommandUnhandledError, run_command
-from runem.types import FilePathList, JobName, JobReturnData, OptionsWritable
+from runem.types import FilePathList, JobKwargs, JobName, JobReturnData, OptionsWritable
 
 
 def _job_py_code_reformat(
-    **kwargs: typing.Any,
+    **kwargs: Unpack[JobKwargs],
 ) -> None:
     """Runs python formatting code in serial order as one influences the other."""
     label: JobName = kwargs["label"]
@@ -79,7 +81,7 @@ def _job_py_code_reformat(
 
 
 def _job_py_pylint(
-    **kwargs: typing.Any,
+    **kwargs: Unpack[JobKwargs],
 ) -> None:
     python_files: FilePathList = kwargs["file_list"]
     root_path: pathlib.Path = kwargs["root_path"]
@@ -101,7 +103,7 @@ def _job_py_pylint(
 
 
 def _job_py_flake8(
-    **kwargs: typing.Any,
+    **kwargs: Unpack[JobKwargs],
 ) -> None:
     python_files: FilePathList = kwargs["file_list"]
     root_path: pathlib.Path = kwargs["root_path"]
@@ -119,7 +121,7 @@ def _job_py_flake8(
 
 
 def _job_py_mypy(
-    **kwargs: typing.Any,
+    **kwargs: Unpack[JobKwargs],
 ) -> None:
     python_files: FilePathList = kwargs["file_list"]
     mypy_cmd = ["python3", "-m", "mypy", *python_files]
@@ -138,7 +140,7 @@ def _delete_old_coverage_reports(root_path: pathlib.Path) -> None:
 
 
 def _job_py_pytest(  # noqa: C901 # pylint: disable=too-many-branches,too-many-statements
-    **kwargs: typing.Any,
+    **kwargs: Unpack[JobKwargs],
 ) -> JobReturnData:
     label: JobName = kwargs["label"]
     options: OptionsWritable = kwargs["options"]
@@ -272,7 +274,7 @@ def _job_py_pytest(  # noqa: C901 # pylint: disable=too-many-branches,too-many-s
 
 
 def _install_python_requirements(
-    **kwargs: typing.Any,
+    **kwargs: Unpack[JobKwargs],
 ) -> None:
     options: OptionsWritable = kwargs["options"]
     root_path: pathlib.Path = kwargs["root_path"]

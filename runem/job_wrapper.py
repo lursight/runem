@@ -18,7 +18,7 @@ def get_job_wrapper(job_wrapper: JobWrapper, cfg_filepath: pathlib.Path) -> JobF
         # validate that the command is "understandable" and usable.
         command_string: str = job_wrapper["command"]
         validate_simple_command(command_string)
-        return job_runner_simple_command  # type: ignore # NO_COMMIT
+        return job_runner_simple_command
 
     # if we do not have a simple command address assume we have just an addressed
     # function

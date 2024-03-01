@@ -1,6 +1,8 @@
 import typing
 from collections import defaultdict
 
+from typing_extensions import Unpack
+
 from runem.config_metadata import ConfigMetadata
 from runem.job import Job
 from runem.job_execute import job_execute
@@ -10,6 +12,7 @@ from runem.types import (
     HookConfig,
     HookName,
     Hooks,
+    HookSpecificKwargs,
     HooksStore,
     JobConfig,
 )
@@ -69,7 +72,7 @@ class HookManager:
         self,
         hook_name: HookName,
         config_metadata: ConfigMetadata,
-        **kwargs: typing.Any,
+        **kwargs: Unpack[HookSpecificKwargs],
     ) -> None:
         """Invokes all functions registered to a specific hook."""
         hooks: typing.List[HookConfig] = self.hooks_store.get(hook_name, [])
