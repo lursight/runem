@@ -16,6 +16,7 @@ from unittest.mock import Mock, patch
 import pytest
 
 from runem.config_metadata import ConfigMetadata
+from runem.informative_dict import InformativeDict
 from runem.runem import (
     _process_jobs,
     _process_jobs_by_phase,
@@ -1377,7 +1378,7 @@ def test_process_jobs_by_phase_early_exits_with_exceptions(
         phases_to_run=set(all_phase_names),  # JobPhases,
         tags_to_run=set(),  # ignored JobTags,
         tags_to_avoid=set(),  # ignored  JobTags,
-        options={},  # Options,
+        options=InformativeDict({}),  # Options,
     )
 
     file_lists: FilePathListLookup = defaultdict(list)
@@ -1489,7 +1490,7 @@ def test_process_jobs_early_exits_with_exceptions(
         phases_to_run=set(all_phase_names),  # JobPhases,
         tags_to_run=set(),  # ignored JobTags,
         tags_to_avoid=set(),  # ignored  JobTags,
-        options={},  # Options,
+        options=InformativeDict({}),  # Options,
     )
 
     file_lists: FilePathListLookup = defaultdict(list)

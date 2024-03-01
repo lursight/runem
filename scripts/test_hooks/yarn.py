@@ -1,7 +1,7 @@
 import typing
 
 from runem.run_command import run_command
-from runem.types import Options
+from runem.types import OptionsWritable
 
 
 def _job_prettier(
@@ -11,7 +11,7 @@ def _job_prettier(
 
     TODO: connect me up!
     """
-    options: Options = kwargs["options"]
+    options: OptionsWritable = kwargs["options"]
     command_variant = "pretty"
     if "check_only" in options and options["check_only"]:
         command_variant = "prettyCheck"

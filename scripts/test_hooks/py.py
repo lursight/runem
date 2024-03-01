@@ -4,7 +4,7 @@ import typing
 
 from runem.log import log
 from runem.run_command import RunCommandUnhandledError, run_command
-from runem.types import FilePathList, JobName, JobReturnData, Options
+from runem.types import FilePathList, JobName, JobReturnData, OptionsWritable
 
 
 def _job_py_code_reformat(
@@ -12,7 +12,7 @@ def _job_py_code_reformat(
 ) -> None:
     """Runs python formatting code in serial order as one influences the other."""
     label: JobName = kwargs["label"]
-    options: Options = kwargs["options"]
+    options: OptionsWritable = kwargs["options"]
     python_files: FilePathList = kwargs["file_list"]
 
     # put into 'check' mode if requested on the command line
@@ -132,7 +132,7 @@ def _job_py_pytest(  # noqa: C901 # pylint: disable=too-many-branches,too-many-s
     **kwargs: typing.Any,
 ) -> JobReturnData:
     label: JobName = kwargs["label"]
-    options: Options = kwargs["options"]
+    options: OptionsWritable = kwargs["options"]
     procs: int = kwargs["procs"]
     root_path: pathlib.Path = kwargs["root_path"]
 
@@ -261,7 +261,7 @@ def _job_py_pytest(  # noqa: C901 # pylint: disable=too-many-branches,too-many-s
 def _install_python_requirements(
     **kwargs: typing.Any,
 ) -> None:
-    options: Options = kwargs["options"]
+    options: OptionsWritable = kwargs["options"]
     root_path: pathlib.Path = kwargs["root_path"]
     if not ("install deps" in options and options["install deps"]):
         # not enabled

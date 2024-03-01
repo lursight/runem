@@ -9,12 +9,13 @@ from unittest.mock import patch
 import pytest
 
 from runem.config_metadata import ConfigMetadata
+from runem.informative_dict import InformativeDict
 from runem.job_execute import job_execute
 from runem.types import (
     FilePathList,
     FilePathListLookup,
     JobConfig,
-    Options,
+    OptionsWritable,
     PhaseGroupedJobs,
 )
 from tests.intentional_test_error import IntentionalTestError
@@ -30,7 +31,7 @@ def intentionally_raising_function(**kwargs: typing.Any) -> None:
 
 
 def old_style_function(
-    args: Namespace, options: Options, file_list: FilePathList
+    args: Namespace, options: OptionsWritable, file_list: FilePathList
 ) -> None:
     """Does nothing called by runner."""
 
@@ -110,7 +111,7 @@ def test_job_execute_basic_call() -> None:
         phases_to_run=set(),  # ignored JobPhases,
         tags_to_run=set(),  # ignored JobTags,
         tags_to_avoid=set(),  # ignored  JobTags,
-        options={},  # Options,
+        options=InformativeDict({}),  # Options,
     )
 
     file_lists: FilePathListLookup = defaultdict(list)
@@ -168,7 +169,7 @@ def test_job_execute_basic_call_verbose() -> None:
         phases_to_run=set(),  # ignored JobPhases,
         tags_to_run=set(),  # ignored JobTags,
         tags_to_avoid=set(),  # ignored  JobTags,
-        options={},  # Options,
+        options=InformativeDict({}),  # Options,
     )
 
     file_lists: FilePathListLookup = defaultdict(list)
@@ -180,9 +181,9 @@ def test_job_execute_basic_call_verbose() -> None:
         file_lists,
     )
     assert stdout == (
-        "runem: START: reformat py\n"
-        "runem: job: running reformat py\n"
-        "runem: DONE: reformat py: 0:00:00\n"
+        "runem: START: 'reformat py'\n"
+        "runem: job: running: 'reformat py'\n"
+        "runem: job: DONE: 'reformat py': 0:00:00\n"
     )
 
 
@@ -230,7 +231,7 @@ def test_job_execute_empty_files() -> None:
         phases_to_run=set(),  # ignored JobPhases,
         tags_to_run=set(),  # ignored JobTags,
         tags_to_avoid=set(),  # ignored  JobTags,
-        options={},  # Options,
+        options=InformativeDict({}),  # Options,
     )
 
     file_lists: FilePathListLookup = defaultdict(list)
@@ -242,10 +243,10 @@ def test_job_execute_empty_files() -> None:
         file_lists,
     )
     assert stdout == (
-        "runem: START: reformat py\n"
+        "runem: START: 'reformat py'\n"
         "runem: WARNING: skipping job 'reformat py', no files for job\n"
-        # "runem: job: running reformat py\n"
-        # "runem: DONE: reformat py: 0:00:00\n"
+        # "runem: job: running: 'reformat py'\n"
+        # "runem: job: DONE: 'reformat py': 0:00:00\n"
     )
 
 
@@ -297,7 +298,7 @@ def test_job_execute_with_ctx_cwd() -> None:
         phases_to_run=set(),  # ignored JobPhases,
         tags_to_run=set(),  # ignored JobTags,
         tags_to_avoid=set(),  # ignored  JobTags,
-        options={},  # Options,
+        options=InformativeDict({}),  # Options,
     )
 
     file_lists: FilePathListLookup = defaultdict(list)
@@ -309,9 +310,9 @@ def test_job_execute_with_ctx_cwd() -> None:
         file_lists,
     )
     assert stdout == (
-        "runem: START: reformat py\n"
-        "runem: job: running reformat py\n"
-        "runem: DONE: reformat py: 0:00:00\n"
+        "runem: START: 'reformat py'\n"
+        "runem: job: running: 'reformat py'\n"
+        "runem: job: DONE: 'reformat py': 0:00:00\n"
     )
 
 
@@ -363,7 +364,7 @@ def test_job_execute_with_old_style_func() -> None:
         phases_to_run=set(),  # ignored JobPhases,
         tags_to_run=set(),  # ignored JobTags,
         tags_to_avoid=set(),  # ignored  JobTags,
-        options={},  # Options,
+        options=InformativeDict({}),  # Options,
     )
 
     file_lists: FilePathListLookup = defaultdict(list)
@@ -375,9 +376,9 @@ def test_job_execute_with_old_style_func() -> None:
         file_lists,
     )
     assert stdout == (
-        "runem: START: reformat py\n"
-        "runem: job: running reformat py\n"
-        "runem: DONE: reformat py: 0:00:00\n"
+        "runem: START: 'reformat py'\n"
+        "runem: job: running: 'reformat py'\n"
+        "runem: job: DONE: 'reformat py': 0:00:00\n"
     )
 
 
@@ -438,7 +439,7 @@ def test_job_execute_with_raising_func() -> None:
         phases_to_run=set(),  # ignored JobPhases,
         tags_to_run=set(),  # ignored JobTags,
         tags_to_avoid=set(),  # ignored  JobTags,
-        options={},  # Options,
+        options=InformativeDict({}),  # Options,
     )
 
     file_lists: FilePathListLookup = defaultdict(list)
@@ -451,7 +452,10 @@ def test_job_execute_with_raising_func() -> None:
         file_lists,
     )
     assert isinstance(err, IntentionalTestError)
-    assert stdout == (
-        "runem: START: intentionally throwing\n"
-        "runem: job: running intentionally throwing\n"
-    )
+    assert stdout.split("\n") == [
+        "runem: START: 'intentionally throwing'",
+        "runem: job: running: 'intentionally throwing'",
+        "",
+        "runem: job: ERROR: job 'intentionally throwing' failed to complete!",
+        "",
+    ]

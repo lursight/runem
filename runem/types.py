@@ -3,6 +3,8 @@ import pathlib
 import typing
 from datetime import timedelta
 
+from runem.informative_dict import InformativeDict, ReadOnlyInformativeDict
+
 
 class FunctionNotFound(ValueError):
     """Thrown when the test-function cannot be found."""
@@ -53,7 +55,9 @@ OptionName = str
 OptionValue = bool
 
 OptionConfigs = typing.Tuple[OptionConfig, ...]
-Options = typing.Dict[OptionName, OptionValue]
+OptionsWritable = InformativeDict[OptionName, OptionValue]
+OptionsReadOnly = ReadOnlyInformativeDict[OptionName, OptionValue]
+Options = OptionsReadOnly
 
 # P1: bool for verbose, P2: list of file paths to work on
 
@@ -70,7 +74,7 @@ FilePathListLookup = typing.DefaultDict[JobTag, FilePathList]
 
 # FIXME: this type is no-longer the actual spec of the test-functions
 JobFunction = typing.Union[
-    typing.Callable[[argparse.Namespace, Options, FilePathList], None],
+    typing.Callable[[argparse.Namespace, OptionsWritable, FilePathList], None],
     typing.Callable[[typing.Any], None],
 ]
 
