@@ -31,9 +31,9 @@ jobs:
       - name: Install project
         run: pip install -e .[test]
       - name: Run backup tests
-        run: python3 -m pytest tests/
-      - name: Run backup flake8
-        run: python3 -m flake8 tests/* runem/*
+        run: make test
+      - name: Run backup lint
+        run: make lint
         # with:
         #   fail_ci_if_error: true
 
