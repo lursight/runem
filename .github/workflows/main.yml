@@ -32,6 +32,10 @@ jobs:
         run: pip install -e .[test]
       - name: Run tests
         run: python3 -m runem.runem --verbose
+      - name: Run backup tests
+        run: python3 -m pytest tests/
+      - name: Run backup flake8
+        run: python3 -m flake8 tests/* runem/*
       - name: "Upload coverage to Codecov"
         uses: codecov/codecov-action@v4
         # with:
