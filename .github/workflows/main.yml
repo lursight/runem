@@ -70,7 +70,7 @@ jobs:
         uses: codecov/codecov-action@v4
       - name: Upload Artifacts
         if: failure() # This step runs only if any previous step failed
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: reports-${{ matrix.os }}-python${{ matrix.python-version }}
           path: /home/runner/work/runem/runem/reports/**
@@ -102,7 +102,7 @@ jobs:
         run: python3 -m runem.runem --verbose --no-spinner
       - name: Upload Artifacts
         if: failure() # This step runs only if any previous step failed
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: reports-${{ matrix.os }}-python${{ matrix.python-version }}
           path: /home/runner/work/runem/runem/reports/**
@@ -136,7 +136,7 @@ jobs:
   #       run: python3 -m runem.runem --verbose --no-spinner
   #     - name: Upload Artifacts
   #       if: failure() # This step runs only if any previous step failed
-  #       uses: actions/upload-artifact@v3
+  #       uses: actions/upload-artifact@v4
   #       with:
   #         name: reports-${{ matrix.os }}-python${{ matrix.python-version }}
   #         path: /home/runner/work/runem/runem/reports/**
