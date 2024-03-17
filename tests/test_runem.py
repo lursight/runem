@@ -29,8 +29,10 @@ from runem.types import (
     FilePathListLookup,
     GlobalSerialisedConfig,
     JobConfig,
+    JobReturn,
     Jobs,
     JobSerialisedConfig,
+    JobTiming,
     PhaseGroupedJobs,
 )
 from tests.intentional_test_error import IntentionalTestError
@@ -144,6 +146,12 @@ def test_runem_basic_with_config_no_options(
         assert [] == _strip_reports_footer(runem_stdout)
 
 
+MOCK_JOB_EXECUTE_INNER_RET: typing.Tuple[JobTiming, JobReturn] = (
+    ("mocked job run", timedelta(0)),
+    None,
+)
+
+
 @patch(
     "runem.runem.load_config",
 )
@@ -153,7 +161,7 @@ def test_runem_basic_with_config_no_options(
 @patch(
     # patch the inner call that is NOT serialised by multiprocessing
     "runem.job_execute.job_execute_inner",
-    return_value=(("mocked job run", timedelta(0)), None),
+    return_value=MOCK_JOB_EXECUTE_INNER_RET,
 )
 def _run_full_config_runem(
     job_runner_mock: Mock,

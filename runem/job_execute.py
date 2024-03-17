@@ -11,14 +11,21 @@ from runem.informative_dict import ReadOnlyInformativeDict
 from runem.job import Job
 from runem.job_wrapper import get_job_wrapper
 from runem.log import log
-from runem.types import FilePathListLookup, JobConfig, JobFunction, JobReturn, JobTags
+from runem.types import (
+    FilePathListLookup,
+    JobConfig,
+    JobFunction,
+    JobReturn,
+    JobTags,
+    JobTiming,
+)
 
 
 def job_execute_inner(
     job_config: JobConfig,
     config_metadata: ConfigMetadata,
     file_lists: FilePathListLookup,
-) -> typing.Tuple[typing.Tuple[str, timedelta], JobReturn]:
+) -> typing.Tuple[JobTiming, JobReturn]:
     """Wrapper for running a job inside a sub-process.
 
     Returns the time information and any reports the job generated
@@ -92,7 +99,7 @@ def job_execute(
     running_jobs: typing.Dict[str, str],
     config_metadata: ConfigMetadata,
     file_lists: FilePathListLookup,
-) -> typing.Tuple[typing.Tuple[str, timedelta], JobReturn]:
+) -> typing.Tuple[JobTiming, JobReturn]:
     """Thin-wrapper around job_execute_inner needed for mocking in tests.
 
     Needed for faster tests.
