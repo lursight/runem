@@ -297,9 +297,11 @@ def _main(
     end = timer()
 
     job_run_metadatas: JobRunMetadatasByPhase = defaultdict(list)
-    job_run_metadatas["_app"].append(
-        (("pre-build", (timedelta(seconds=end - start))), None)
-    )
+    pre_build_time: JobTiming = {
+        "job": ("pre-build", (timedelta(seconds=end - start))),
+        "commands": [],
+    }
+    job_run_metadatas["_app"].append((pre_build_time, None))
 
     start = timer()
 
@@ -313,7 +315,10 @@ def _main(
 
     end = timer()
 
-    phase_run_timing: JobTiming = ("run-phases", timedelta(seconds=end - start))
+    phase_run_timing: JobTiming = {
+        "job": ("run-phases", timedelta(seconds=end - start)),
+        "commands": [],
+    }
     phase_run_report: JobReturn = None
     phase_run_metadata: JobRunMetadata = (phase_run_timing, phase_run_report)
     job_run_metadatas["_app"].append(phase_run_metadata)

@@ -14,6 +14,7 @@ from runem.types import (
     PhaseName,
     ReportUrlInfo,
     ReportUrls,
+    TimingEntries,
 )
 
 try:
@@ -58,19 +59,29 @@ def _plot_times(
         # log(f"Phase '{phase}' jobs took:")
         phase_total_time: float = 0.0
         phase_start_idx = len(labels)
-        for label, job_time in timing_data[phase]:
-            if job_time.total_seconds() == 0:
+        job_timing: JobTiming
+        for job_timing in timing_data[phase]:
+            job_label, job_time_total = job_timing["job"]
+            if job_time_total.total_seconds() == 0:
                 continue
-            labels.append(f"│├{phase}.{label}")
-            times.append(job_time.total_seconds())
-            job_time_sum += job_time
-            phase_total_time += job_time.total_seconds()
+            labels.append(f"│├{phase}.{job_label}")
+            times.append(job_time_total.total_seconds())
+            job_time_sum += job_time_total
+            phase_total_time += job_time_total.total_seconds()
+            sub_command_times: TimingEntries = job_timing["commands"]
+            # also print the sub-components of the job as we have more than one
+            for sub_job_label, sub_job_time in sub_command_times:
+                labels.append(f"│├├{phase}.{job_label}.{sub_job_label}")
+                times.append(sub_job_time.total_seconds())
         labels.insert(phase_start_idx, f"├{phase} (total)")
         times.insert(phase_start_idx, phase_total_time)
 
-    for label, job_time in reversed(timing_data["_app"]):
-        labels.insert(0, f"├runem.{label}")
-        times.insert(0, job_time.total_seconds())
+    runem_app_timing: typing.List[JobTiming] = timing_data["_app"]
+    job_metadata: JobTiming
+    for job_metadata in reversed(runem_app_timing):
+        job_label, job_time_total = job_metadata["job"]
+        labels.insert(0, f"├runem.{job_label}")
+        times.insert(0, job_time_total.total_seconds())
     labels.insert(0, "runem")
     times.insert(0, overall_run_time.total_seconds())
     if termplotlib:
@@ -84,8 +95,8 @@ def _plot_times(
         # ensure the graphs get aligned nicely.
         _align_bar_graphs_workaround(fig.get_string())
     else:  # pragma: FIXME: add code coverage
-        for label, time in zip(labels, times):
-            log(f"{label}: {time}s")
+        for job_label, time in zip(labels, times):
+            log(f"{job_label}: {time}s")
 
     time_saved: timedelta = job_time_sum - overall_run_time
     return time_saved

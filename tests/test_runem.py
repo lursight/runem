@@ -147,7 +147,7 @@ def test_runem_basic_with_config_no_options(
 
 
 MOCK_JOB_EXECUTE_INNER_RET: typing.Tuple[JobTiming, JobReturn] = (
-    ("mocked job run", timedelta(0)),
+    {"job": ("mocked job run", timedelta(0)), "commands": []},
     None,
 )
 

@@ -1,9 +1,11 @@
 import os
 import pathlib
 import typing
+from datetime import timedelta
 from subprocess import PIPE as SUBPROCESS_PIPE
 from subprocess import STDOUT as SUBPROCESS_STDOUT
 from subprocess import Popen
+from timeit import default_timer as timer
 
 from runem.log import log
 
@@ -16,6 +18,10 @@ class RunCommandBadExitCode(RuntimeError):
 
 class RunCommandUnhandledError(RuntimeError):
     pass
+
+
+# A function type for recording timing information.
+RecordSubJobTimeType = typing.Callable[[str, timedelta], None]
 
 
 def parse_stdout(stdout: str, prefix: str) -> str:
@@ -91,10 +97,15 @@ def run_command(  # noqa: C901
     ignore_fails: bool = False,
     valid_exit_ids: typing.Optional[typing.Tuple[int, ...]] = None,
     cwd: typing.Optional[pathlib.Path] = None,
+    record_sub_job_time: typing.Optional[RecordSubJobTimeType] = None,
     **kwargs: typing.Any,
 ) -> str:
     """Runs the given command, returning stdout or throwing on any error."""
     cmd_string = " ".join(cmd)
+
+    if record_sub_job_time is not None:
+        # start the capture of how long this sub-task takes.
+        start = timer()
 
     run_env: typing.Dict[str, str] = _prepare_environment(
         env_overrides,
@@ -174,4 +185,11 @@ def run_command(  # noqa: C901
 
     if verbose:
         log(f"running: done: {label}: {cmd_string}")
+
+    if record_sub_job_time is not None:
+        # Capture how long this run took
+        end = timer()
+        time_taken: timedelta = timedelta(seconds=end - start)
+        record_sub_job_time(label, time_taken)
+
     return stdout

@@ -18,6 +18,8 @@ from runem.types import (
     JobReturn,
     JobTags,
     JobTiming,
+    TimingEntries,
+    TimingEntry,
 )
 
 
@@ -45,7 +47,19 @@ def job_execute_inner(
     if not file_list:
         # no files to work on
         log(f"WARNING: skipping job '{label}', no files for job")
-        return (f"{label}: no files!", timedelta(0)), None
+        return {
+            "job": (f"{label}: no files!", timedelta(0)),
+            "commands": [],
+        }, None
+
+    sub_command_timings: TimingEntries = []
+
+    def _record_sub_job_time(label: str, timing: timedelta) -> None:
+        """Record timing information for sub-commands/tasks, atomically.
+
+        For example inside of run_command() calls
+        """
+        sub_command_timings.append((label, timing))
 
     if (
         "ctx" in job_config
@@ -78,6 +92,7 @@ def job_execute_inner(
                 # unpack useful data points from the job_config
                 label=Job.get_job_name(job_config),
                 job=job_config,
+                record_sub_job_time=_record_sub_job_time,
             )
     except BaseException:  # pylint: disable=broad-exception-caught
         # log that we hit an error on this job and re-raise
@@ -90,8 +105,8 @@ def job_execute_inner(
     time_taken: timedelta = timedelta(seconds=end - start)
     if config_metadata.args.verbose:
         log(f"job: DONE: '{label}': {time_taken}")
-    timing_data = (label, time_taken)
-    return (timing_data, reports)
+    this_job_timing_data: TimingEntry = (label, time_taken)
+    return ({"job": this_job_timing_data, "commands": sub_command_timings}, reports)
 
 
 def job_execute(
