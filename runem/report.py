@@ -128,6 +128,11 @@ def _gen_jobs_report(
         times.append(job_time_total.total_seconds())
         job_time_sum += job_time_total
         sub_command_times: TimingEntries = job_timing["commands"]
+
+        if len(sub_command_times) <= 1:
+            # we only have one or fewer sub-commands, just show the job-time
+            continue
+
         # also print the sub-components of the job as we have more than one
         for idx, (sub_job_label, sub_job_time) in enumerate(sub_command_times):
             sub_utf8 = "├"
