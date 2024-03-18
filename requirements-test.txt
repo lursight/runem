@@ -15,6 +15,7 @@ pytest-cov==4.1.0
 pytest-profiling==1.7.0
 pytest-xdist==3.3.1
 pytest==7.4.3
+setuptools
 termplotlib==0.3.9
 types-PyYAML==6.0.12.12
 requests-mock==1.10.0

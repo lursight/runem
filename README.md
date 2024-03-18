@@ -367,12 +367,12 @@ runem: reports:
 runem: runem: 8.820488s
 runem: ├runem.pre-build: 0.019031s
 runem: ├runem.run-phases: 8.801317s
-runem: ├pre-run (total): 0.00498s
+runem: ├pre-run (user-time): 0.00498s
 runem: │├pre-run.install python requirements: 2.6e-05s
 runem: │├pre-run.ls -alh runem: 0.004954s
-runem: ├edit (total): 0.557559s
+runem: ├edit (user-time): 0.557559s
 runem: │├edit.reformat py: 0.557559s
-runem: ├analysis (total): 21.526145s
+runem: ├analysis (user-time): 21.526145s
 runem: │├analysis.pylint py: 7.457029s
 runem: │├analysis.flake8 py: 0.693754s
 runem: │├analysis.mypy py: 1.071956s
@@ -397,12 +397,12 @@ runem: reports:
 runem                                  [14.174612]  ███████████████▋
 ├runem.pre-build                       [ 0.025858]
 ├runem.run-phases                      [14.148587]  ███████████████▋
-├pre-run (total)                       [ 0.005825]
+├pre-run (user-time)                   [ 0.005825]
 │├pre-run.install python requirements  [ 0.000028]
 │├pre-run.ls -alh runem                [ 0.005797]
-├edit (total)                          [ 0.579153]  ▋
+├edit (user-time)                      [ 0.579153]  ▋
 │├edit.reformat py                     [ 0.579153]  ▋
-├analysis (total)                      [36.231034]  ████████████████████████████████████████
+├analysis (user-time)                  [36.231034]  ████████████████████████████████████████
 │├analysis.pylint py                   [12.738303]  ██████████████▏
 │├analysis.flake8 py                   [ 0.798575]  ▉
 │├analysis.mypy py                     [ 0.335984]  ▍
