@@ -14,6 +14,7 @@ from runem.types import (
     PhaseName,
     ReportUrlInfo,
     ReportUrls,
+    TimingEntries,
 )
 
 try:
@@ -54,23 +55,29 @@ def _plot_times(
     labels: typing.List[str] = []
     times: typing.List[float] = []
     job_time_sum: timedelta = timedelta()  # init to 0
-    for phase in phase_run_oder:
+    for idx, phase in enumerate(phase_run_oder):
+        not_last_phase: bool = idx < len(phase_run_oder) - 1
+        utf8_phase = "├" if not_last_phase else "└"
+        utf8_phase_group = "│" if not_last_phase else " "
         # log(f"Phase '{phase}' jobs took:")
-        phase_total_time: float = 0.0
         phase_start_idx = len(labels)
-        for label, job_time in timing_data[phase]:
-            if job_time.total_seconds() == 0:
-                continue
-            labels.append(f"│├{phase}.{label}")
-            times.append(job_time.total_seconds())
-            job_time_sum += job_time
-            phase_total_time += job_time.total_seconds()
-        labels.insert(phase_start_idx, f"├{phase} (total)")
-        times.insert(phase_start_idx, phase_total_time)
 
-    for label, job_time in reversed(timing_data["_app"]):
-        labels.insert(0, f"├runem.{label}")
-        times.insert(0, job_time.total_seconds())
+        phase_job_times: timedelta = _gen_jobs_report(
+            phase,
+            labels,
+            times,
+            utf8_phase_group,
+            timing_data[phase],
+        )
+        labels.insert(phase_start_idx, f"{utf8_phase}{phase} (total)")
+        times.insert(phase_start_idx, phase_job_times.total_seconds())
+
+    runem_app_timing: typing.List[JobTiming] = timing_data["_app"]
+    job_metadata: JobTiming
+    for job_metadata in reversed(runem_app_timing):
+        job_label, job_time_total = job_metadata["job"]
+        labels.insert(0, f"├runem.{job_label}")
+        times.insert(0, job_time_total.total_seconds())
     labels.insert(0, "runem")
     times.insert(0, overall_run_time.total_seconds())
     if termplotlib:
@@ -84,11 +91,53 @@ def _plot_times(
         # ensure the graphs get aligned nicely.
         _align_bar_graphs_workaround(fig.get_string())
     else:  # pragma: FIXME: add code coverage
-        for label, time in zip(labels, times):
-            log(f"{label}: {time}s")
+        for job_label, time in zip(labels, times):
+            log(f"{job_label}: {time}s")
 
     time_saved: timedelta = job_time_sum - overall_run_time
     return time_saved
+
+
+def _gen_jobs_report(
+    phase: PhaseName,
+    labels: typing.List[str],
+    times: typing.List[float],
+    utf8_phase_group: str,
+    job_timings: typing.List[JobTiming],
+) -> timedelta:
+    """Gathers the reports for sub-jobs.
+
+    Split out from _plot_times as the code was getting complex
+    """
+    job_timing: JobTiming
+
+    # Filter out JobTiming instances with non-zero total_seconds
+    non_zero_timing_data: typing.List[JobTiming] = [
+        job_timing
+        for job_timing in job_timings
+        if job_timing["job"][1].total_seconds() != 0
+    ]
+
+    job_time_sum: timedelta = timedelta()  # init to 0
+    for idx, job_timing in enumerate(non_zero_timing_data):
+        not_last: bool = idx < len(non_zero_timing_data) - 1
+        utf8_job = "├" if not_last else "└"
+        utf8_sub_jobs = "│" if not_last else " "
+        job_label, job_time_total = job_timing["job"]
+        labels.append(f"{utf8_phase_group}{utf8_job}{phase}.{job_label}")
+        times.append(job_time_total.total_seconds())
+        job_time_sum += job_time_total
+        sub_command_times: TimingEntries = job_timing["commands"]
+        # also print the sub-components of the job as we have more than one
+        for idx, (sub_job_label, sub_job_time) in enumerate(sub_command_times):
+            sub_utf8 = "├"
+            if idx == len(sub_command_times) - 1:
+                sub_utf8 = "└"
+            labels.append(
+                f"{utf8_phase_group}{utf8_sub_jobs}{sub_utf8}{phase}.{job_label}.{sub_job_label}"
+            )
+            times.append(sub_job_time.total_seconds())
+    return job_time_sum
 
 
 def _print_reports_by_phase(

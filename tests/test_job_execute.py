@@ -4,6 +4,7 @@ import typing
 from argparse import Namespace
 from collections import defaultdict
 from contextlib import redirect_stdout
+from datetime import timedelta
 from unittest.mock import patch
 
 import pytest
@@ -11,6 +12,7 @@ import pytest
 from runem.config_metadata import ConfigMetadata
 from runem.informative_dict import InformativeDict
 from runem.job_execute import job_execute
+from runem.run_command import RecordSubJobTimeType
 from runem.types import (
     FilePathList,
     FilePathListLookup,
@@ -34,6 +36,15 @@ def old_style_function(
     args: Namespace, options: OptionsWritable, file_list: FilePathList
 ) -> None:
     """Does nothing called by runner."""
+
+
+def time_recording_function(
+    record_sub_job_time: typing.Optional[RecordSubJobTimeType], **kwargs: typing.Any
+) -> None:
+    """Does nothing, called by runner."""
+    assert record_sub_job_time is not None
+    record_sub_job_time("test entry", timedelta(seconds=100))
+    record_sub_job_time("test entry 2", timedelta(seconds=200))
 
 
 def _job_execute_and_capture_stdout(
@@ -459,3 +470,66 @@ def test_job_execute_with_raising_func() -> None:
         "runem: job: ERROR: job 'intentionally throwing' failed to complete!",
         "",
     ]
+
+
+def test_job_execute_time_recording_function() -> None:
+    job_config: JobConfig = {
+        "addr": {
+            "file": __file__,
+            "function": "time_recording_function",
+        },
+        "label": "reformat py",
+        "when": {
+            "phase": "edit",
+            "tags": set(
+                (
+                    "dummy tag",
+                    "tag not in files",
+                )
+            ),
+        },
+    }
+    config_file_path = pathlib.Path(__file__).parent / ".runem.yml"
+
+    expected_jobs: PhaseGroupedJobs = defaultdict(list)
+    expected_jobs["dummy phase 1"] = [
+        job_config,
+    ]
+    config_metadata: ConfigMetadata = ConfigMetadata(
+        cfg_filepath=config_file_path,
+        phases=("dummy phase 1",),
+        options_config=tuple(),
+        file_filters={
+            # "dummy tag": {
+            #     "tag": "dummy tag",
+            #     "regex": ".*1.txt",  # should match just one file
+            # }
+        },
+        jobs=expected_jobs,
+        all_job_names=set(("dummy job label",)),
+        all_job_phases=set(("dummy phase 1",)),
+        all_job_tags=set(
+            (
+                "dummy tag 2",
+                "dummy tag 1",
+            )
+        ),
+    )
+    config_metadata.set_cli_data(
+        args=Namespace(verbose=False, procs=1),
+        jobs_to_run=set((job_config["label"])),  # JobNames,
+        phases_to_run=set(),  # ignored JobPhases,
+        tags_to_run=set(),  # ignored JobTags,
+        tags_to_avoid=set(),  # ignored  JobTags,
+        options=InformativeDict({}),  # Options,
+    )
+
+    file_lists: FilePathListLookup = defaultdict(list)
+    file_lists["dummy tag"] = [__file__]
+    stdout, _ = _job_execute_and_capture_stdout(
+        job_config,
+        {},
+        config_metadata,
+        file_lists,
+    )
+    assert stdout == ""

@@ -1,6 +1,7 @@
 import io
 import pathlib
 from contextlib import redirect_stdout
+from datetime import timedelta
 from typing import Optional, Tuple, Type
 from unittest.mock import Mock, patch
 
@@ -73,10 +74,19 @@ def test_run_command_basic_call(mock_popen: Mock) -> None:
 
     That is, that we can run a successful command and set the run-context for it
     """
+    record_times_called: bool = False
+
+    def dummy_record_sub_job_time(label: str, timing: timedelta) -> None:
+        nonlocal record_times_called
+        record_times_called = True
+
     # capture any prints the run_command() does, should be none in verbose=False mode
     with io.StringIO() as buf, redirect_stdout(buf):
         output = runem.run_command.run_command(
-            cmd=["ls"], label="test command", verbose=False
+            cmd=["ls"],
+            label="test command",
+            verbose=False,
+            record_sub_job_time=dummy_record_sub_job_time,
         )
         run_command_stdout = buf.getvalue()
     assert output == "test output"
@@ -87,6 +97,7 @@ def test_run_command_basic_call(mock_popen: Mock) -> None:
     call_ctx = mock_popen.call_args[1]
     env = call_ctx["env"]
     assert len(env.keys()) > 0, "expected the calling env to be passed to the command"
+    assert record_times_called
 
 
 @patch("runem.run_command.Popen", autospec=True, return_value=MockPopen())

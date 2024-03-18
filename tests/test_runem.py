@@ -29,8 +29,10 @@ from runem.types import (
     FilePathListLookup,
     GlobalSerialisedConfig,
     JobConfig,
+    JobReturn,
     Jobs,
     JobSerialisedConfig,
+    JobTiming,
     PhaseGroupedJobs,
 )
 from tests.intentional_test_error import IntentionalTestError
@@ -144,6 +146,12 @@ def test_runem_basic_with_config_no_options(
         assert [] == _strip_reports_footer(runem_stdout)
 
 
+MOCK_JOB_EXECUTE_INNER_RET: typing.Tuple[JobTiming, JobReturn] = (
+    {"job": ("mocked job run", timedelta(0)), "commands": []},
+    None,
+)
+
+
 @patch(
     "runem.runem.load_config",
 )
@@ -153,7 +161,7 @@ def test_runem_basic_with_config_no_options(
 @patch(
     # patch the inner call that is NOT serialised by multiprocessing
     "runem.job_execute.job_execute_inner",
-    return_value=(("mocked job run", timedelta(0)), None),
+    return_value=MOCK_JOB_EXECUTE_INNER_RET,
 )
 def _run_full_config_runem(
     job_runner_mock: Mock,
@@ -326,7 +334,9 @@ def test_runem_with_full_config(verbosity: bool) -> None:
         runem_cli_switches=runem_cli_switches,
         add_verbose_switch=verbosity,
     )
-    assert error_raised is None
+    if error_raised is not None:  # pragma: no cover
+        print("\n".join(runem_stdout))
+        raise error_raised  # re-raise the error that shouldn't have been raised
     _remove_x_of_y_workers_log(runem_stdout, phase="dummy phase 1", num_jobs=2)
     _remove_x_of_y_workers_log(runem_stdout, phase="dummy phase 2", num_jobs=2)
 
@@ -371,7 +381,8 @@ def test_runem_with_full_config_verbose() -> None:
     ) = _run_full_config_runem(  # pylint: disable=no-value-for-parameter
         runem_cli_switches=runem_cli_switches
     )
-    assert error_raised is None
+    if error_raised is not None:  # pragma: no cover
+        raise error_raised  # re-raise the error that shouldn't have been raised
 
     _remove_x_of_y_workers_log(runem_stdout, phase="dummy phase 1", num_jobs=2)
     _remove_x_of_y_workers_log(runem_stdout, phase="dummy phase 2", num_jobs=2)
@@ -409,7 +420,8 @@ def test_runem_with_single_phase() -> None:
     ) = _run_full_config_runem(  # pylint: disable=no-value-for-parameter
         runem_cli_switches=runem_cli_switches
     )
-    assert error_raised is None
+    if error_raised is not None:  # pragma: no cover
+        raise error_raised  # re-raise the error that shouldn't have been raised
 
     _remove_x_of_y_workers_log(runem_stdout, num_jobs=2)
 
@@ -446,7 +458,9 @@ def test_runem_with_single_phase_verbose() -> None:
 
     _remove_x_of_y_workers_log(runem_stdout, num_jobs=2)
 
-    assert error_raised is None
+    if error_raised is not None:  # pragma: no cover
+        raise error_raised  # re-raise the error that shouldn't have been raised
+
     assert runem_stdout == [
         (
             "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
@@ -724,7 +738,8 @@ def test_runem_job_filters_work(verbosity: bool) -> None:
     ) = _run_full_config_runem(  # pylint: disable=no-value-for-parameter
         runem_cli_switches=runem_cli_switches
     )
-    assert error_raised is None
+    if error_raised is not None:  # pragma: no cover
+        raise error_raised  # re-raise the error that shouldn't have been raised
 
     _remove_x_of_y_workers_log(runem_stdout, num_jobs=1)
 
@@ -821,7 +836,8 @@ def test_runem_tag_filters_work(verbosity: bool) -> None:
     ) = _run_full_config_runem(  # pylint: disable=no-value-for-parameter
         runem_cli_switches=runem_cli_switches
     )
-    assert error_raised is None
+    if error_raised is not None:  # pragma: no cover
+        raise error_raised  # re-raise the error that shouldn't have been raised
 
     _remove_x_of_y_workers_log(runem_stdout)
 
@@ -909,7 +925,8 @@ def test_runem_tag_out_filters_work(verbosity: bool, one_liner: bool) -> None:
         _remove_x_of_y_workers_log(runem_stdout, phase="dummy phase 1", num_jobs=1)
     _remove_x_of_y_workers_log(runem_stdout, phase="dummy phase 2", num_jobs=2)
 
-    assert error_raised is None
+    if error_raised is not None:  # pragma: no cover
+        raise error_raised  # re-raise the error that shouldn't have been raised
 
     if one_liner:
         if verbosity:
@@ -1045,7 +1062,9 @@ def test_runem_tag_out_filters_work_all_tags(verbosity: bool) -> None:
         add_verbose_switch=False,
         add_command_one_liner=False,
     )
-    assert error_raised is None
+    if error_raised is not None:  # pragma: no cover
+        raise error_raised  # re-raise the error that shouldn't have been raised
+
     if verbosity:
         assert runem_stdout == [
             "runem: loaded config from [CONFIG PATH]",
@@ -1104,7 +1123,8 @@ def test_runem_phase_filters_work(verbosity: bool) -> None:
     ) = _run_full_config_runem(  # pylint: disable=no-value-for-parameter
         runem_cli_switches=runem_cli_switches
     )
-    assert error_raised is None
+    if error_raised is not None:  # pragma: no cover
+        raise error_raised  # re-raise the error that shouldn't have been raised
 
     _remove_x_of_y_workers_log(runem_stdout)
 

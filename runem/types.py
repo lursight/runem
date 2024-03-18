@@ -32,7 +32,21 @@ class JobReturnData(typing.TypedDict, total=False):
     reportUrls: ReportUrls  # urls containing reports for the user
 
 
-JobTiming = typing.Tuple[str, timedelta]
+TimingEntry = typing.Tuple[str, timedelta]
+TimingEntries = typing.List[TimingEntry]
+
+
+class JobTiming(typing.TypedDict, total=True):
+    """A hierarchy of timing info. Job->JobCommands.
+
+    The overall time for a job is in 'job', the child calls to run_command are in
+    'commands'
+    """
+
+    job: TimingEntry  # the overall time for a job
+    commands: TimingEntries  # timing for each call to `run_command`
+
+
 JobReturn = typing.Optional[JobReturnData]
 JobRunMetadata = typing.Tuple[JobTiming, JobReturn]
 JobRunTimesByPhase = typing.Dict[PhaseName, typing.List[JobTiming]]
