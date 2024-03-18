@@ -86,7 +86,7 @@ def _plot_times(
         job_label, job_time_total = job_metadata["job"]
         labels.insert(0, f"├runem.{job_label}")
         times.insert(0, job_time_total.total_seconds())
-    labels.insert(0, "runem")
+    labels.insert(0, "runem (total wall-clock)")
     times.insert(0, wall_clock_for_runem_main.total_seconds())
     if termplotlib:
         fig = termplotlib.figure()
