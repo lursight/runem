@@ -338,14 +338,18 @@ def timed_main(argv: typing.List[str]) -> None:
     phase_run_oder, job_run_metadatas, failure_exception = _main(argv)
     end = timer()
     time_taken: timedelta = timedelta(seconds=end - start)
-    time_saved = report_on_run(phase_run_oder, job_run_metadatas, time_taken)
+    wall_clock_time_saved: timedelta
+    system_time_spent: timedelta
+    system_time_spent, wall_clock_time_saved = report_on_run(
+        phase_run_oder, job_run_metadatas, time_taken
+    )
     message: str = "DONE: runem took"
     if failure_exception:
         message = "FAILED: your jobs failed after"
     log(
         (
             f"{message}: {time_taken.total_seconds()}s, "
-            f"saving you {time_saved.total_seconds()}s"
+            f"saving you {wall_clock_time_saved.total_seconds()}s, "
         )
     )
 

@@ -44,17 +44,24 @@ def _align_bar_graphs_workaround(original_text: str) -> None:
 
 
 def _plot_times(
-    overall_run_time: timedelta,
+    wall_clock_for_runem_main: timedelta,
     phase_run_oder: OrderedPhases,
     timing_data: JobRunTimesByPhase,
-) -> timedelta:
+) -> typing.Tuple[timedelta, timedelta]:
     """Prints a report to terminal on how well we performed.
 
     Also calculates the wall-clock time-saved for the user.
+
+    Returns the total system time spent and the time-saved.     (system-time-spent,
+    wall-clock-time-saved)
     """
     labels: typing.List[str] = []
     times: typing.List[float] = []
-    job_time_sum: timedelta = timedelta()  # init to 0
+
+    # Track active processing time for jobs, distinct from wall-clock time (the
+    # time the user experiences).
+    system_time_spent: timedelta = timedelta()  # init to 0
+
     for idx, phase in enumerate(phase_run_oder):
         not_last_phase: bool = idx < len(phase_run_oder) - 1
         utf8_phase = "├" if not_last_phase else "└"
@@ -71,7 +78,7 @@ def _plot_times(
         )
         labels.insert(phase_start_idx, f"{utf8_phase}{phase} (total)")
         times.insert(phase_start_idx, phase_job_times.total_seconds())
-        job_time_sum += phase_job_times
+        system_time_spent += phase_job_times
 
     runem_app_timing: typing.List[JobTiming] = timing_data["_app"]
     job_metadata: JobTiming
@@ -80,7 +87,7 @@ def _plot_times(
         labels.insert(0, f"├runem.{job_label}")
         times.insert(0, job_time_total.total_seconds())
     labels.insert(0, "runem")
-    times.insert(0, overall_run_time.total_seconds())
+    times.insert(0, wall_clock_for_runem_main.total_seconds())
     if termplotlib:
         fig = termplotlib.figure()
         # cspell:disable-next-line
@@ -95,8 +102,8 @@ def _plot_times(
         for job_label, time in zip(labels, times):
             log(f"{job_label}: {time}s")
 
-    time_saved: timedelta = job_time_sum - overall_run_time
-    return time_saved
+    wall_clock_time_saved: timedelta = system_time_spent - wall_clock_for_runem_main
+    return system_time_spent, wall_clock_time_saved
 
 
 def _gen_jobs_report(
@@ -162,8 +169,8 @@ def _print_reports_by_phase(
 def report_on_run(
     phase_run_oder: OrderedPhases,
     job_run_metadatas: JobRunMetadatasByPhase,
-    overall_runtime: timedelta,
-) -> timedelta:
+    wall_clock_for_runem_main: timedelta,
+) -> typing.Tuple[timedelta, timedelta]:
     """Generate high-level reports AND prints out any reports returned by jobs.
 
     IMPORTANT: returns the wall-clock time saved to the user.
@@ -185,9 +192,8 @@ def report_on_run(
                 report_data[phase].extend(reports["reportUrls"])
 
     # Now plot the times on the terminal to give a visual report of the timing.
-    # Also, calculate the time saved by runem, a key selling-point metric
-    time_saved: timedelta = _plot_times(
-        overall_run_time=overall_runtime,
+    time_metrics: typing.Tuple[timedelta, timedelta] = _plot_times(
+        wall_clock_for_runem_main=wall_clock_for_runem_main,
         phase_run_oder=phase_run_oder,
         timing_data=timing_data,
     )
@@ -195,6 +201,7 @@ def report_on_run(
     # Penultimate-ly print out the available reports grouped by run-phase.
     _print_reports_by_phase(phase_run_oder, report_data)
 
-    # Return the key metric for runem, the wall-clock time saved to the user
+    # Return the key metrics for runem, the system vs wall-clock time saved to
+    # the user
     # TODO: write this to disk
-    return time_saved
+    return time_metrics

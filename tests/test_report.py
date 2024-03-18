@@ -53,10 +53,12 @@ def test_report_on_run_basic_call() -> None:
         ]
     }
     with io.StringIO() as buf, redirect_stdout(buf):
-        time_saved: timedelta = report_on_run(
+        system_time_spent: timedelta
+        wall_clock_time_saved: timedelta
+        system_time_spent, wall_clock_time_saved = report_on_run(
             phase_run_oder=("phase 1",),
             job_run_metadatas=job_run_metadatas,
-            overall_runtime=timedelta(
+            wall_clock_for_runem_main=timedelta(
                 # mimic a value that is slightly larger than the largest single
                 # job in the single phase.
                 seconds=1000.5
@@ -74,9 +76,10 @@ def test_report_on_run_basic_call() -> None:
         " └phase 1.another job 4      [ 250.000000]  ████████",
         "",
     ]
-    # this floating-point comparison should be problematic but ots' working for
+    # this floating-point comparison should be problematic but its' working for
     # now... for now.
-    assert time_saved.total_seconds() == 251.501001
+    assert wall_clock_time_saved.total_seconds() == 251.501001
+    assert system_time_spent.total_seconds() == 1252.001001
 
 
 def test_report_on_run_reports() -> None:
@@ -118,7 +121,7 @@ def test_report_on_run_reports() -> None:
         report_on_run(
             phase_run_oder=("phase 1",),
             job_run_metadatas=job_run_metadatas,
-            overall_runtime=timedelta(0),
+            wall_clock_for_runem_main=timedelta(0),
         )
         run_command_stdout = buf.getvalue()
     assert run_command_stdout.split("\n") == [
