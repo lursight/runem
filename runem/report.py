@@ -71,6 +71,7 @@ def _plot_times(
         )
         labels.insert(phase_start_idx, f"{utf8_phase}{phase} (total)")
         times.insert(phase_start_idx, phase_job_times.total_seconds())
+        job_time_sum += phase_job_times
 
     runem_app_timing: typing.List[JobTiming] = timing_data["_app"]
     job_metadata: JobTiming

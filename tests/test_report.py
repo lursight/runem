@@ -32,34 +32,51 @@ def test_report_on_run_basic_call() -> None:
         ),
         "commands": [],
     }
+    job_timing_4: JobTiming = {
+        "job": (
+            "another job 4",
+            timedelta(seconds=250),
+        ),
+        "commands": [],
+    }
     job_return: JobReturn = None  # typing.Optional[JobReturnData]
     job_run_metadata_1: JobRunMetadata = (job_timing_1, job_return)
     job_run_metadata_2: JobRunMetadata = (job_timing_2, job_return)
     job_run_metadata_3: JobRunMetadata = (job_timing_3, job_return)
+    job_run_metadata_4: JobRunMetadata = (job_timing_4, job_return)
     job_run_metadatas: JobRunMetadatasByPhase = {
         "phase 1": [
             job_run_metadata_1,
             job_run_metadata_2,
             job_run_metadata_3,
+            job_run_metadata_4,
         ]
     }
     with io.StringIO() as buf, redirect_stdout(buf):
-        report_on_run(
+        time_saved: timedelta = report_on_run(
             phase_run_oder=("phase 1",),
             job_run_metadatas=job_run_metadatas,
-            overall_runtime=timedelta(0),
+            overall_runtime=timedelta(
+                # mimic a value that is slightly larger than the largest single
+                # job in the single phase.
+                seconds=1000.5
+            ),
         )
         run_command_stdout = buf.getvalue()
     assert run_command_stdout.split("\n") == [
         "runem: reports:",
-        "runem                        [   0.000000]",
-        "└phase 1 (total)             [1002.001001]  ████████████████████████████████████████",
-        " ├phase 1.job label 2        [1000.001001]  ███████████████████████████████████████▉",
-        " │├phase 1.job label 2.sub1  [ 500.000000]  ████████████████████",
-        " │└phase 1.job label 2.sub2  [ 500.000000]  ████████████████████",
-        " └phase 1.another job 3      [   2.000000]  ▏",
+        "runem                        [1000.500000]  ████████████████████████████████",
+        "└phase 1 (total)             [1252.001001]  ████████████████████████████████████████",
+        " ├phase 1.job label 2        [1000.001001]  ████████████████████████████████",
+        " │├phase 1.job label 2.sub1  [ 500.000000]  ████████████████",
+        " │└phase 1.job label 2.sub2  [ 500.000000]  ████████████████",
+        " ├phase 1.another job 3      [   2.000000]  ▏",
+        " └phase 1.another job 4      [ 250.000000]  ████████",
         "",
     ]
+    # this floating-point comparison should be problematic but ots' working for
+    # now... for now.
+    assert time_saved.total_seconds() == 251.501001
 
 
 def test_report_on_run_reports() -> None:
