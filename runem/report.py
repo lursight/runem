@@ -55,25 +55,42 @@ def _plot_times(
     labels: typing.List[str] = []
     times: typing.List[float] = []
     job_time_sum: timedelta = timedelta()  # init to 0
-    for phase in phase_run_oder:
+    for idx, phase in enumerate(phase_run_oder):
+        not_last_phase: bool = idx < len(phase_run_oder) - 1
+        utf8_phase = "├" if not_last_phase else "└"
+        utf8_phase_group = "│" if not_last_phase else " "
         # log(f"Phase '{phase}' jobs took:")
         phase_total_time: float = 0.0
         phase_start_idx = len(labels)
         job_timing: JobTiming
-        for job_timing in timing_data[phase]:
+
+        # Filter out JobTiming instances with non-zero total_seconds
+        non_zero_timing_data: typing.List[JobTiming] = [
+            job_timing
+            for job_timing in timing_data[phase]
+            if job_timing["job"][1].total_seconds() != 0
+        ]
+
+        for idx, job_timing in enumerate(non_zero_timing_data):
+            not_last: bool = idx < len(non_zero_timing_data) - 1
+            utf8_job = "├" if not_last else "└"
+            utf8_sub_jobs = "│" if not_last else " "
             job_label, job_time_total = job_timing["job"]
-            if job_time_total.total_seconds() == 0:
-                continue
-            labels.append(f"│├{phase}.{job_label}")
+            labels.append(f"{utf8_phase_group}{utf8_job}{phase}.{job_label}")
             times.append(job_time_total.total_seconds())
             job_time_sum += job_time_total
             phase_total_time += job_time_total.total_seconds()
             sub_command_times: TimingEntries = job_timing["commands"]
             # also print the sub-components of the job as we have more than one
-            for sub_job_label, sub_job_time in sub_command_times:
-                labels.append(f"│├├{phase}.{job_label}.{sub_job_label}")
+            for idx, (sub_job_label, sub_job_time) in enumerate(sub_command_times):
+                sub_utf8 = "├"
+                if idx == len(sub_command_times) - 1:
+                    sub_utf8 = "└"
+                labels.append(
+                    f"{utf8_phase_group}{utf8_sub_jobs}{sub_utf8}{phase}.{job_label}.{sub_job_label}"
+                )
                 times.append(sub_job_time.total_seconds())
-        labels.insert(phase_start_idx, f"├{phase} (total)")
+        labels.insert(phase_start_idx, f"{utf8_phase}{phase} (total)")
         times.insert(phase_start_idx, phase_total_time)
 
     runem_app_timing: typing.List[JobTiming] = timing_data["_app"]

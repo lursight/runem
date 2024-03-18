@@ -53,11 +53,11 @@ def test_report_on_run_basic_call() -> None:
     assert run_command_stdout.split("\n") == [
         "runem: reports:",
         "runem                        [   0.000000]",
-        "├phase 1 (total)             [1002.001001]  ████████████████████████████████████████",
-        "│├phase 1.job label 2        [1000.001001]  ███████████████████████████████████████▉",
-        "│├├phase 1.job label 2.sub1  [ 500.000000]  ████████████████████",
-        "│├├phase 1.job label 2.sub2  [ 500.000000]  ████████████████████",
-        "│├phase 1.another job 3      [   2.000000]  ▏",
+        "└phase 1 (total)             [1002.001001]  ████████████████████████████████████████",
+        " ├phase 1.job label 2        [1000.001001]  ███████████████████████████████████████▉",
+        " │├phase 1.job label 2.sub1  [ 500.000000]  ████████████████████",
+        " │└phase 1.job label 2.sub2  [ 500.000000]  ████████████████████",
+        " └phase 1.another job 3      [   2.000000]  ▏",
         "",
     ]
 
@@ -107,9 +107,9 @@ def test_report_on_run_reports() -> None:
     assert run_command_stdout.split("\n") == [
         "runem: reports:",
         "runem                    [   0.000000]",
-        "├phase 1 (total)         [1002.001001]  ████████████████████████████████████████",
-        "│├phase 1.job label 2    [1000.001001]  ███████████████████████████████████████▉",
-        "│├phase 1.another job 3  [   2.000000]  ▏",
+        "└phase 1 (total)         [1002.001001]  ████████████████████████████████████████",
+        " ├phase 1.job label 2    [1000.001001]  ███████████████████████████████████████▉",
+        " └phase 1.another job 3  [   2.000000]  ▏",
         "runem: report: dummy report label: /dummy/report/url",
         "",
     ]
