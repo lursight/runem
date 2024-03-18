@@ -334,7 +334,9 @@ def test_runem_with_full_config(verbosity: bool) -> None:
         runem_cli_switches=runem_cli_switches,
         add_verbose_switch=verbosity,
     )
-    assert error_raised is None
+    if error_raised is not None:  # pragma: no cover
+        print("\n".join(runem_stdout))
+        raise error_raised  # re-raise the error that shouldn't have been raised
     _remove_x_of_y_workers_log(runem_stdout, phase="dummy phase 1", num_jobs=2)
     _remove_x_of_y_workers_log(runem_stdout, phase="dummy phase 2", num_jobs=2)
 
@@ -379,7 +381,8 @@ def test_runem_with_full_config_verbose() -> None:
     ) = _run_full_config_runem(  # pylint: disable=no-value-for-parameter
         runem_cli_switches=runem_cli_switches
     )
-    assert error_raised is None
+    if error_raised is not None:  # pragma: no cover
+        raise error_raised  # re-raise the error that shouldn't have been raised
 
     _remove_x_of_y_workers_log(runem_stdout, phase="dummy phase 1", num_jobs=2)
     _remove_x_of_y_workers_log(runem_stdout, phase="dummy phase 2", num_jobs=2)
@@ -417,7 +420,8 @@ def test_runem_with_single_phase() -> None:
     ) = _run_full_config_runem(  # pylint: disable=no-value-for-parameter
         runem_cli_switches=runem_cli_switches
     )
-    assert error_raised is None
+    if error_raised is not None:  # pragma: no cover
+        raise error_raised  # re-raise the error that shouldn't have been raised
 
     _remove_x_of_y_workers_log(runem_stdout, num_jobs=2)
 
@@ -454,7 +458,9 @@ def test_runem_with_single_phase_verbose() -> None:
 
     _remove_x_of_y_workers_log(runem_stdout, num_jobs=2)
 
-    assert error_raised is None
+    if error_raised is not None:  # pragma: no cover
+        raise error_raised  # re-raise the error that shouldn't have been raised
+
     assert runem_stdout == [
         (
             "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
@@ -732,7 +738,8 @@ def test_runem_job_filters_work(verbosity: bool) -> None:
     ) = _run_full_config_runem(  # pylint: disable=no-value-for-parameter
         runem_cli_switches=runem_cli_switches
     )
-    assert error_raised is None
+    if error_raised is not None:  # pragma: no cover
+        raise error_raised  # re-raise the error that shouldn't have been raised
 
     _remove_x_of_y_workers_log(runem_stdout, num_jobs=1)
 
@@ -829,7 +836,8 @@ def test_runem_tag_filters_work(verbosity: bool) -> None:
     ) = _run_full_config_runem(  # pylint: disable=no-value-for-parameter
         runem_cli_switches=runem_cli_switches
     )
-    assert error_raised is None
+    if error_raised is not None:  # pragma: no cover
+        raise error_raised  # re-raise the error that shouldn't have been raised
 
     _remove_x_of_y_workers_log(runem_stdout)
 
@@ -917,7 +925,8 @@ def test_runem_tag_out_filters_work(verbosity: bool, one_liner: bool) -> None:
         _remove_x_of_y_workers_log(runem_stdout, phase="dummy phase 1", num_jobs=1)
     _remove_x_of_y_workers_log(runem_stdout, phase="dummy phase 2", num_jobs=2)
 
-    assert error_raised is None
+    if error_raised is not None:  # pragma: no cover
+        raise error_raised  # re-raise the error that shouldn't have been raised
 
     if one_liner:
         if verbosity:
@@ -1053,7 +1062,9 @@ def test_runem_tag_out_filters_work_all_tags(verbosity: bool) -> None:
         add_verbose_switch=False,
         add_command_one_liner=False,
     )
-    assert error_raised is None
+    if error_raised is not None:  # pragma: no cover
+        raise error_raised  # re-raise the error that shouldn't have been raised
+
     if verbosity:
         assert runem_stdout == [
             "runem: loaded config from [CONFIG PATH]",
@@ -1112,7 +1123,8 @@ def test_runem_phase_filters_work(verbosity: bool) -> None:
     ) = _run_full_config_runem(  # pylint: disable=no-value-for-parameter
         runem_cli_switches=runem_cli_switches
     )
-    assert error_raised is None
+    if error_raised is not None:  # pragma: no cover
+        raise error_raised  # re-raise the error that shouldn't have been raised
 
     _remove_x_of_y_workers_log(runem_stdout)
 
