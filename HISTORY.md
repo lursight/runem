@@ -4,6 +4,113 @@ Changelog
 
 (unreleased)
 ------------
+- Merge pull request #40 from lursight/fix/time_saved. [Frank Harrison]
+
+  Fix/time saved
+- Feat(prettier-bars): clarifies that total is user-space time. [Frank
+  Harrison]
+
+  ... not wall-clock or system-time
+- Feat(prettier-bars): distiguishes the wall-clock bars. [Frank
+  Harrison]
+
+  ... from the total/sum and sub-job bars, so that it's slightly easier to
+  see where the time is being really spent.
+- Fix(time-saved): clarifies which measurement is the wall-clock time
+  for the entire run. [Frank Harrison]
+- Fix(time-saved): add message about how long we _would_ have waited
+  without runem. [Frank Harrison]
+- Fix(time-saved): renames all variable associated with timing reports.
+  [Frank Harrison]
+
+  This just makes someting which can become intractable/confusing a lot
+  easier to follow.
+- Fix(time-saved): check that time-saved is reported correctly. [Frank
+  Harrison]
+
+  Here we add a test first and then fix the missing math to calculate the
+  time-saved by using runem. We broke this in the previous feature for
+  rendering the tree slightly more elegantly.
+- Feat(hide-single-leafs): only show the job when it has a single child.
+  [Frank Harrison]
+
+  We would get duplicated information for jobs which had single
+  run_command invocations. This only shows sub-tasks/jobs if there are
+  more than one sub-tasks meaning the output looks a lot nicer & clearer.
+- Chore(deps): adds setuptools as a explicit dep. [Frank Harrison]
+
+  ... otherwise we get the following error (more often in python 3.12),
+  perhaps due to setuptools being removed from distros?:
+
+  ```text
+  Traceback (most recent call last):
+    File "/var/www/mydir/virtualenvs/dev/bin/pip", line 5, in <module>
+      from pkg_resources import load_entry_point
+  ImportError: No module named pkg_resources
+  ```
+- Merge pull request #39 from lursight/feat/time_all_run_command_calls.
+  [Frank Harrison]
+
+  Feat/time all run command calls
+- Feat(pretty-tree): refactors out the phase-job report generator.
+  [Frank Harrison]
+
+  This is just to make pylint happy.
+- Feat(pretty-tree): makes the report tree neater. [Frank Harrison]
+- Feat(time-all-sub-tasks): re-raise errors for context in ci/cd. [Frank
+  Harrison]
+
+  In github ci/cd we were hitting the asserts but had no context of where
+  they're raised from or why. This should fix that if they still occur.
+- Feat(time-all-sub-tasks): adds a test to test the time-recording
+  functions. [Frank Harrison]
+- Feat(time-all-sub-tasks): adds all run_command times to report output.
+  [Frank Harrison]
+- Chore(type): uses a type-alias instead of manual type. [Frank
+  Harrison]
+- Merge pull request #37 from
+  lursight/dependabot/github_actions/actions/upload-artifact-4. [Frank
+  Harrison]
+
+  chore(deps): bump actions/upload-artifact from 3 to 4
+- Chore(deps): bump actions/upload-artifact from 3 to 4.
+  [dependabot[bot]]
+
+  Bumps [actions/upload-artifact](https://github.com/actions/upload-artifact) from 3 to 4.
+  - [Release notes](https://github.com/actions/upload-artifact/releases)
+  - [Commits](https://github.com/actions/upload-artifact/compare/v3...v4)
+
+  ---
+  updated-dependencies:
+  - dependency-name: actions/upload-artifact
+    dependency-type: direct:production
+    update-type: version-update:semver-major
+  ...
+- Merge pull request #36 from lursight/chore/more_python_versions_in_ci.
+  [Frank Harrison]
+
+  Chore/more python versions in ci
+- Chore(github-ci): workaround for python 3.12 setuptools issue. [Frank
+  Harrison]
+
+  This fies what looks like an issue with pytest hooks running ci/cd (and
+  on local machine) where we get:
+    ModuleNotFoundError: No module named 'pkg_resources'
+- Chore(github-ci): updates the python `--help` tests for 3.11 (and
+  later) [Frank Harrison]
+- Chore(github-ci): test python 3.9, 3.11 and 3.12 in ci. [Frank
+  Harrison]
+
+  We don't bother with 3.10 because we test 3.9 and boundaries for
+  features are on the 3.11 version.
+
+  We don't bother with earlier than 3.9, even though 3.8 is the earliest
+  officially supported version.
+
+
+0.0.28 (2024-03-01)
+-------------------
+- Release: version 0.0.28 🚀 [Frank Harrison]
 - Merge pull request #35 from lursight/fix/aliases_not_setting_options.
   [Frank Harrison]
 
