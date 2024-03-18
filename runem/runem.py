@@ -350,6 +350,7 @@ def timed_main(argv: typing.List[str]) -> None:
         (
             f"{message}: {time_taken.total_seconds()}s, "
             f"saving you {wall_clock_time_saved.total_seconds()}s, "
+            f"without runem you would have waited {system_time_spent.total_seconds()}s"
         )
     )
 
