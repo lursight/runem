@@ -74,7 +74,7 @@ def _replace_bar_characters(text: str, end_str: str, replace_char: str) -> str:
 
 def _semi_shade_phase_totals(text: str) -> str:
     light_shade_char = "░"
-    return _replace_bar_characters(text, "(total)", light_shade_char)
+    return _replace_bar_characters(text, "(user-time)", light_shade_char)
 
 
 def _dot_jobs(text: str) -> str:
@@ -115,7 +115,7 @@ def _plot_times(
             utf8_phase_group,
             timing_data[phase],
         )
-        labels.insert(phase_start_idx, f"{utf8_phase}{phase} (total)")
+        labels.insert(phase_start_idx, f"{utf8_phase}{phase} (user-time)")
         times.insert(phase_start_idx, phase_job_times.total_seconds())
         system_time_spent += phase_job_times
 

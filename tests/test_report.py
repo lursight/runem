@@ -69,7 +69,7 @@ def test_report_on_run_basic_call() -> None:
         "runem: reports:",
         "runem (total wall-clock)         [1000.500000]  ████████████████████████████████",
         (
-            "└phase 1 (total)                 [1252.001001] "
+            "└phase 1 (user-time)             [1252.001001] "
             " ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░"
         ),
         " ├phase 1.job label 2            [1000.001001]  ████████████████████████████████",
@@ -130,7 +130,7 @@ def test_report_on_run_reports() -> None:
     assert run_command_stdout.split("\n") == [
         "runem: reports:",
         "runem (total wall-clock)  [   0.000000]",
-        "└phase 1 (total)          [1002.001001]  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░",
+        "└phase 1 (user-time)      [1002.001001]  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░",
         " ├phase 1.job label 2     [1000.001001]  ███████████████████████████████████████▉",
         " └phase 1.another job 3   [   2.000000]  ▏",
         "runem: report: dummy report label: /dummy/report/url",
