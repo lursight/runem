@@ -23,7 +23,7 @@ except ImportError:  # pragma: FIXME: add code coverage
     termplotlib = None
 
 
-def _align_bar_graphs_workaround(original_text: str) -> None:
+def _align_bar_graphs_workaround(original_text: str) -> str:
     """Module termplotlib doesn't align floats, this fixes that.
 
     This makes it so we can align the point in the floating point string, without it,
@@ -40,7 +40,46 @@ def _align_bar_graphs_workaround(original_text: str) -> None:
         r"\[.*?(\d+)\.", lambda m: f"[{m.group(1):>{max_width}}.", original_text
     )
 
-    print(formatted_text)
+    return formatted_text
+
+
+def _replace_bar_characters(text: str, end_str: str, replace_char: str) -> str:
+    """Replaces block characters in lines containing `end_str` with give char.
+
+    Args:
+        text_lines (List[str]): A list of strings, each representing a line of text.
+        replace_char (str): The character to replace all bocks with
+
+    Returns:
+        List[str]: The modified list of strings with block characters replaced
+                   on specified lines.
+    """
+    # Define the block character and its light shade replacement
+    block_chars = (
+        "▏▎▋▊█▌▐▄▀─"  # Extend this string with any additional block characters you use
+    )
+
+    text_lines: typing.List[str] = text.split("\n")
+
+    # Process each line, replacing block characters if `end_str` is present
+    modified_lines = [
+        line.translate(str.maketrans(block_chars, replace_char * len(block_chars)))
+        if end_str in line
+        else line
+        for line in text_lines
+    ]
+
+    return "\n".join(modified_lines)
+
+
+def _semi_shade_phase_totals(text: str) -> str:
+    light_shade_char = "░"
+    return _replace_bar_characters(text, "(total)", light_shade_char)
+
+
+def _dot_jobs(text: str) -> str:
+    dot_char = "·"
+    return _replace_bar_characters(text, "(+)", dot_char)
 
 
 def _plot_times(
@@ -96,8 +135,12 @@ def _plot_times(
             labels,
             force_ascii=False,
         )
+        shaded_bar_graph: str = _semi_shade_phase_totals(fig.get_string())
+        dotted_bar_graph: str = _dot_jobs(shaded_bar_graph)
+
         # ensure the graphs get aligned nicely.
-        _align_bar_graphs_workaround(fig.get_string())
+        final_bar_graph: str = _align_bar_graphs_workaround(dotted_bar_graph)
+        print(final_bar_graph)
     else:  # pragma: FIXME: add code coverage
         for job_label, time in zip(labels, times):
             log(f"{job_label}: {time}s")
@@ -132,7 +175,8 @@ def _gen_jobs_report(
         utf8_job = "├" if not_last else "└"
         utf8_sub_jobs = "│" if not_last else " "
         job_label, job_time_total = job_timing["job"]
-        labels.append(f"{utf8_phase_group}{utf8_job}{phase}.{job_label}")
+        job_bar_label: str = f"{phase}.{job_label}"
+        labels.append(f"{utf8_phase_group}{utf8_job}{job_bar_label}")
         times.append(job_time_total.total_seconds())
         job_time_sum += job_time_total
         sub_command_times: TimingEntries = job_timing["commands"]
@@ -147,7 +191,8 @@ def _gen_jobs_report(
             if idx == len(sub_command_times) - 1:
                 sub_utf8 = "└"
             labels.append(
-                f"{utf8_phase_group}{utf8_sub_jobs}{sub_utf8}{phase}.{job_label}.{sub_job_label}"
+                f"{utf8_phase_group}{utf8_sub_jobs}{sub_utf8}{job_bar_label}"
+                f".{sub_job_label} (+)"
             )
             times.append(sub_job_time.total_seconds())
     return job_time_sum
