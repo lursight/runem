@@ -103,8 +103,8 @@ def _plot_times(
 
     for idx, phase in enumerate(phase_run_oder):
         not_last_phase: bool = idx < len(phase_run_oder) - 1
-        utf8_phase = "├" if not_last_phase else "└"
-        utf8_phase_group = "│" if not_last_phase else " "
+        utf8_phase = " ├" if not_last_phase else " └"
+        utf8_phase_group = " │" if not_last_phase else "  "
         # log(f"Phase '{phase}' jobs took:")
         phase_start_idx = len(labels)
 
@@ -121,9 +121,11 @@ def _plot_times(
 
     runem_app_timing: typing.List[JobTiming] = timing_data["_app"]
     job_metadata: JobTiming
-    for job_metadata in reversed(runem_app_timing):
+    for idx, job_metadata in enumerate(reversed(runem_app_timing)):
+        last_group: bool = idx == 0  # revere sorted
+        utf8_group = "├" if not last_group else "└"
         job_label, job_time_total = job_metadata["job"]
-        labels.insert(0, f"├runem.{job_label}")
+        labels.insert(0, f"{utf8_group}runem.{job_label}")
         times.insert(0, job_time_total.total_seconds())
     labels.insert(0, "runem (total wall-clock)")
     times.insert(0, wall_clock_for_runem_main.total_seconds())

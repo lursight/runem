@@ -135,8 +135,8 @@ def test_runem_basic_with_config(
             "runem: reports:",
             "runem (total wall-clock)  [<float>]  ",
             "├runem.pre-build          [<float>]  ",
-            "├runem.run-phases         [<float>]  ",
-            "└mock phase (user-time)   [<float>]",
+            "└runem.run-phases         [<float>]  ",
+            " └mock phase (user-time)  [<float>]",
             "runem: DONE: runem took: <float>, saving you <float>, without runem you "
             "would have waited <float>",
             "",
@@ -175,8 +175,8 @@ def test_runem_basic_with_config_no_options(
             "runem: reports:",
             "runem (total wall-clock)  [<float>]  ",
             "├runem.pre-build          [<float>]  ",
-            "├runem.run-phases         [<float>]  ",
-            "└mock phase (user-time)   [<float>]",
+            "└runem.run-phases         [<float>]  ",
+            " └mock phase (user-time)  [<float>]",
             "runem: DONE: runem took: <float>, saving you <float>, without runem you "
             "would have waited <float>",
             "",
