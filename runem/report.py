@@ -43,7 +43,7 @@ def _align_bar_graphs_workaround(original_text: str) -> str:
     return formatted_text
 
 
-def _replace_bar_characters(text: str, end_str: str, replace_char: str) -> str:
+def replace_bar_graph_characters(text: str, end_str: str, replace_char: str) -> str:
     """Replaces block characters in lines containing `end_str` with give char.
 
     Args:
@@ -56,7 +56,7 @@ def _replace_bar_characters(text: str, end_str: str, replace_char: str) -> str:
     """
     # Define the block character and its light shade replacement
     block_chars = (
-        "▏▎▋▊█▌▐▄▀─"  # Extend this string with any additional block characters you use
+        "▏▎▍▋▊█▌▐▄▀─"  # Extend this string with any additional block characters you use
     )
 
     text_lines: typing.List[str] = text.split("\n")
@@ -74,12 +74,12 @@ def _replace_bar_characters(text: str, end_str: str, replace_char: str) -> str:
 
 def _semi_shade_phase_totals(text: str) -> str:
     light_shade_char = "░"
-    return _replace_bar_characters(text, "(user-time)", light_shade_char)
+    return replace_bar_graph_characters(text, "(user-time)", light_shade_char)
 
 
 def _dot_jobs(text: str) -> str:
     dot_char = "·"
-    return _replace_bar_characters(text, "(+)", dot_char)
+    return replace_bar_graph_characters(text, "(+)", dot_char)
 
 
 def _plot_times(
