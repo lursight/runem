@@ -52,8 +52,8 @@
           type: bool
       - option:
           default: true
+          name: unit-test
           desc: run unit tests
-          name: unit test
           type: bool
 - job:
     addr:

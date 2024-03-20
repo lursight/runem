@@ -141,6 +141,10 @@ def _job_py_pytest(  # noqa: C901 # pylint: disable=too-many-branches,too-many-s
     # pytest_cfg = root_path / ".pytest.ini"
     # assert pytest_cfg.exists()
 
+    if not options["unit-test"]:
+        # we've disabled unit-testing on the cli
+        return reports
+
     if "profile" in options and options["profile"]:
         raise RuntimeError("not implemented - see run_test.sh for how to implement")
 
@@ -186,7 +190,6 @@ def _job_py_pytest(  # noqa: C901 # pylint: disable=too-many-branches,too-many-s
         str(pytest_path),
     ]
 
-    # use sqlite for unit-tests
     env_overrides: typing.Dict[str, str] = {}
 
     kwargs["label"] = f"{label} pytest"
