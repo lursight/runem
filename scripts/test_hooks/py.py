@@ -20,11 +20,11 @@ def _job_py_code_reformat(
     docformatter_extra_args = [
         "--in-place",
     ]
-    if "check-only" in options and options["check-only"]:
+    if options["check-only"]:
         extra_args.append("--check")
         docformatter_extra_args = []  # --inplace is not compatible with --check
 
-    if "isort" in options and options["isort"]:
+    if options["isort"]:
         isort_cmd = [
             "python3",
             "-m",
@@ -38,7 +38,7 @@ def _job_py_code_reformat(
         kwargs["label"] = f"{label} isort"
         run_command(cmd=isort_cmd, **kwargs)
 
-    if "black" in options and options["black"]:
+    if options["black"]:
         black_cmd = [
             "python3",
             "-m",
@@ -49,7 +49,7 @@ def _job_py_code_reformat(
         kwargs["label"] = f"{label} black"
         run_command(cmd=black_cmd, **kwargs)
 
-    if "docformatter" in options and options["docformatter"]:
+    if options["docformatter"]:
         docformatter_cmd = [
             "python3",
             "-m",
@@ -66,7 +66,7 @@ def _job_py_code_reformat(
             0,  # no work/change required
             3,  # no errors, but code was reformatted
         )
-        if "check-only" in options and options["check-only"]:
+        if options["check-only"]:
             # in check it is ONLY ok if no work/change was required
             allowed_exits = (0,)
         kwargs["label"] = f"{label} docformatter"
@@ -145,7 +145,7 @@ def _job_py_pytest(  # noqa: C901 # pylint: disable=too-many-branches,too-many-s
         # we've disabled unit-testing on the cli
         return reports
 
-    if "profile" in options and options["profile"]:
+    if options["profile"]:
         raise RuntimeError("not implemented - see run_test.sh for how to implement")
 
     pytest_path = root_path / "tests"
@@ -153,7 +153,7 @@ def _job_py_pytest(  # noqa: C901 # pylint: disable=too-many-branches,too-many-s
 
     coverage_switches: typing.List[str] = []
     coverage_cfg = root_path / ".coveragerc"
-    if "coverage" in options and options["coverage"]:
+    if options["coverage"]:
         assert coverage_cfg.exists()
         coverage_switches = [
             "--cov=.",
@@ -199,7 +199,7 @@ def _job_py_pytest(  # noqa: C901 # pylint: disable=too-many-branches,too-many-s
         **kwargs,
     )
 
-    if "coverage" in options and options["coverage"]:
+    if options["coverage"]:
         reports_dir: pathlib.Path = root_path / "reports"
         reports_dir.mkdir(parents=False, exist_ok=True)
         coverage_output_dir: pathlib.Path = reports_dir / "coverage_python"
@@ -266,7 +266,7 @@ def _install_python_requirements(
 ) -> None:
     options: OptionsWritable = kwargs["options"]
     root_path: pathlib.Path = kwargs["root_path"]
-    if not ("install-deps" in options and options["install-deps"]):
+    if not (options["install-deps"]):
         # not enabled
         return
     requirements_path = root_path

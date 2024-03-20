@@ -213,11 +213,11 @@ def _job_py_code_reformat(
     docformatter_extra_args = [
         "--in-place",
     ]
-    if "check-only" in options and options["check-only"]:
+    if options["check-only"]:
         extra_args.append("--check")
         docformatter_extra_args = []  # --inplace is not compatible with --check
 
-    if "black" in options and options["black"]:
+    if options["black"]:
         black_cmd = [
             "python3",
             "-m",
@@ -228,7 +228,7 @@ def _job_py_code_reformat(
         kwargs["label"] = f"{label} black"
         run_command(cmd=black_cmd, **kwargs)
 
-    if "docformatter" in options and options["docformatter"]:
+    if options["docformatter"]:
         docformatter_cmd = [
             "python3",
             "-m",
@@ -245,7 +245,7 @@ def _job_py_code_reformat(
             0,  # no work/change required
             3,  # no errors, but code was reformatted
         )
-        if "check-only" in options and options["check-only"]:
+        if options["check-only"]:
             # in check it is ONLY ok if no work/change was required
             allowed_exits = (0,)
         kwargs["label"] = f"{label} docformatter"
