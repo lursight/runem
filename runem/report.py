@@ -56,7 +56,8 @@ def replace_bar_graph_characters(text: str, end_str: str, replace_char: str) -> 
     """
     # Define the block character and its light shade replacement
     block_chars = (
-        "▏▎▍▋▊█▌▐▄▀─"  # Extend this string with any additional block characters you use
+        "▏▎▍▋▊▉█▌▐▄▀─"  # Extend this string with any additional block characters you use
+        "░·"  # also include the chars we might replace with for special bars
     )
 
     text_lines: typing.List[str] = text.split("\n")
