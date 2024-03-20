@@ -69,16 +69,16 @@ def test_report_on_run_basic_call() -> None:
         run_command_stdout = buf.getvalue()
     assert run_command_stdout.split("\n") == [
         "runem: reports:",
-        "runem (total wall-clock)          [1000.500000]  ████████████████████████████████",
+        "runem (total wall-clock)  [1000.500000]  ████████████████████████████████",
         (
-            " └phase 1 (user-time)             [1252.001001] "
-            " ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░"
+            " └phase 1 (user-time)     [1252.001001]  "
+            "░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░"
         ),
-        "  ├phase 1.job label 2            [1000.001001]  ████████████████████████████████",
-        "  │├phase 1.job label 2.sub1 (+)  [ 500.000000]  ················",
-        "  │└phase 1.job label 2.sub2 (+)  [ 500.000000]  ················",
-        "  ├phase 1.another job 3          [   2.000000]  ▏",
-        "  └phase 1.another job 4          [ 250.000000]  ████████",
+        "  ├job label 2            [1000.001001]  ████████████████████████████████",
+        "  │├sub1 (+)              [ 500.000000]  ················",
+        "  │└sub2 (+)              [ 500.000000]  ················",
+        "  ├another job 3          [   2.000000]  ▏",
+        "  └another job 4          [ 250.000000]  ████████",
         "",
     ]
     # this floating-point comparison should be problematic but its' working for
@@ -132,9 +132,15 @@ def test_report_on_run_reports() -> None:
     assert run_command_stdout.split("\n") == [
         "runem: reports:",
         "runem (total wall-clock)  [   0.000000]",
-        " └phase 1 (user-time)     [1002.001001]  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░",
-        "  ├phase 1.job label 2    [1000.001001]  ███████████████████████████████████████▉",
-        "  └phase 1.another job 3  [   2.000000]  ▏",
+        (
+            " └phase 1 (user-time)     [1002.001001]  "
+            "░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░"
+        ),
+        (
+            "  ├job label 2            [1000.001001]  "
+            "███████████████████████████████████████▉"
+        ),
+        "  └another job 3          [   2.000000]  ▏",
         "runem: report: dummy report label: /dummy/report/url",
         "",
     ]
@@ -179,20 +185,20 @@ def test_sanitise_reports_footer_removes_all_bar_chars_2() -> None:
         "runem: reports:",
         "runem (total wall-clock)  [ <float>]",
         " └phase 1 (user-time)     [<float>]",
-        "  ├phase 1.job 1          [  <float>]",
-        "  ├phase 1.job 2          [  <float>]",
-        "  ├phase 1.job 3          [  <float>]",
-        "  ├phase 1.job 4          [  <float>]",
-        "  ├phase 1.job 5          [  <float>]",
-        "  ├phase 1.job 6          [  <float>]",
-        "  ├phase 1.job 7          [  <float>]",
-        "  ├phase 1.job 8          [  <float>]",
-        "  ├phase 1.job 9          [  <float>]",
-        "  ├phase 1.job 10         [ <float>]",
-        "  ├phase 1.job 11         [ <float>]",
-        "  ├phase 1.job 12         [ <float>]",
-        "  ├phase 1.job 13         [ <float>]",
-        "  └phase 1.job 14         [ <float>]",
+        "  ├job 1                  [  <float>]",
+        "  ├job 2                  [  <float>]",
+        "  ├job 3                  [  <float>]",
+        "  ├job 4                  [  <float>]",
+        "  ├job 5                  [  <float>]",
+        "  ├job 6                  [  <float>]",
+        "  ├job 7                  [  <float>]",
+        "  ├job 8                  [  <float>]",
+        "  ├job 9                  [  <float>]",
+        "  ├job 10                 [ <float>]",
+        "  ├job 11                 [ <float>]",
+        "  ├job 12                 [ <float>]",
+        "  ├job 13                 [ <float>]",
+        "  └job 14                 [ <float>]",
         "",
     ]
     # this floating-point comparison should be problematic but its' working for
