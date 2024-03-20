@@ -18,6 +18,7 @@ import pytest
 
 from runem.config_metadata import ConfigMetadata
 from runem.informative_dict import InformativeDict
+from runem.report import replace_bar_graph_characters
 from runem.runem import (
     _process_jobs,
     _process_jobs_by_phase,
@@ -71,6 +72,22 @@ def _strip_reports_footer(runem_stdout: typing.List[str]) -> typing.List[str]:
     return runem_stdout[:idx]
 
 
+def _sanitise_reports_footer(stdout: str) -> typing.List[str]:
+    """Strips variable content like floats and bar-graphs from the std out."""
+    special_char: str = "="
+    bar_less_stdout: str = replace_bar_graph_characters(
+        stdout,
+        end_str=" ",  # strip all lines
+        replace_char=special_char,  # use a char that isn't used elsewise
+    ).replace(special_char, "")
+
+    lines: typing.List[str] = bar_less_stdout.split("\n")
+    stripped_of_floats: typing.List[str] = [
+        re.sub(r"-?\b\d+\.\d+s?\b", "<float>", text) for text in lines
+    ]
+    return stripped_of_floats
+
+
 def test_runem_basic() -> None:
     """Tests new user's first call-path, when they wouldn't have a .runem.yml."""
     with io.StringIO() as buf, redirect_stdout(buf):
@@ -111,8 +128,19 @@ def test_runem_basic_with_config(
     with io.StringIO() as buf, redirect_stdout(buf):
         # with pytest.raises(SystemExit):
         timed_main(["--help"])
-        runem_stdout = buf.getvalue().split("\n")
+        runem_stdout: typing.List[str] = _sanitise_reports_footer(buf.getvalue())
         assert [] == _strip_reports_footer(runem_stdout)
+
+        assert [
+            "runem: reports:",
+            "runem (total wall-clock)  [<float>]  ",
+            "├runem.pre-build          [<float>]  ",
+            "└runem.run-phases         [<float>]  ",
+            " └mock phase (user-time)  [<float>]",
+            "runem: DONE: runem took: <float>, saving you <float>, without runem you "
+            "would have waited <float>",
+            "",
+        ] == runem_stdout
 
 
 @patch(
@@ -142,8 +170,17 @@ def test_runem_basic_with_config_no_options(
     with io.StringIO() as buf, redirect_stdout(buf):
         # with pytest.raises(SystemExit):
         timed_main(["--help"])
-        runem_stdout = buf.getvalue().split("\n")
-        assert [] == _strip_reports_footer(runem_stdout)
+        runem_stdout = buf.getvalue()
+        assert [
+            "runem: reports:",
+            "runem (total wall-clock)  [<float>]  ",
+            "├runem.pre-build          [<float>]  ",
+            "└runem.run-phases         [<float>]  ",
+            " └mock phase (user-time)  [<float>]",
+            "runem: DONE: runem took: <float>, saving you <float>, without runem you "
+            "would have waited <float>",
+            "",
+        ] == _sanitise_reports_footer(runem_stdout)
 
 
 MOCK_JOB_EXECUTE_INNER_RET: typing.Tuple[JobTiming, JobReturn] = (
