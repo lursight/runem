@@ -13,7 +13,7 @@ def _job_prettier(
     """
     options: OptionsWritable = kwargs["options"]
     command_variant = "pretty"
-    if "check_only" in options and options["check_only"]:
+    if "check-only" in options and options["check-only"]:
         command_variant = "prettyCheck"
 
     pretty_cmd = [

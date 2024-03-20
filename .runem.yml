@@ -22,7 +22,7 @@
       - option:
           alias: check
           default: false
-          name: check_only
+          name: check-only
           type: bool
           desc: runs in check-mode, erroring if isort, black or any text-edits would occur
       - option:
@@ -37,7 +37,7 @@
           type: bool
       - option:
           default: false
-          name: install deps
+          name: install-deps
           type: bool
           desc: gets dep-installing job to run
       - option:

@@ -20,7 +20,7 @@ def _job_py_code_reformat(
     docformatter_extra_args = [
         "--in-place",
     ]
-    if "check_only" in options and options["check_only"]:
+    if "check-only" in options and options["check-only"]:
         extra_args.append("--check")
         docformatter_extra_args = []  # --inplace is not compatible with --check
 
@@ -66,7 +66,7 @@ def _job_py_code_reformat(
             0,  # no work/change required
             3,  # no errors, but code was reformatted
         )
-        if "check_only" in options and options["check_only"]:
+        if "check-only" in options and options["check-only"]:
             # in check it is ONLY ok if no work/change was required
             allowed_exits = (0,)
         kwargs["label"] = f"{label} docformatter"
@@ -263,7 +263,7 @@ def _install_python_requirements(
 ) -> None:
     options: OptionsWritable = kwargs["options"]
     root_path: pathlib.Path = kwargs["root_path"]
-    if not ("install deps" in options and options["install deps"]):
+    if not ("install-deps" in options and options["install-deps"]):
         # not enabled
         return
     requirements_path = root_path
