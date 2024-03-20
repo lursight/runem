@@ -51,25 +51,9 @@
           desc: generate profile information in jobs that can
           type: bool
       - option:
-          alias: u
-          default: true
-          desc: update snapshots in jobs that can update data snapshots
-          name: update snapshots
-          type: bool
-      - option:
           default: true
           desc: run unit tests
           name: unit test
-          type: bool
-      - option:
-          default: false
-          desc: run unit tests for the firebase function's data
-          name: unit test firebase data
-          type: bool
-      - option:
-          default: false
-          desc: run unit tests for the python code
-          name: unit test python
           type: bool
 - job:
     addr:

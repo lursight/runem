@@ -435,8 +435,8 @@ usage: runem.py [-h] [--jobs JOBS [JOBS ...]] [--not-jobs JOBS_EXCLUDED [JOBS_EX
                 [--not-phases PHASES_EXCLUDED [PHASES_EXCLUDED ...]] [--tags TAGS [TAGS ...]] [--not-tags TAGS_EXCLUDED [TAGS_EXCLUDED ...]]
                 [--black] [--no-black] [--check-only] [--no-check-only] [--coverage] [--no-coverage] [--docformatter] [--no-docformatter]
                 [--generate-call-graphs] [--no-generate-call-graphs] [--install-deps] [--no-install-deps] [--isort] [--no-isort] [--profile]
-                [--no-profile] [--update-snapshots] [--no-update-snapshots] [--unit-test] [--no-unit-test] [--unit-test-firebase-data]
-                [--no-unit-test-firebase-data] [--unit-test-python] [--no-unit-test-python] [--call-graphs | --no-call-graphs]
+                [--no-profile] [--unit-test] [--no-unit-test]
+                [--call-graphs | --no-call-graphs]
                 [--procs PROCS] [--root ROOT_DIR] [--verbose | --no-verbose | -v]
 
 Runs the Lursight Lang test-suite
@@ -490,18 +490,8 @@ job-param overrides:
   --no-isort            turn off allow/disallows isort from running on python files
   --profile             generate profile information in jobs that can
   --no-profile          turn off generate profile information in jobs that can
-  --update-snapshots    update snapshots in jobs that can update data snapshots
-  --no-update-snapshots
-                        turn off update snapshots in jobs that can update data snapshots
   --unit-test           run unit tests
   --no-unit-test        turn off run unit tests
-  --unit-test-firebase-data
-                        run unit tests for the firebase function's data
-  --no-unit-test-firebase-data
-                        turn off run unit tests for the firebase function's data
-  --unit-test-python    run unit tests for the python code
-  --no-unit-test-python
-                        turn off run unit tests for the python code
 ```
 </details>
 
