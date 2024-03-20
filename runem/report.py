@@ -122,7 +122,7 @@ def _plot_times(
     runem_app_timing: typing.List[JobTiming] = timing_data["_app"]
     job_metadata: JobTiming
     for idx, job_metadata in enumerate(reversed(runem_app_timing)):
-        last_group: bool = idx == 0  # revere sorted
+        last_group: bool = idx == 0  # reverse sorted
         utf8_group = "├" if not last_group else "└"
         job_label, job_time_total = job_metadata["job"]
         labels.insert(0, f"{utf8_group}runem.{job_label}")
