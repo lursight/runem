@@ -1,6 +1,6 @@
 import pathlib
 from collections import defaultdict
-from unittest.mock import Mock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 from runem.config_metadata import ConfigMetadata
 from runem.files import find_files
@@ -22,6 +22,7 @@ def test_find_files_basic(mock_subprocess_check_output: Mock) -> None:
                 "regex": ".*1.txt",  # should match just one file
             }
         },
+        hook_manager=MagicMock(),
         jobs=defaultdict(list),
         all_job_names=set(),
         all_job_phases=set(),

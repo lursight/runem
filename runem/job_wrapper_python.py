@@ -3,7 +3,7 @@ import sys
 from importlib.util import module_from_spec
 from importlib.util import spec_from_file_location as module_spec_from_file_location
 
-from runem.types import FunctionNotFound, JobConfig, JobFunction
+from runem.types import FunctionNotFound, JobFunction, JobWrapper
 
 
 def _load_python_function_from_module(
@@ -86,22 +86,22 @@ def _find_job_module(cfg_filepath: pathlib.Path, module_file_path: str) -> pathl
 
 
 def get_job_wrapper_py_func(
-    job_config: JobConfig, cfg_filepath: pathlib.Path
+    job_wrapper: JobWrapper, cfg_filepath: pathlib.Path
 ) -> JobFunction:
     """For a job, dynamically loads the associated python job-function.
 
     Side-effects: also re-addressed the job-config.
     """
-    function_to_load: str = job_config["addr"]["function"]
+    function_to_load: str = job_wrapper["addr"]["function"]
     try:
         module_file_path: pathlib.Path = _find_job_module(
-            cfg_filepath, job_config["addr"]["file"]
+            cfg_filepath, job_wrapper["addr"]["file"]
         )
     except FunctionNotFound as err:
         raise FunctionNotFound(
             (
-                f"Whilst loading job '{job_config['label']}' runem failed to find "
-                f"job.addr.file '{job_config['addr']['file']}' looking for "
+                "runem failed to find "
+                f"job.addr.file '{job_wrapper['addr']['file']}' looking for "
                 f"job.addr.function '{function_to_load}'"
             )
         ) from err
@@ -118,5 +118,5 @@ def get_job_wrapper_py_func(
     )
 
     # re-write the job-config file-path for the module with the one that worked
-    job_config["addr"]["file"] = str(module_file_path)
+    job_wrapper["addr"]["file"] = str(module_file_path)
     return function

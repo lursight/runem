@@ -5,6 +5,12 @@ from runem.run_command import run_command
 from runem.types import JobConfig
 
 
+def validate_simple_command(command_string: str) -> typing.List[str]:
+    # use shlex to handle parsing of the command string, a non-trivial problem.
+    split_command: typing.List[str] = shlex.split(command_string)
+    return split_command
+
+
 def job_runner_simple_command(
     **kwargs: typing.Any,
 ) -> None:
@@ -17,7 +23,7 @@ def job_runner_simple_command(
     command_string: str = job_config["command"]
 
     # use shlex to handle parsing of the command string, a non-trivial problem.
-    result = shlex.split(command_string)
+    result = validate_simple_command(command_string)
 
     # preserve quotes for consistent handling of strings and avoid the "word
     # splitting" problem for unix-like shells.

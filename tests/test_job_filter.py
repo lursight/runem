@@ -4,7 +4,7 @@ import typing
 from argparse import Namespace
 from collections import defaultdict
 from contextlib import redirect_stdout
-from unittest.mock import Mock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
@@ -50,6 +50,7 @@ def test_runem_job_filters_work_with_no_tags(verbosity: bool) -> None:
             #     "regex": ".*1.txt",  # should match just one file
             # }
         },
+        hook_manager=MagicMock(),
         jobs=expected_jobs,
         all_job_names=set(("dummy job label",)),
         all_job_phases=set(("dummy phase 1",)),

@@ -10,8 +10,7 @@ from argparse import Namespace
 from collections import defaultdict
 from contextlib import redirect_stdout
 from datetime import timedelta
-from pprint import pprint
-from unittest.mock import Mock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 # Assuming that the modified _progress_updater function is in a module named runem
 import pytest
@@ -19,6 +18,7 @@ import pytest
 from runem.config_metadata import ConfigMetadata
 from runem.informative_dict import InformativeDict
 from runem.runem import (
+    MainReturnType,
     _process_jobs,
     _process_jobs_by_phase,
     _update_progress,
@@ -54,7 +54,6 @@ def _remove_x_of_y_workers_log(
     )
     # the index() call will error if the X/Z message isn't found, so we know
     # it's there, so just remove it.
-    pprint(runem_stdout)
     assert machine_specific_job in runem_stdout, runem_stdout
 
     # remove all instances
@@ -1256,7 +1255,6 @@ def test_progress_updater_with_running_jobs_and_10_jobs(mock_sleep: Mock) -> Non
         job_config = copy.copy(job_config)
         job_config["label"] = f'{job_config["label"]} {idx}'
         all_jobs.append(job_config)
-    pprint(all_jobs)
     with pytest.raises(SleepCalledError), multiprocessing.Manager() as manager:
         _update_progress(
             "dummy label",
@@ -1323,13 +1321,44 @@ def test_progress_updater_with_false(show_spinner: bool) -> None:
         )
 
 
+def _dummy_config_metadata() -> ConfigMetadata:
+    config_metadata: ConfigMetadata = ConfigMetadata(
+        cfg_filepath=pathlib.Path(__file__),
+        phases=("dummy phase 1",),
+        options_config=tuple(),
+        file_filters={
+            "dummy tag": {
+                "tag": "dummy tag",
+                "regex": ".*1.txt",  # should match just one file
+            }
+        },
+        hook_manager=MagicMock(),
+        jobs=defaultdict(list),
+        all_job_names=set(),
+        all_job_phases=set(),
+        all_job_tags=set(),
+    )
+    config_metadata.set_cli_data(
+        args=Namespace(verbose=False, procs=1),
+        jobs_to_run=set(),  # JobNames,
+        phases_to_run=set(),  # JobPhases,
+        tags_to_run=set(),  # ignored JobTags,
+        tags_to_avoid=set(),  # ignored  JobTags,
+        options=InformativeDict({}),  # Options,
+    )
+    return config_metadata
+
+
+DUMMY_MAIN_RETURN: MainReturnType = (
+    _dummy_config_metadata(),  # ConfigMetadata,
+    {},  # job_run_metadatas,
+    IntentionalTestError(),
+)
+
+
 @patch(
     "runem.runem._main",
-    return_value=(
-        (),  # phase_run_oder,
-        (),  # job_run_metadatas,
-        IntentionalTestError(),
-    ),
+    return_value=DUMMY_MAIN_RETURN,
 )
 def test_runem_re_raises_after_reporting(
     main_mock: Mock,
@@ -1409,6 +1438,7 @@ def test_process_jobs_by_phase_early_exits_with_exceptions(
             #     "regex": ".*1.txt",  # should match just one file
             # }
         },
+        hook_manager=MagicMock(),
         jobs=jobs_by_phase,
         all_job_names=set(all_job_names),
         all_job_phases=set(("dummy phase 1",)),
@@ -1521,6 +1551,7 @@ def test_process_jobs_early_exits_with_exceptions(
             #     "regex": ".*1.txt",  # should match just one file
             # }
         },
+        hook_manager=MagicMock(),
         jobs=jobs_by_phase,
         all_job_names=set(all_job_names),
         all_job_phases=set(("dummy phase 1",)),

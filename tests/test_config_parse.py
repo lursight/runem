@@ -3,7 +3,7 @@ import pathlib
 import unittest
 from collections import defaultdict
 from contextlib import redirect_stdout
-from unittest.mock import Mock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
@@ -12,12 +12,17 @@ from runem.config_parse import (
     _parse_global_config,
     _parse_job,
     parse_config,
+    parse_hook_config,
     parse_job_config,
 )
 from runem.types import (
     Config,
+    FunctionNotFound,
     GlobalConfig,
     GlobalSerialisedConfig,
+    HookConfig,
+    HookName,
+    HookSerialisedConfig,
     JobConfig,
     JobNames,
     JobPhases,
@@ -312,7 +317,13 @@ def test_parse_config() -> None:
             },
         }
     }
-    full_config: Config = [global_config, job_config]
+    hook_config: HookSerialisedConfig = {
+        "hook": {
+            "command": "echo 'test hook command'",
+            "hook_name": HookName("on-exit"),
+        }
+    }
+    full_config: Config = [global_config, job_config, hook_config]
     config_file_path = pathlib.Path(__file__).parent / ".runem.yml"
     expected_job: JobConfig = {
         "addr": {
@@ -339,6 +350,7 @@ def test_parse_config() -> None:
             #     "regex": ".*1.txt",  # should match just one file
             # }
         },
+        hook_manager=MagicMock(),
         jobs=expected_jobs,
         all_job_names=set(("dummy job label",)),
         all_job_phases=set(("dummy phase 1",)),
@@ -578,3 +590,133 @@ def test_parse_job_without_tags(mock_get_job_wrapper: Mock) -> None:
 
     assert run_command_stdout == [""]
     assert not in_out_tags
+
+
+@patch(
+    "runem.config_parse.get_job_wrapper",
+    side_effect=FunctionNotFound,
+)
+def test_parse_job_with_bad_function(mock_get_job_wrapper: Mock) -> None:
+    """Test case where job_tags is empty or None."""
+    cfg_filepath = pathlib.Path(__file__)
+    job_config: JobConfig = {
+        "label": "Job2",
+        "when": {
+            "phase": "phase1",
+        },
+    }
+    in_out_tags: JobTags = set()
+    in_out_jobs_by_phase: PhaseGroupedJobs = defaultdict(list)
+    in_out_job_names: JobNames = set()
+    in_out_phases: JobPhases = set()
+    phase_order: OrderedPhases = ("phase1", "phase2")
+
+    with io.StringIO() as buf, redirect_stdout(buf):
+        with pytest.raises(FunctionNotFound):
+            _parse_job(
+                cfg_filepath,
+                job_config,
+                in_out_tags,
+                in_out_jobs_by_phase,
+                in_out_job_names,
+                in_out_phases,
+                phase_order,
+            )
+        run_command_stdout = buf.getvalue().split("\n")
+
+    mock_get_job_wrapper.assert_called_once()
+
+    assert run_command_stdout == [""]
+    assert not in_out_tags
+
+
+@patch(
+    "runem.config_parse.get_job_wrapper",
+    return_value=None,
+)
+def test_parse_job_with_missing_phase(mock_get_job_wrapper: Mock) -> None:
+    """Test case where job_tags is empty or None."""
+    cfg_filepath = pathlib.Path(__file__)
+    job_config: JobConfig = {
+        "label": "Job2",
+        "when": {
+            # "phase": "phase1",
+        },
+    }
+    in_out_tags: JobTags = set()
+    in_out_jobs_by_phase: PhaseGroupedJobs = defaultdict(list)
+    in_out_job_names: JobNames = set()
+    in_out_phases: JobPhases = set()
+    phase_order: OrderedPhases = ("phase1", "phase2")
+
+    with io.StringIO() as buf, redirect_stdout(buf):
+        _parse_job(
+            cfg_filepath,
+            job_config,
+            in_out_tags,
+            in_out_jobs_by_phase,
+            in_out_job_names,
+            in_out_phases,
+            phase_order,
+            warn_missing_phase=False,
+        )
+        run_command_stdout = buf.getvalue().split("\n")
+
+    mock_get_job_wrapper.assert_called_once()
+
+    assert run_command_stdout == [""]
+    assert not in_out_tags
+
+
+def test_parse_hook_config_with_valid_config() -> None:
+    cfg_filepath = pathlib.Path(__file__)
+    hook: HookConfig = {
+        "command": "echo 'test hook command'",
+        "hook_name": HookName("on-exit"),
+    }
+    # should execute without raising
+    parse_hook_config(hook, cfg_filepath)
+
+
+def test_parse_hook_config_with_in_valid_hook_name() -> None:
+    cfg_filepath = pathlib.Path(__file__)
+    hook: HookConfig = {
+        "command": "echo 'test hook command'",
+        "hook_name": "bd-hook-name",  # type: ignore
+    }
+    with pytest.raises(ValueError):
+        parse_hook_config(hook, cfg_filepath)
+
+
+def test_parse_hook_config_with_missing_hook_name() -> None:
+    cfg_filepath = pathlib.Path(__file__)
+    hook: HookConfig = {
+        "command": "echo 'test hook command'",
+        # "hook_name": HookName("on-exit"),
+    }
+    with pytest.raises(ValueError):
+        parse_hook_config(hook, cfg_filepath)
+
+
+def test_parse_hook_config_with_missing_command() -> None:
+    cfg_filepath = pathlib.Path(__file__)
+    hook: HookConfig = {
+        # "command": "echo 'test hook command'",
+        "hook_name": HookName("on-exit"),
+    }
+    with pytest.raises(ValueError):
+        parse_hook_config(hook, cfg_filepath)
+
+
+def test_parse_hook_config_with_bad_function_address() -> None:
+    cfg_filepath = pathlib.Path(__file__)
+    hook: HookConfig = {
+        # "command": "echo 'test hook command'",
+        "addr": {
+            "file": __file__,
+            "function": "non_existent_function",
+        },
+        "hook_name": HookName("on-exit"),
+    }
+    with pytest.raises(FunctionNotFound):
+        parse_hook_config(hook, cfg_filepath)

@@ -35,7 +35,7 @@ def _should_filter_out_by_tags(
         if verbose:
             log(
                 (
-                    f"not running job '{job['label']}' because it doesn't have "
+                    f"not running job '{Job.get_job_name(job)}' because it doesn't have "
                     f"any of the following tags: {printable_set(tags)}"
                 )
             )
@@ -46,7 +46,7 @@ def _should_filter_out_by_tags(
         if verbose:
             log(
                 (
-                    f"not running job '{job['label']}' because it contains the "
+                    f"not running job '{Job.get_job_name(job)}' because it contains the "
                     f"following tags: {printable_set(has_tags_to_avoid)}"
                 )
             )

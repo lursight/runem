@@ -6,14 +6,20 @@ from collections import defaultdict
 from collections.abc import Iterable
 
 from runem.config_metadata import ConfigMetadata
+from runem.hook_manager import HookManager
 from runem.job import Job
 from runem.job_wrapper import get_job_wrapper
 from runem.log import log
 from runem.types import (
     Config,
     ConfigNodes,
+    FunctionNotFound,
     GlobalConfig,
     GlobalSerialisedConfig,
+    HookConfig,
+    HookName,
+    Hooks,
+    HookSerialisedConfig,
     JobConfig,
     JobNames,
     JobPhases,
@@ -61,6 +67,28 @@ def _parse_global_config(
     return phases, options, file_filters
 
 
+def parse_hook_config(
+    hook: HookConfig,
+    cfg_filepath: pathlib.Path,
+) -> None:
+    """Get the hook information, verifying validity."""
+    try:
+        hook_name: HookName = HookName(hook["hook_name"])
+        if not HookManager.is_valid_hook_name(hook_name):
+            raise ValueError(
+                f"invalid hook-name '{hook_name}'. "
+                f"Valid hook names are: {[hook.value for hook in HookName]}"
+            )
+        hook["hook_name"] = hook_name
+        get_job_wrapper(hook, cfg_filepath)
+    except KeyError as err:
+        raise ValueError(
+            f"hook config entry is missing '{err.args[0]}' key. Have {tuple(hook.keys())}"
+        ) from err
+    except FunctionNotFound as err:
+        raise FunctionNotFound(f"Whilst loading job '{hook_name}'. {str(err)}") from err
+
+
 def _parse_job(
     cfg_filepath: pathlib.Path,
     job: JobConfig,
@@ -69,6 +97,7 @@ def _parse_job(
     in_out_job_names: JobNames,
     in_out_phases: JobPhases,
     phase_order: OrderedPhases,
+    warn_missing_phase: bool = True,
 ) -> None:
     """Parse an individual job."""
     job_name: str = Job.get_job_name(job)
@@ -78,13 +107,20 @@ def _parse_job(
         log(f"\t'{job['label']}' is used twice or more in {str(cfg_filepath)}")
         sys.exit(1)
 
-    # try and load the function _before_ we schedule it's execution
-    get_job_wrapper(job, cfg_filepath)
+    try:
+        # try and load the function _before_ we schedule it's execution
+        get_job_wrapper(job, cfg_filepath)
+    except FunctionNotFound as err:
+        raise FunctionNotFound(
+            f"Whilst loading job '{job['label']}'. {str(err)}"
+        ) from err
+
     try:
         phase_id: PhaseName = job["when"]["phase"]
     except KeyError:
         fallback_phase = phase_order[0]
-        log(f"WARNING: no phase found for '{job_name}', using '{fallback_phase}'")
+        if warn_missing_phase:
+            log(f"WARNING: no phase found for '{job_name}', using '{fallback_phase}'")
         phase_id = fallback_phase
     in_out_jobs_by_phase[phase_id].append(job)
 
@@ -169,7 +205,9 @@ def parse_job_config(
         ) from err
 
 
-def parse_config(config: Config, cfg_filepath: pathlib.Path) -> ConfigMetadata:
+def parse_config(
+    config: Config, cfg_filepath: pathlib.Path, verbose: bool = False
+) -> ConfigMetadata:
     """Validates and restructure the config to make it more convenient to use."""
     jobs_by_phase: PhaseGroupedJobs = defaultdict(list)
     job_names: JobNames = set()
@@ -180,6 +218,7 @@ def parse_config(config: Config, cfg_filepath: pathlib.Path) -> ConfigMetadata:
     phase_order: OrderedPhases = ()
     options: OptionConfigs = ()
     file_filters: TagFileFilters = {}
+    hooks: Hooks = defaultdict(list)
 
     # first search for the global config
     for entry in config:
@@ -202,6 +241,21 @@ def parse_config(config: Config, cfg_filepath: pathlib.Path) -> ConfigMetadata:
             global_entry: GlobalSerialisedConfig = entry  # type: ignore  # see above
             global_config: GlobalConfig = global_entry["config"]
             phase_order, options, file_filters = _parse_global_config(global_config)
+            continue
+
+        # we apply a type-ignore here as we know (for now) that jobs have "job"
+        # keys and global configs have "global" keys
+        isinstance_hooks: bool = "hook" in entry
+        if isinstance_hooks:
+            hook_entry: HookSerialisedConfig = entry  # type: ignore  # see above
+            hook: HookConfig = hook_entry["hook"]
+            parse_hook_config(hook, cfg_filepath)
+
+            # if we get here we have validated the hook, add it to the hooks list
+            hook_name: HookName = hook["hook_name"]
+            hooks[hook_name].append(hook)
+
+            # continue to the next element and do NOT error
             continue
 
         # not a global or a job entry, what is it
@@ -235,6 +289,7 @@ def parse_config(config: Config, cfg_filepath: pathlib.Path) -> ConfigMetadata:
         phase_order,
         options,
         file_filters,
+        HookManager(hooks, verbose),
         jobs_by_phase,
         job_names,
         job_phases,

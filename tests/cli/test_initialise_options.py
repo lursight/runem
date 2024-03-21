@@ -2,6 +2,7 @@ import pathlib
 from argparse import Namespace
 from collections import defaultdict
 from typing import Dict
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -45,6 +46,7 @@ def config_metadata_fixture() -> ConfigMetadata:
             #     "regex": ".*1.txt",  # should match just one file
             # }
         },
+        hook_manager=MagicMock(),
         jobs=expected_jobs,
         all_job_names=set(("dummy job label",)),
         all_job_phases=set(("dummy phase 1",)),
