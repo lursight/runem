@@ -206,8 +206,17 @@ def parse_job_config(
 
 
 def parse_config(
-    config: Config, cfg_filepath: pathlib.Path, verbose: bool = False
-) -> ConfigMetadata:
+    config: Config, cfg_filepath: pathlib.Path
+) -> typing.Tuple[
+    Hooks,  # hooks:
+    OrderedPhases,  # phase_order:
+    OptionConfigs,  # options:
+    TagFileFilters,  # file_filters:
+    PhaseGroupedJobs,  # jobs_by_phase:
+    JobNames,  # job_names:
+    JobPhases,  # job_phases:
+    JobTags,  # tags:
+]:
     """Validates and restructure the config to make it more convenient to use."""
     jobs_by_phase: PhaseGroupedJobs = defaultdict(list)
     job_names: JobNames = set()
@@ -216,8 +225,6 @@ def parse_config(
     entry: ConfigNodes
     seen_global: bool = False
     phase_order: OrderedPhases = ()
-    options: OptionConfigs = ()
-    file_filters: TagFileFilters = {}
     hooks: Hooks = defaultdict(list)
 
     # first search for the global config
@@ -282,14 +289,72 @@ def parse_config(
             in_out_phases=job_phases,
             phase_order=phase_order,
         )
+    return (
+        hooks,
+        phase_order,
+        options,
+        file_filters,
+        jobs_by_phase,
+        job_names,
+        job_phases,
+        tags,
+    )
 
-    # tags = tags.union(("python", "es", "firebase_funcs"))
+
+def generate_config(
+    cfg_filepath: pathlib.Path,
+    hooks: Hooks,
+    phase_order: OrderedPhases,
+    verbose: bool,
+    options: OptionConfigs,
+    file_filters: TagFileFilters,
+    jobs_by_phase: PhaseGroupedJobs,
+    job_names: JobNames,
+    job_phases: JobPhases,
+    tags: JobTags,
+) -> ConfigMetadata:
+    """Constructs the ConfigMetadata from parsed config parts"""
     return ConfigMetadata(
         cfg_filepath,
         phase_order,
         options,
         file_filters,
         HookManager(hooks, verbose),
+        jobs_by_phase,
+        job_names,
+        job_phases,
+        tags,
+    )
+
+
+def load_config_metadata(
+    config: Config, cfg_filepath: pathlib.Path, verbose: bool = False
+) -> ConfigMetadata:
+    hooks: Hooks
+    phase_order: OrderedPhases
+    options: OptionConfigs
+    file_filters: TagFileFilters
+    jobs_by_phase: PhaseGroupedJobs
+    job_names: JobNames
+    job_phases: JobPhases
+    tags: JobTags
+    (
+        hooks,
+        phase_order,
+        options,
+        file_filters,
+        jobs_by_phase,
+        job_names,
+        job_phases,
+        tags,
+    ) = parse_config(config, cfg_filepath)
+    return generate_config(
+        cfg_filepath,
+        hooks,
+        phase_order,
+        verbose,
+        options,
+        file_filters,
         jobs_by_phase,
         job_names,
         job_phases,

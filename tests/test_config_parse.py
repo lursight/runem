@@ -11,7 +11,7 @@ from runem.config_metadata import ConfigMetadata
 from runem.config_parse import (
     _parse_global_config,
     _parse_job,
-    parse_config,
+    load_config_metadata,
     parse_hook_config,
     parse_job_config,
 )
@@ -289,7 +289,7 @@ def test_parse_global_config_full() -> None:
     assert file_filters == {"dummy tag": {"regex": ".*", "tag": "dummy tag"}}
 
 
-def test_parse_config() -> None:
+def test_load_config_metadata() -> None:
     """Test parsing works for a full config."""
     global_config: GlobalSerialisedConfig = {
         "config": {
@@ -303,7 +303,7 @@ def test_parse_config() -> None:
         "job": {
             "addr": {
                 "file": __file__,
-                "function": "test_parse_config",
+                "function": "test_load_config_metadata",
             },
             "label": "dummy job label",
             "when": {
@@ -328,7 +328,7 @@ def test_parse_config() -> None:
     expected_job: JobConfig = {
         "addr": {
             "file": "test_config_parse.py",
-            "function": "test_parse_config",
+            "function": "test_load_config_metadata",
         },
         "label": "dummy job label",
         "when": {
@@ -362,7 +362,7 @@ def test_parse_config() -> None:
         ),
     )
 
-    result: ConfigMetadata = parse_config(full_config, config_file_path)
+    result: ConfigMetadata = load_config_metadata(full_config, config_file_path)
     assert result.phases == expected_config_metadata.phases
     assert result.options_config == expected_config_metadata.options_config
     assert result.file_filters == expected_config_metadata.file_filters
@@ -372,7 +372,7 @@ def test_parse_config() -> None:
     assert result.all_job_tags == expected_config_metadata.all_job_tags
 
 
-def test_parse_config_raises_on_invalid() -> None:
+def test_load_config_metadata_raises_on_invalid() -> None:
     """Test throws for an invalid config."""
     invalid_config_spec: GlobalSerialisedConfig = {  # type: ignore
         "invalid": None,
@@ -383,10 +383,10 @@ def test_parse_config_raises_on_invalid() -> None:
     config_file_path = pathlib.Path(__file__).parent / ".runem.yml"
 
     with pytest.raises(RuntimeError):
-        parse_config(invalid_config, config_file_path)
+        load_config_metadata(invalid_config, config_file_path)
 
 
-def test_parse_config_duplicated_global_raises() -> None:
+def test_load_config_metadata_duplicated_global_raises() -> None:
     """Test the global config parse raises with duplicated global config."""
     dummy_global_config: GlobalSerialisedConfig = {
         "config": {
@@ -412,10 +412,10 @@ def test_parse_config_duplicated_global_raises() -> None:
     ]
     config_file_path = pathlib.Path(__file__).parent / ".runem.yml"
     with pytest.raises(ValueError):
-        parse_config(invalid_config, config_file_path)
+        load_config_metadata(invalid_config, config_file_path)
 
 
-def test_parse_config_empty_phases_raises() -> None:
+def test_load_config_metadata_empty_phases_raises() -> None:
     """Test the global config raises if the phases are empty."""
     dummy_global_config: GlobalSerialisedConfig = {
         "config": {
@@ -441,10 +441,10 @@ def test_parse_config_empty_phases_raises() -> None:
     ]
     config_file_path = pathlib.Path(__file__).parent / ".runem.yml"
     with pytest.raises(ValueError):
-        parse_config(invalid_config, config_file_path)
+        load_config_metadata(invalid_config, config_file_path)
 
 
-def test_parse_config_missing_phases_raises() -> None:
+def test_load_config_metadata_missing_phases_raises() -> None:
     """Test the global config raises if the phases are missing."""
     dummy_global_config: GlobalSerialisedConfig = {
         "config": {  # type: ignore
@@ -468,14 +468,14 @@ def test_parse_config_missing_phases_raises() -> None:
     ]
     config_file_path = pathlib.Path(__file__).parent / ".runem.yml"
     with pytest.raises(ValueError):
-        parse_config(invalid_config, config_file_path)
+        load_config_metadata(invalid_config, config_file_path)
 
 
 @patch(
     "runem.config_parse._parse_global_config",
     return_value=(None, (), {}),
 )
-def test_parse_config_warning_if_missing_phase_order(
+def test_load_config_metadata_warning_if_missing_phase_order(
     mock_parse_global_config: unittest.mock.Mock,
 ) -> None:
     """Test the global config raises if the phases are missing."""
@@ -502,7 +502,7 @@ def test_parse_config_warning_if_missing_phase_order(
 
     # run the command and capture output
     with io.StringIO() as buf, redirect_stdout(buf):
-        parse_config(valid_config, config_file_path)
+        load_config_metadata(valid_config, config_file_path)
         run_command_stdout = buf.getvalue()
 
     assert run_command_stdout.split("\n") == [
