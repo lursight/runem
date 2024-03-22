@@ -84,7 +84,7 @@ def test_runem_basic() -> None:
 
 
 @patch(
-    "runem.runem.load_config",
+    "runem.runem.load_project_config",
 )
 @patch(
     "runem.runem.find_files",
@@ -127,7 +127,7 @@ def test_runem_basic_with_config(
 
 
 @patch(
-    "runem.runem.load_config",
+    "runem.runem.load_project_config",
 )
 @patch(
     "runem.runem.find_files",
@@ -173,7 +173,7 @@ MOCK_JOB_EXECUTE_INNER_RET: typing.Tuple[JobTiming, JobReturn] = (
 
 
 @patch(
-    "runem.runem.load_config",
+    "runem.runem.load_project_config",
 )
 @patch(
     "runem.runem.find_files",

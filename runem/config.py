@@ -77,9 +77,8 @@ def _conform_global_config_types(
     return all_config, global_config
 
 
-def load_config() -> typing.Tuple[Config, pathlib.Path]:
-    """Finds and loads the .runem.yml file."""
-    cfg_filepath: pathlib.Path = _find_cfg()
+def load_and_parse_config(cfg_filepath: pathlib.Path) -> Config:
+    """For the given config file pass, project or user, load it & parse/conform it."""
     with cfg_filepath.open("r+", encoding="utf-8") as config_file_handle:
         all_config = yaml.full_load(config_file_handle)
 
@@ -104,5 +103,12 @@ def load_config() -> typing.Tuple[Config, pathlib.Path]:
                 )
             )
             sys.exit(1)
+    return conformed_config
+
+
+def load_project_config() -> typing.Tuple[Config, pathlib.Path]:
+    """Finds and loads the .runem.yml file for the current project."""
+    cfg_filepath: pathlib.Path = _find_cfg()
+    conformed_config = load_and_parse_config(cfg_filepath)
 
     return conformed_config, cfg_filepath

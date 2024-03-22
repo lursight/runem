@@ -34,7 +34,7 @@ from timeit import default_timer as timer
 from halo import Halo
 
 from runem.command_line import parse_args
-from runem.config import load_config
+from runem.config import load_project_config
 from runem.config_metadata import ConfigMetadata
 from runem.config_parse import load_config_metadata
 from runem.files import find_files
@@ -69,7 +69,7 @@ def _determine_run_parameters(argv: typing.List[str]) -> ConfigMetadata:
     """
     config: Config
     cfg_filepath: pathlib.Path
-    config, cfg_filepath = load_config()
+    config, cfg_filepath = load_project_config()
     config_metadata: ConfigMetadata = load_config_metadata(
         config, cfg_filepath, verbose=("--verbose" in argv)
     )
