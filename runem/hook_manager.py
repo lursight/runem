@@ -107,6 +107,9 @@ class HookManager:
                 log(f"hooks: initialising {num_hooks} hooks")
         for hook_name in hooks:
             hook: HookConfig
-            log(f"hooks:\tinitialising {len(hooks[hook_name])} hooks for '{hook_name}'")
+            if verbose:
+                log(
+                    f"hooks:\tinitialising {len(hooks[hook_name])} hooks for '{hook_name}'"
+                )
             for hook in hooks[hook_name]:
                 self.register_hook(hook_name, hook, verbose)

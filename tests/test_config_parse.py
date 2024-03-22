@@ -362,7 +362,116 @@ def test_load_config_metadata() -> None:
         ),
     )
 
-    result: ConfigMetadata = load_config_metadata(full_config, config_file_path)
+    result: ConfigMetadata = load_config_metadata(full_config, config_file_path, [])
+    assert result.phases == expected_config_metadata.phases
+    assert result.options_config == expected_config_metadata.options_config
+    assert result.file_filters == expected_config_metadata.file_filters
+    assert result.jobs == expected_config_metadata.jobs
+    assert result.all_job_names == expected_config_metadata.all_job_names
+    assert result.all_job_phases == expected_config_metadata.all_job_phases
+    assert result.all_job_tags == expected_config_metadata.all_job_tags
+
+
+def test_load_config_metadata_hooks() -> None:
+    """Test parsing works for a full config, with user hook."""
+    global_config: GlobalSerialisedConfig = {
+        "config": {
+            "phases": ("dummy phase 1",),
+            "files": [],
+            "min_version": None,
+            "options": [],
+        }
+    }
+    job_config: JobSerialisedConfig = {
+        "job": {
+            "addr": {
+                "file": __file__,
+                "function": "test_load_config_metadata",
+            },
+            "label": "dummy job label",
+            "when": {
+                "phase": "dummy phase 1",
+                "tags": set(
+                    (
+                        "dummy tag 1",
+                        "dummy tag 2",
+                    )
+                ),
+            },
+        }
+    }
+    hook_config: HookSerialisedConfig = {
+        "hook": {
+            "command": "echo 'test hook command'",
+            "hook_name": HookName("on-exit"),
+        }
+    }
+    user_hook_config_1: HookSerialisedConfig = {
+        "hook": {
+            "command": "echo 'test user-hook command 1'",
+            "hook_name": HookName("on-exit"),
+        }
+    }
+    user_hook_config_2: HookSerialisedConfig = {
+        "hook": {
+            "command": "echo 'test user-hook command 2'",
+            "hook_name": HookName("on-exit"),
+        }
+    }
+    full_config: Config = [global_config, job_config, hook_config]
+    config_file_path = pathlib.Path(__file__).parent / ".runem.yml"
+    expected_job: JobConfig = {
+        "addr": {
+            "file": "test_config_parse.py",
+            "function": "test_load_config_metadata",
+        },
+        "label": "dummy job label",
+        "when": {
+            "phase": "dummy phase 1",
+            "tags": {"dummy tag 1", "dummy tag 2"},
+        },
+    }
+    expected_jobs: PhaseGroupedJobs = defaultdict(list)
+    expected_jobs["dummy phase 1"] = [
+        expected_job,
+    ]
+    expected_config_metadata: ConfigMetadata = ConfigMetadata(
+        cfg_filepath=config_file_path,
+        phases=("dummy phase 1",),
+        options_config=tuple(),
+        file_filters={
+            # "dummy tag": {
+            #     "tag": "dummy tag",
+            #     "regex": ".*1.txt",  # should match just one file
+            # }
+        },
+        hook_manager=MagicMock(),
+        jobs=expected_jobs,
+        all_job_names=set(("dummy job label",)),
+        all_job_phases=set(("dummy phase 1",)),
+        all_job_tags=set(
+            (
+                "dummy tag 2",
+                "dummy tag 1",
+            )
+        ),
+    )
+
+    user_config_1: Config = [
+        user_hook_config_1,
+    ]
+    user_config_2: Config = [
+        user_hook_config_2,
+    ]
+
+    result: ConfigMetadata = load_config_metadata(
+        full_config,
+        config_file_path,
+        [
+            (user_config_1, pathlib.Path(__file__)),
+            (user_config_2, pathlib.Path(__file__)),
+        ],
+    )
     assert result.phases == expected_config_metadata.phases
     assert result.options_config == expected_config_metadata.options_config
     assert result.file_filters == expected_config_metadata.file_filters
@@ -383,7 +492,7 @@ def test_load_config_metadata_raises_on_invalid() -> None:
     config_file_path = pathlib.Path(__file__).parent / ".runem.yml"
 
     with pytest.raises(RuntimeError):
-        load_config_metadata(invalid_config, config_file_path)
+        load_config_metadata(invalid_config, config_file_path, [])
 
 
 def test_load_config_metadata_duplicated_global_raises() -> None:
@@ -412,7 +521,7 @@ def test_load_config_metadata_duplicated_global_raises() -> None:
     ]
     config_file_path = pathlib.Path(__file__).parent / ".runem.yml"
     with pytest.raises(ValueError):
-        load_config_metadata(invalid_config, config_file_path)
+        load_config_metadata(invalid_config, config_file_path, [])
 
 
 def test_load_config_metadata_empty_phases_raises() -> None:
@@ -441,7 +550,7 @@ def test_load_config_metadata_empty_phases_raises() -> None:
     ]
     config_file_path = pathlib.Path(__file__).parent / ".runem.yml"
     with pytest.raises(ValueError):
-        load_config_metadata(invalid_config, config_file_path)
+        load_config_metadata(invalid_config, config_file_path, [])
 
 
 def test_load_config_metadata_missing_phases_raises() -> None:
@@ -468,7 +577,7 @@ def test_load_config_metadata_missing_phases_raises() -> None:
     ]
     config_file_path = pathlib.Path(__file__).parent / ".runem.yml"
     with pytest.raises(ValueError):
-        load_config_metadata(invalid_config, config_file_path)
+        load_config_metadata(invalid_config, config_file_path, [])
 
 
 @patch(
@@ -502,7 +611,7 @@ def test_load_config_metadata_warning_if_missing_phase_order(
 
     # run the command and capture output
     with io.StringIO() as buf, redirect_stdout(buf):
-        load_config_metadata(valid_config, config_file_path)
+        load_config_metadata(valid_config, config_file_path, [])
         run_command_stdout = buf.getvalue()
 
     assert run_command_stdout.split("\n") == [

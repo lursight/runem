@@ -248,3 +248,5 @@ ConfigNodes = typing.Union[
 ]
 # The config format as it is serialised to/from disk
 Config = typing.List[ConfigNodes]
+
+UserConfigMetadata = typing.List[typing.Tuple[Config, pathlib.Path]]

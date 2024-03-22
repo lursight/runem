@@ -1,11 +1,13 @@
 import io
 import os
 import pathlib
+import typing
 from contextlib import redirect_stdout
+from unittest.mock import Mock, patch
 
 import pytest
 
-from runem.config import load_project_config
+from runem.config import _find_local_configs, load_project_config, load_user_configs
 from runem.types import Config, GlobalConfig
 
 
@@ -143,3 +145,50 @@ def test_load_project_config_with_global_last(tmp_path: pathlib.Path) -> None:
     ]
     assert loaded_config == expected_config
     assert config_read_path == config_gen_path
+
+
+@patch(
+    "runem.config._find_config_file",
+    return_value=(pathlib.Path("dummy path"), None),
+)
+@patch("pathlib.Path.exists", return_value=True)
+def test_find_local_configs(
+    path_exists_mock: Mock,
+    find_config_file_mock: Mock,
+) -> None:
+    configs: typing.List[pathlib.Path] = _find_local_configs()
+    assert len(configs) == 3
+    assert configs == [
+        pathlib.Path("dummy path"),
+        pathlib.Path("dummy path"),
+        pathlib.Path("~/.runem.user.yml"),
+    ]
+    find_config_file_mock.assert_called()
+    path_exists_mock.assert_called()
+
+
+@patch(
+    "runem.config.load_and_parse_config",
+    return_value="DUMMY CONFIG",
+)
+@patch(
+    "runem.config._find_config_file",
+    return_value=(pathlib.Path("dummy path"), None),
+)
+@patch("pathlib.Path.exists", return_value=True)
+def test_load_user_configs(
+    path_exists_mock: Mock,
+    find_config_file_mock: Mock,
+    load_and_parse_config_mock: Mock,
+) -> None:
+    configs: typing.List[typing.Tuple[Config, pathlib.Path]] = load_user_configs()
+    assert len(configs) == 3
+    expected_config: typing.List[typing.Tuple[Config, pathlib.Path]] = [
+        ("DUMMY CONFIG", pathlib.Path("dummy path")),  # type:ignore
+        ("DUMMY CONFIG", pathlib.Path("dummy path")),  # type:ignore
+        ("DUMMY CONFIG", pathlib.Path("~/.runem.user.yml")),  # type:ignore
+    ]
+    assert configs == expected_config
+    find_config_file_mock.assert_called()
+    path_exists_mock.assert_called()
+    load_and_parse_config_mock.assert_called()

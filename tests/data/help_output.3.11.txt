@@ -1,4 +1,8 @@
 runem: WARNING: no phase found for 'echo "hello world!"', using 'dummy phase 1'
+runem: hooks: initialising 2 hooks
+runem: hooks:	initialising 2 hooks for 'HookName.ON_EXIT'
+runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock user local hook'
+runem: hooks: registered hook for 'HookName.ON_EXIT', have 2: echo 'mock user home-dir hook'
 usage: -c [-h] [--jobs JOBS [JOBS ...]]
           [--not-jobs JOBS_EXCLUDED [JOBS_EXCLUDED ...]]
           [--phases PHASES [PHASES ...]]

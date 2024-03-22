@@ -206,7 +206,7 @@ def parse_job_config(
 
 
 def parse_config(
-    config: Config, cfg_filepath: pathlib.Path
+    config: Config, cfg_filepath: pathlib.Path, hooks_only: bool = False
 ) -> typing.Tuple[
     Hooks,  # hooks:
     OrderedPhases,  # phase_order:
@@ -225,6 +225,8 @@ def parse_config(
     entry: ConfigNodes
     seen_global: bool = False
     phase_order: OrderedPhases = ()
+    options: OptionConfigs = ()
+    file_filters: TagFileFilters = {}
     hooks: Hooks = defaultdict(list)
 
     # first search for the global config
@@ -266,11 +268,14 @@ def parse_config(
             continue
 
         # not a global or a job entry, what is it
-        raise RuntimeError(f"invalid 'job' or 'global' config entry, {entry}")
+        raise RuntimeError(f"invalid 'job', 'hook, or 'global' config entry, {entry}")
 
     if not phase_order:
-        log("WARNING: phase ordering not configured! Runs will be non-deterministic!")
-        phase_order = tuple(job_phases)
+        if not hooks_only:
+            log(
+                "WARNING: phase ordering not configured! Runs will be non-deterministic!"
+            )
+            phase_order = tuple(job_phases)
 
     # now parse out the job_configs
     for entry in config:
@@ -313,7 +318,7 @@ def generate_config(
     job_phases: JobPhases,
     tags: JobTags,
 ) -> ConfigMetadata:
-    """Constructs the ConfigMetadata from parsed config parts"""
+    """Constructs the ConfigMetadata from parsed config parts."""
     return ConfigMetadata(
         cfg_filepath,
         phase_order,
@@ -327,8 +332,28 @@ def generate_config(
     )
 
 
+def _load_user_hooks_from_config(
+    user_config: Config, cfg_filepath: pathlib.Path
+) -> Hooks:
+    hooks: Hooks
+    (
+        hooks,
+        _,
+        _,
+        _,
+        _,
+        _,
+        _,
+        _,
+    ) = parse_config(user_config, cfg_filepath, hooks_only=True)
+    return hooks
+
+
 def load_config_metadata(
-    config: Config, cfg_filepath: pathlib.Path, verbose: bool = False
+    config: Config,
+    cfg_filepath: pathlib.Path,
+    user_configs: typing.List[typing.Tuple[Config, pathlib.Path]],
+    verbose: bool = False,
 ) -> ConfigMetadata:
     hooks: Hooks
     phase_order: OrderedPhases
@@ -348,6 +373,16 @@ def load_config_metadata(
         job_phases,
         tags,
     ) = parse_config(config, cfg_filepath)
+
+    user_config: Config
+    user_config_path: pathlib.Path
+    for user_config, user_config_path in user_configs:
+        user_hooks: Hooks = _load_user_hooks_from_config(user_config, user_config_path)
+        hook_name: HookName
+        hooks_for_name: typing.List[HookConfig]
+        for hook_name, hooks_for_name in user_hooks.items():
+            hooks[hook_name].extend(hooks_for_name)
+
     return generate_config(
         cfg_filepath,
         hooks,
