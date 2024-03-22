@@ -48,7 +48,7 @@ def test_get_job_wrapper_python_wrapper_job(mock_get_job_wrapper_py_func: Mock) 
 def test_get_job_wrapper_simple_command_job(mock_get_job_wrapper_py_func: Mock) -> None:
     """Checks that the job_runner_simple_command is returned for 'command' jobs."""
     job_config: JobConfig = {
-        "command": "echo 'testing exec",
+        "command": "echo 'testing exec'",
     }
     func_obj: JobFunction = get_job_wrapper(
         job_config, cfg_filepath=pathlib.Path(__file__)

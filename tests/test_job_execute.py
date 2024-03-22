@@ -5,7 +5,7 @@ from argparse import Namespace
 from collections import defaultdict
 from contextlib import redirect_stdout
 from datetime import timedelta
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -13,13 +13,7 @@ from runem.config_metadata import ConfigMetadata
 from runem.informative_dict import InformativeDict
 from runem.job_execute import job_execute
 from runem.run_command import RecordSubJobTimeType
-from runem.types import (
-    FilePathList,
-    FilePathListLookup,
-    JobConfig,
-    OptionsWritable,
-    PhaseGroupedJobs,
-)
+from runem.types import FilePathListLookup, JobConfig, PhaseGroupedJobs
 from tests.intentional_test_error import IntentionalTestError
 
 
@@ -30,12 +24,6 @@ def empty_function(**kwargs: typing.Any) -> None:
 def intentionally_raising_function(**kwargs: typing.Any) -> None:
     """Raises an error called by runner."""
     raise IntentionalTestError()
-
-
-def old_style_function(
-    args: Namespace, options: OptionsWritable, file_list: FilePathList
-) -> None:
-    """Does nothing called by runner."""
 
 
 def time_recording_function(
@@ -106,6 +94,7 @@ def test_job_execute_basic_call() -> None:
             #     "regex": ".*1.txt",  # should match just one file
             # }
         },
+        hook_manager=MagicMock(),
         jobs=expected_jobs,
         all_job_names=set(("dummy job label",)),
         all_job_phases=set(("dummy phase 1",)),
@@ -164,6 +153,7 @@ def test_job_execute_basic_call_verbose() -> None:
             #     "regex": ".*1.txt",  # should match just one file
             # }
         },
+        hook_manager=MagicMock(),
         jobs=expected_jobs,
         all_job_names=set(("dummy job label",)),
         all_job_phases=set(("dummy phase 1",)),
@@ -226,6 +216,7 @@ def test_job_execute_empty_files() -> None:
             #     "regex": ".*1.txt",  # should match just one file
             # }
         },
+        hook_manager=MagicMock(),
         jobs=expected_jobs,
         all_job_names=set(("dummy job label",)),
         all_job_phases=set(("dummy phase 1",)),
@@ -293,72 +284,7 @@ def test_job_execute_with_ctx_cwd() -> None:
             #     "regex": ".*1.txt",  # should match just one file
             # }
         },
-        jobs=expected_jobs,
-        all_job_names=set(("dummy job label",)),
-        all_job_phases=set(("dummy phase 1",)),
-        all_job_tags=set(
-            (
-                "dummy tag 2",
-                "dummy tag 1",
-            )
-        ),
-    )
-    config_metadata.set_cli_data(
-        args=Namespace(verbose=True, procs=1),
-        jobs_to_run=set((job_config["label"])),  # JobNames,
-        phases_to_run=set(),  # ignored JobPhases,
-        tags_to_run=set(),  # ignored JobTags,
-        tags_to_avoid=set(),  # ignored  JobTags,
-        options=InformativeDict({}),  # Options,
-    )
-
-    file_lists: FilePathListLookup = defaultdict(list)
-    file_lists["dummy tag"] = [__file__]
-    stdout, _ = _job_execute_and_capture_stdout(
-        job_config,
-        {},
-        config_metadata,
-        file_lists,
-    )
-    assert stdout == (
-        "runem: START: 'reformat py'\n"
-        "runem: job: running: 'reformat py'\n"
-        "runem: job: DONE: 'reformat py': 0:00:00\n"
-    )
-
-
-def test_job_execute_with_old_style_func() -> None:
-    job_config: JobConfig = {
-        "addr": {
-            "file": __file__,
-            "function": "old_style_function",
-        },
-        "label": "reformat py",
-        "when": {
-            "phase": "edit",
-            "tags": set(("dummy tag",)),
-        },
-        "ctx": {
-            # set the cwd
-            "cwd": ".",
-        },
-    }
-    config_file_path = pathlib.Path(__file__).parent / ".runem.yml"
-
-    expected_jobs: PhaseGroupedJobs = defaultdict(list)
-    expected_jobs["dummy phase 1"] = [
-        job_config,
-    ]
-    config_metadata: ConfigMetadata = ConfigMetadata(
-        cfg_filepath=config_file_path,
-        phases=("dummy phase 1",),
-        options_config=tuple(),
-        file_filters={
-            # "dummy tag": {
-            #     "tag": "dummy tag",
-            #     "regex": ".*1.txt",  # should match just one file
-            # }
-        },
+        hook_manager=MagicMock(),
         jobs=expected_jobs,
         all_job_names=set(("dummy job label",)),
         all_job_phases=set(("dummy phase 1",)),
@@ -434,6 +360,7 @@ def test_job_execute_with_raising_func() -> None:
             #     "regex": ".*1.txt",  # should match just one file
             # }
         },
+        hook_manager=MagicMock(),
         jobs=expected_jobs,
         all_job_names=set(("dummy job label",)),
         all_job_phases=set(("dummy phase 1",)),
@@ -505,6 +432,7 @@ def test_job_execute_time_recording_function() -> None:
             #     "regex": ".*1.txt",  # should match just one file
             # }
         },
+        hook_manager=MagicMock(),
         jobs=expected_jobs,
         all_job_names=set(("dummy job label",)),
         all_job_phases=set(("dummy phase 1",)),

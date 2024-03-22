@@ -55,6 +55,11 @@
           name: unit-test
           desc: run unit tests
           type: bool
+- hook:
+    hook_name: on-exit
+    addr:
+      file: scripts/test_hooks/runem_hooks.py
+      function: _on_exit_hook
 - job:
     addr:
       file: scripts/test_hooks/py.py

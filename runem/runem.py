@@ -34,9 +34,9 @@ from timeit import default_timer as timer
 from halo import Halo
 
 from runem.command_line import parse_args
-from runem.config import load_config
+from runem.config import load_project_config, load_user_configs
 from runem.config_metadata import ConfigMetadata
-from runem.config_parse import parse_config
+from runem.config_parse import load_config_metadata
 from runem.files import find_files
 from runem.job import Job
 from runem.job_execute import job_execute
@@ -46,6 +46,7 @@ from runem.report import report_on_run
 from runem.types import (
     Config,
     FilePathListLookup,
+    HookName,
     JobReturn,
     JobRunMetadata,
     JobRunMetadatasByPhase,
@@ -68,8 +69,11 @@ def _determine_run_parameters(argv: typing.List[str]) -> ConfigMetadata:
     """
     config: Config
     cfg_filepath: pathlib.Path
-    config, cfg_filepath = load_config()
-    config_metadata: ConfigMetadata = parse_config(config, cfg_filepath)
+    config, cfg_filepath = load_project_config()
+    user_configs: typing.List[typing.Tuple[Config, pathlib.Path]] = load_user_configs()
+    config_metadata: ConfigMetadata = load_config_metadata(
+        config, cfg_filepath, user_configs, verbose=("--verbose" in argv)
+    )
 
     # Now we parse the cli arguments extending them with information from the
     # .runem.yml config.
@@ -270,11 +274,14 @@ def _process_jobs_by_phase(
     return None
 
 
+MainReturnType = typing.Tuple[
+    ConfigMetadata, JobRunMetadatasByPhase, typing.Optional[BaseException]
+]
+
+
 def _main(
     argv: typing.List[str],
-) -> typing.Tuple[
-    OrderedPhases, JobRunMetadatasByPhase, typing.Optional[BaseException]
-]:
+) -> MainReturnType:
     start = timer()
 
     config_metadata: ConfigMetadata = _determine_run_parameters(argv)
@@ -322,7 +329,7 @@ def _main(
     phase_run_report: JobReturn = None
     phase_run_metadata: JobRunMetadata = (phase_run_timing, phase_run_report)
     job_run_metadatas["_app"].append(phase_run_metadata)
-    return config_metadata.phases, job_run_metadatas, failure_exception
+    return config_metadata, job_run_metadatas, failure_exception
 
 
 def timed_main(argv: typing.List[str]) -> None:
@@ -332,10 +339,11 @@ def timed_main(argv: typing.List[str]) -> None:
                are representative.
     """
     start = timer()
-    phase_run_oder: OrderedPhases
+    config_metadata: ConfigMetadata
     job_run_metadatas: JobRunMetadatasByPhase
     failure_exception: typing.Optional[BaseException]
-    phase_run_oder, job_run_metadatas, failure_exception = _main(argv)
+    config_metadata, job_run_metadatas, failure_exception = _main(argv)
+    phase_run_oder: OrderedPhases = config_metadata.phases
     end = timer()
     time_taken: timedelta = timedelta(seconds=end - start)
     wall_clock_time_saved: timedelta
@@ -352,6 +360,12 @@ def timed_main(argv: typing.List[str]) -> None:
             f"saving you {wall_clock_time_saved.total_seconds()}s, "
             f"without runem you would have waited {system_time_spent.total_seconds()}s"
         )
+    )
+
+    config_metadata.hook_manager.invoke_hooks(
+        hook_name=HookName.ON_EXIT,
+        config_metadata=config_metadata,
+        wall_clock_time_saved=wall_clock_time_saved,
     )
 
     if failure_exception is not None:

@@ -1,4 +1,3 @@
-import inspect
 import os
 import pathlib
 import typing
@@ -27,6 +26,7 @@ def job_execute_inner(
     job_config: JobConfig,
     config_metadata: ConfigMetadata,
     file_lists: FilePathListLookup,
+    **kwargs: typing.Any,
 ) -> typing.Tuple[JobTiming, JobReturn]:
     """Wrapper for running a job inside a sub-process.
 
@@ -73,27 +73,22 @@ def job_execute_inner(
         os.chdir(root_path)
 
     start = timer()
-    func_signature = inspect.signature(function)
     if config_metadata.args.verbose:
         log(f"job: running: '{Job.get_job_name(job_config)}'")
     reports: JobReturn
     try:
-        if "args" in func_signature.parameters:
-            reports = function(  # type: ignore  # FIXME: which function do we have?
-                config_metadata.args, config_metadata.options, file_list
-            )
-        else:
-            reports = function(
-                options=ReadOnlyInformativeDict(config_metadata.options),  # type: ignore
-                file_list=file_list,
-                procs=config_metadata.args.procs,
-                root_path=root_path,
-                verbose=config_metadata.args.verbose,
-                # unpack useful data points from the job_config
-                label=Job.get_job_name(job_config),
-                job=job_config,
-                record_sub_job_time=_record_sub_job_time,
-            )
+        reports = function(
+            options=ReadOnlyInformativeDict(config_metadata.options),  # type: ignore
+            file_list=file_list,
+            procs=config_metadata.args.procs,
+            root_path=root_path,
+            verbose=config_metadata.args.verbose,
+            # unpack useful data points from the job_config
+            label=Job.get_job_name(job_config),
+            job=job_config,
+            record_sub_job_time=_record_sub_job_time,
+            **kwargs,
+        )
     except BaseException:  # pylint: disable=broad-exception-caught
         # log that we hit an error on this job and re-raise
         log(decorate=False)
@@ -114,6 +109,7 @@ def job_execute(
     running_jobs: typing.Dict[str, str],
     config_metadata: ConfigMetadata,
     file_lists: FilePathListLookup,
+    **kwargs: typing.Any,
 ) -> typing.Tuple[JobTiming, JobReturn]:
     """Thin-wrapper around job_execute_inner needed for mocking in tests.
 
@@ -121,6 +117,11 @@ def job_execute(
     """
     this_id: str = str(uuid.uuid4())
     running_jobs[this_id] = Job.get_job_name(job_config)
-    results = job_execute_inner(job_config, config_metadata, file_lists)
+    results = job_execute_inner(
+        job_config,
+        config_metadata,
+        file_lists,
+        **kwargs,
+    )
     del running_jobs[this_id]
     return results

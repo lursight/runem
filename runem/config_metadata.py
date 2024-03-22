@@ -1,5 +1,6 @@
 import argparse
 import pathlib
+import typing
 
 from runem.informative_dict import InformativeDict
 from runem.types import (
@@ -13,6 +14,9 @@ from runem.types import (
     TagFileFilters,
 )
 
+if typing.TYPE_CHECKING:  # pragma: no cover
+    from runem.hook_manager import HookManager
+
 
 class ConfigMetadata:
     """Full metadata about what can and should be run."""
@@ -20,6 +24,7 @@ class ConfigMetadata:
     phases: OrderedPhases  # the phases and orders to run them in
     options_config: OptionConfigs  # the options to add to the cli and pass to jobs
     file_filters: TagFileFilters  # which files to get for which tag
+    hook_manager: "HookManager"  # the hooks register for the run
     jobs: PhaseGroupedJobs  # the jobs to be run ordered by phase
     all_job_names: JobNames  # the set of job-names
     all_job_phases: JobPhases  # the set of job-phases (should be subset of 'phases')
@@ -39,6 +44,7 @@ class ConfigMetadata:
         phases: OrderedPhases,
         options_config: OptionConfigs,
         file_filters: TagFileFilters,
+        hook_manager: "HookManager",
         jobs: PhaseGroupedJobs,
         all_job_names: JobNames,
         all_job_phases: JobPhases,
@@ -48,6 +54,8 @@ class ConfigMetadata:
         self.phases = phases
         self.options_config = options_config
         self.file_filters = file_filters
+        # initialise all the registered call-back hooks
+        self.hook_manager = hook_manager
         self.jobs = jobs
         self.all_job_names = all_job_names
         self.all_job_phases = all_job_phases

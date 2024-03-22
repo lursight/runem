@@ -6,14 +6,20 @@ from collections import defaultdict
 from collections.abc import Iterable
 
 from runem.config_metadata import ConfigMetadata
+from runem.hook_manager import HookManager
 from runem.job import Job
 from runem.job_wrapper import get_job_wrapper
 from runem.log import log
 from runem.types import (
     Config,
     ConfigNodes,
+    FunctionNotFound,
     GlobalConfig,
     GlobalSerialisedConfig,
+    HookConfig,
+    HookName,
+    Hooks,
+    HookSerialisedConfig,
     JobConfig,
     JobNames,
     JobPhases,
@@ -61,7 +67,31 @@ def _parse_global_config(
     return phases, options, file_filters
 
 
-def _parse_job(
+def parse_hook_config(
+    hook: HookConfig,
+    cfg_filepath: pathlib.Path,
+) -> None:
+    """Get the hook information, verifying validity."""
+    try:
+        if not HookManager.is_valid_hook_name(hook["hook_name"]):
+            raise ValueError(
+                f"invalid hook-name '{str(hook['hook_name'])}'. "
+                f"Valid hook names are: {[hook.value for hook in HookName]}"
+            )
+        # cast the hook-name to a HookName type
+        hook["hook_name"] = HookName(hook["hook_name"])
+        get_job_wrapper(hook, cfg_filepath)
+    except KeyError as err:
+        raise ValueError(
+            f"hook config entry is missing '{err.args[0]}' key. Have {tuple(hook.keys())}"
+        ) from err
+    except FunctionNotFound as err:
+        raise FunctionNotFound(
+            f"Whilst loading job '{str(hook['hook_name'])}'. {str(err)}"
+        ) from err
+
+
+def _parse_job(  # noqa: C901
     cfg_filepath: pathlib.Path,
     job: JobConfig,
     in_out_tags: JobTags,
@@ -69,6 +99,7 @@ def _parse_job(
     in_out_job_names: JobNames,
     in_out_phases: JobPhases,
     phase_order: OrderedPhases,
+    warn_missing_phase: bool = True,
 ) -> None:
     """Parse an individual job."""
     job_name: str = Job.get_job_name(job)
@@ -78,13 +109,33 @@ def _parse_job(
         log(f"\t'{job['label']}' is used twice or more in {str(cfg_filepath)}")
         sys.exit(1)
 
-    # try and load the function _before_ we schedule it's execution
-    get_job_wrapper(job, cfg_filepath)
+    try:
+        # try and load the function _before_ we schedule it's execution
+        get_job_wrapper(job, cfg_filepath)
+    except FunctionNotFound as err:
+        raise FunctionNotFound(
+            f"Whilst loading job '{job['label']}'. {str(err)}"
+        ) from err
+
     try:
         phase_id: PhaseName = job["when"]["phase"]
     except KeyError:
-        fallback_phase = phase_order[0]
-        log(f"WARNING: no phase found for '{job_name}', using '{fallback_phase}'")
+        try:
+            fallback_phase = phase_order[0]
+            if warn_missing_phase:
+                log(
+                    f"WARNING: no phase found for '{job_name}', using '{fallback_phase}'"
+                )
+        except IndexError:
+            fallback_phase = "<NO PHASES FOUND>"
+            if warn_missing_phase:
+                log(
+                    (
+                        f"WARNING: no phases found for '{job_name}', "
+                        f"or in '{str(cfg_filepath)}', "
+                        f"using '{fallback_phase}'"
+                    )
+                )
         phase_id = fallback_phase
     in_out_jobs_by_phase[phase_id].append(job)
 
@@ -169,7 +220,18 @@ def parse_job_config(
         ) from err
 
 
-def parse_config(config: Config, cfg_filepath: pathlib.Path) -> ConfigMetadata:
+def parse_config(
+    config: Config, cfg_filepath: pathlib.Path, hooks_only: bool = False
+) -> typing.Tuple[
+    Hooks,  # hooks:
+    OrderedPhases,  # phase_order:
+    OptionConfigs,  # options:
+    TagFileFilters,  # file_filters:
+    PhaseGroupedJobs,  # jobs_by_phase:
+    JobNames,  # job_names:
+    JobPhases,  # job_phases:
+    JobTags,  # tags:
+]:
     """Validates and restructure the config to make it more convenient to use."""
     jobs_by_phase: PhaseGroupedJobs = defaultdict(list)
     job_names: JobNames = set()
@@ -180,6 +242,7 @@ def parse_config(config: Config, cfg_filepath: pathlib.Path) -> ConfigMetadata:
     phase_order: OrderedPhases = ()
     options: OptionConfigs = ()
     file_filters: TagFileFilters = {}
+    hooks: Hooks = defaultdict(list)
 
     # first search for the global config
     for entry in config:
@@ -204,12 +267,30 @@ def parse_config(config: Config, cfg_filepath: pathlib.Path) -> ConfigMetadata:
             phase_order, options, file_filters = _parse_global_config(global_config)
             continue
 
+        # we apply a type-ignore here as we know (for now) that jobs have "job"
+        # keys and global configs have "global" keys
+        isinstance_hooks: bool = "hook" in entry
+        if isinstance_hooks:
+            hook_entry: HookSerialisedConfig = entry  # type: ignore  # see above
+            hook: HookConfig = hook_entry["hook"]
+            parse_hook_config(hook, cfg_filepath)
+
+            # if we get here we have validated the hook, add it to the hooks list
+            hook_name: HookName = hook["hook_name"]
+            hooks[hook_name].append(hook)
+
+            # continue to the next element and do NOT error
+            continue
+
         # not a global or a job entry, what is it
-        raise RuntimeError(f"invalid 'job' or 'global' config entry, {entry}")
+        raise RuntimeError(f"invalid 'job', 'hook, or 'global' config entry, {entry}")
 
     if not phase_order:
-        log("WARNING: phase ordering not configured! Runs will be non-deterministic!")
-        phase_order = tuple(job_phases)
+        if not hooks_only:
+            log(
+                "WARNING: phase ordering not configured! Runs will be non-deterministic!"
+            )
+            phase_order = tuple(job_phases)
 
     # now parse out the job_configs
     for entry in config:
@@ -228,11 +309,107 @@ def parse_config(config: Config, cfg_filepath: pathlib.Path) -> ConfigMetadata:
             in_out_phases=job_phases,
             phase_order=phase_order,
         )
+    return (
+        hooks,
+        phase_order,
+        options,
+        file_filters,
+        jobs_by_phase,
+        job_names,
+        job_phases,
+        tags,
+    )
 
-    # tags = tags.union(("python", "es", "firebase_funcs"))
+
+def generate_config(
+    cfg_filepath: pathlib.Path,
+    hooks: Hooks,
+    phase_order: OrderedPhases,
+    verbose: bool,
+    options: OptionConfigs,
+    file_filters: TagFileFilters,
+    jobs_by_phase: PhaseGroupedJobs,
+    job_names: JobNames,
+    job_phases: JobPhases,
+    tags: JobTags,
+) -> ConfigMetadata:
+    """Constructs the ConfigMetadata from parsed config parts."""
     return ConfigMetadata(
         cfg_filepath,
         phase_order,
+        options,
+        file_filters,
+        HookManager(hooks, verbose),
+        jobs_by_phase,
+        job_names,
+        job_phases,
+        tags,
+    )
+
+
+def _load_user_hooks_from_config(
+    user_config: Config, cfg_filepath: pathlib.Path
+) -> Hooks:
+    hooks: Hooks
+    (
+        hooks,
+        _,
+        _,
+        _,
+        _,
+        _,
+        _,
+        _,
+    ) = parse_config(user_config, cfg_filepath, hooks_only=True)
+    return hooks
+
+
+def load_config_metadata(
+    config: Config,
+    cfg_filepath: pathlib.Path,
+    user_configs: typing.List[typing.Tuple[Config, pathlib.Path]],
+    verbose: bool = False,
+) -> ConfigMetadata:
+    hooks: Hooks
+    phase_order: OrderedPhases
+    options: OptionConfigs
+    file_filters: TagFileFilters
+    jobs_by_phase: PhaseGroupedJobs
+    job_names: JobNames
+    job_phases: JobPhases
+    tags: JobTags
+    (
+        hooks,
+        phase_order,
+        options,
+        file_filters,
+        jobs_by_phase,
+        job_names,
+        job_phases,
+        tags,
+    ) = parse_config(config, cfg_filepath)
+
+    user_config: Config
+    user_config_path: pathlib.Path
+    for user_config, user_config_path in user_configs:
+        user_hooks: Hooks = _load_user_hooks_from_config(user_config, user_config_path)
+        if user_hooks:
+            if verbose:
+                log(f"hooks: loading user hooks from '{str(user_config_path)}'")
+        hook_name: HookName
+        hooks_for_name: typing.List[HookConfig]
+        for hook_name, hooks_for_name in user_hooks.items():
+            hooks[hook_name].extend(hooks_for_name)
+            if verbose:
+                log(
+                    f"hooks:\tadded {len(hooks_for_name)} user hooks for '{str(hook_name)}'"
+                )
+
+    return generate_config(
+        cfg_filepath,
+        hooks,
+        phase_order,
+        verbose,
         options,
         file_filters,
         jobs_by_phase,

@@ -2,6 +2,7 @@ import argparse
 import pathlib
 import typing
 from datetime import timedelta
+from enum import Enum
 
 from runem.informative_dict import InformativeDict, ReadOnlyInformativeDict
 
@@ -24,6 +25,15 @@ ReportName = str
 ReportUrl = typing.Union[str, pathlib.Path]
 ReportUrlInfo = typing.Tuple[ReportName, ReportUrl]
 ReportUrls = typing.List[ReportUrlInfo]
+
+
+class HookName(Enum):
+    # at exit
+    ON_EXIT = "on-exit"
+    # before all tasks are run, after config is read
+    # BEFORE_ALL = "before-all"
+    # after all tasks are done, before reporting
+    # AFTER_ALL = "after-all"
 
 
 class JobReturnData(typing.TypedDict, total=False):
@@ -125,7 +135,14 @@ class JobWhen(typing.TypedDict, total=False):
     phase: PhaseName  # the phase when the job should be run
 
 
-class JobConfig(typing.TypedDict, total=False):
+class JobWrapper(typing.TypedDict, total=False):
+    """A base-type for jobs, hooks, and things that can be invoked."""
+
+    addr: JobAddressConfig  # which callable to call
+    command: str  # a one-liner command to be run
+
+
+class JobConfig(JobWrapper, total=False):
     """A dict that defines a job to be run.
 
     It consists of the label, address, context and filter information
@@ -134,8 +151,6 @@ class JobConfig(typing.TypedDict, total=False):
     """
 
     label: JobName  # the name of the job
-    addr: JobAddressConfig  # which callable to call
-    command: str  # a one-liner command to be run
     ctx: typing.Optional[JobContextConfig]  # how to call the callable
     when: JobWhen  # when to call the job
 
@@ -193,6 +208,30 @@ class GlobalSerialisedConfig(typing.TypedDict):
     config: GlobalConfig
 
 
+class HookConfig(JobWrapper, total=False):
+    """Specification for hooks.
+
+    Like JobConfig with use addr or command to specify what to execute.
+    """
+
+    hook_name: HookName  # the hook for when this is called
+
+
+Hooks = typing.DefaultDict[HookName, typing.List[HookConfig]]
+
+# A dictionary to hold hooks, with hook names as keys
+HooksStore = typing.Dict[HookName, typing.List[HookConfig]]
+
+
+class HookSerialisedConfig(typing.TypedDict):
+    """Intended to make reading a config file easier.
+
+    Also, unlike JobSerialisedConfig, this type may not actually help readability.
+    """
+
+    hook: HookConfig
+
+
 class JobSerialisedConfig(typing.TypedDict):
     """Makes serialised configs easier to read.
 
@@ -204,6 +243,10 @@ class JobSerialisedConfig(typing.TypedDict):
     job: JobConfig
 
 
-ConfigNodes = typing.Union[GlobalSerialisedConfig, JobSerialisedConfig]
+ConfigNodes = typing.Union[
+    GlobalSerialisedConfig, JobSerialisedConfig, HookSerialisedConfig
+]
 # The config format as it is serialised to/from disk
 Config = typing.List[ConfigNodes]
+
+UserConfigMetadata = typing.List[typing.Tuple[Config, pathlib.Path]]

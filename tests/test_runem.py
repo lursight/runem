@@ -11,7 +11,7 @@ from collections import defaultdict
 from contextlib import redirect_stdout
 from datetime import timedelta
 from pprint import pprint
-from unittest.mock import Mock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 # Assuming that the modified _progress_updater function is in a module named runem
 import pytest
@@ -19,6 +19,7 @@ import pytest
 from runem.config_metadata import ConfigMetadata
 from runem.informative_dict import InformativeDict
 from runem.runem import (
+    MainReturnType,
     _process_jobs,
     _process_jobs_by_phase,
     _update_progress,
@@ -28,12 +29,15 @@ from runem.types import (
     Config,
     FilePathListLookup,
     GlobalSerialisedConfig,
+    HookName,
+    HookSerialisedConfig,
     JobConfig,
     JobReturn,
     Jobs,
     JobSerialisedConfig,
     JobTiming,
     PhaseGroupedJobs,
+    UserConfigMetadata,
 )
 from tests.intentional_test_error import IntentionalTestError
 from tests.sanitise_reports_footer import sanitise_reports_footer
@@ -54,7 +58,6 @@ def _remove_x_of_y_workers_log(
     )
     # the index() call will error if the X/Z message isn't found, so we know
     # it's there, so just remove it.
-    pprint(runem_stdout)
     assert machine_specific_job in runem_stdout, runem_stdout
 
     # remove all instances
@@ -85,14 +88,17 @@ def test_runem_basic() -> None:
 
 
 @patch(
-    "runem.runem.load_config",
+    "runem.runem.load_user_configs",
+    return_value=[],
+)
+@patch(
+    "runem.runem.load_project_config",
 )
 @patch(
     "runem.runem.find_files",
 )
 def test_runem_basic_with_config(
-    find_files_mock: Mock,
-    load_config_mock: Mock,
+    find_files_mock: Mock, load_config_mock: Mock, load_config_metadata_mock: Mock
 ) -> None:
     global_config: GlobalSerialisedConfig = {
         "config": {
@@ -125,10 +131,15 @@ def test_runem_basic_with_config(
             "would have waited <float>",
             "",
         ] == runem_stdout
+    load_config_metadata_mock.assert_called_once()
 
 
 @patch(
-    "runem.runem.load_config",
+    "runem.runem.load_user_configs",
+    return_value=[],
+)
+@patch(
+    "runem.runem.load_project_config",
 )
 @patch(
     "runem.runem.find_files",
@@ -136,6 +147,7 @@ def test_runem_basic_with_config(
 def test_runem_basic_with_config_no_options(
     find_files_mock: Mock,
     load_config_mock: Mock,
+    load_config_metadata_mock: Mock,
 ) -> None:
     global_config: GlobalSerialisedConfig = {
         "config": {  # type: ignore[typeddict-item]
@@ -172,9 +184,39 @@ MOCK_JOB_EXECUTE_INNER_RET: typing.Tuple[JobTiming, JobReturn] = (
     None,
 )
 
+MOCK_USER_LOCAL_HOOK: HookSerialisedConfig = {
+    "hook": {
+        "command": "echo 'mock user local hook'",
+        "hook_name": HookName.ON_EXIT,
+    }
+}
+
+MOCK_USER_HOME_DIR_HOOK: HookSerialisedConfig = {
+    "hook": {
+        "command": "echo 'mock user home-dir hook'",
+        "hook_name": HookName.ON_EXIT,
+    }
+}
+
+MOCK_USER_LOCAL_CONFIG: Config = [
+    MOCK_USER_LOCAL_HOOK,
+]
+MOCK_USER_HOME_DIR_CONFIG: Config = [
+    MOCK_USER_HOME_DIR_HOOK,
+]
+
+MOCK_USER_CONFIGS_METADATA: UserConfigMetadata = [
+    (MOCK_USER_LOCAL_CONFIG, pathlib.Path("local-user-config.yml")),
+    (MOCK_USER_HOME_DIR_CONFIG, pathlib.Path("local-user-home-dir-config.yml")),
+]
+
 
 @patch(
-    "runem.runem.load_config",
+    "runem.runem.load_user_configs",
+    return_value=MOCK_USER_CONFIGS_METADATA,
+)
+@patch(
+    "runem.runem.load_project_config",
 )
 @patch(
     "runem.runem.find_files",
@@ -188,6 +230,7 @@ def _run_full_config_runem(
     job_runner_mock: Mock,
     find_files_mock: Mock,
     load_config_mock: Mock,
+    load_config_metadata_mock: Mock,
     runem_cli_switches: typing.List[str],
     add_verbose_switch: bool = True,
     add_command_one_liner: bool = True,
@@ -374,6 +417,20 @@ def test_runem_with_full_config(verbosity: bool) -> None:
                 "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
                 "'dummy phase 1'"
             ),
+            "runem: hooks: loading user hooks from 'local-user-config.yml'",
+            "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+            "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
+            "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+            "runem: hooks: initialising 2 hooks",
+            "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
+            (
+                "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
+                "user local hook'"
+            ),
+            (
+                "runem: hooks: registered hook for 'HookName.ON_EXIT', have 2: echo 'mock "
+                "user home-dir hook'"
+            ),
             "runem: loaded config from [CONFIG PATH]",
             "runem: found 1 batches, 1 'mock phase' files, ",
             (
@@ -413,6 +470,20 @@ def test_runem_with_full_config_verbose() -> None:
             "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
             "'dummy phase 1'"
         ),
+        "runem: hooks: loading user hooks from 'local-user-config.yml'",
+        "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+        "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
+        "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+        "runem: hooks: initialising 2 hooks",
+        "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
+        (
+            "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
+            "user local hook'"
+        ),
+        (
+            "runem: hooks: registered hook for 'HookName.ON_EXIT', have 2: echo 'mock "
+            "user home-dir hook'"
+        ),
         "runem: loaded config from [CONFIG PATH]",
         "runem: found 1 batches, 1 'mock phase' files, ",
         (
@@ -451,6 +522,20 @@ def test_runem_with_single_phase() -> None:
             "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
             "'dummy phase 1'"
         ),
+        "runem: hooks: loading user hooks from 'local-user-config.yml'",
+        "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+        "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
+        "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+        "runem: hooks: initialising 2 hooks",
+        "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
+        (
+            "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
+            "user local hook'"
+        ),
+        (
+            "runem: hooks: registered hook for 'HookName.ON_EXIT', have 2: echo 'mock "
+            "user home-dir hook'"
+        ),
         "runem: loaded config from [CONFIG PATH]",
         "runem: found 1 batches, 1 'mock phase' files, ",
         (
@@ -487,6 +572,20 @@ def test_runem_with_single_phase_verbose() -> None:
             "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
             "'dummy phase 1'"
         ),
+        "runem: hooks: loading user hooks from 'local-user-config.yml'",
+        "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+        "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
+        "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+        "runem: hooks: initialising 2 hooks",
+        "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
+        (
+            "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
+            "user local hook'"
+        ),
+        (
+            "runem: hooks: registered hook for 'HookName.ON_EXIT', have 2: echo 'mock "
+            "user home-dir hook'"
+        ),
         "runem: loaded config from [CONFIG PATH]",
         "runem: found 1 batches, 1 'mock phase' files, ",
         (
@@ -521,9 +620,16 @@ def _remove_first_line_and_split_along_whitespace(
     # contexts:
     # usage: __main__.py [-h] [--jobs JOBS [JOBS ...]]
     # usage: -c [-h] [--jobs JOBS [JOBS ...]]
-    index_of_usage_line: int = 1
-    usage_line: str = lines[index_of_usage_line]
-    assert "usage:" in usage_line
+    index_of_usage_lines: typing.Tuple[int, ...] = (1, 9)
+    usage_line: typing.Optional[str] = None
+    for index_of_usage_line in index_of_usage_lines:  # pragma: no cover
+        usage_line_candidate: str = lines[index_of_usage_line]
+        if "usage:" in usage_line_candidate:
+            usage_line = usage_line_candidate
+            break
+    if usage_line is None:  # pragma: no cover
+        pprint(lines)
+        raise RuntimeError("test setup failure, 'usage' line =NOT found in stdout")
     first_brace: int = usage_line.index("[")
     usage_line = usage_line[first_brace:]
     lines[index_of_usage_line] = usage_line
@@ -563,7 +669,8 @@ def test_runem_help() -> None:
         runem_stdout,
         error_raised,
     ) = _run_full_config_runem(  # pylint: disable=no-value-for-parameter
-        runem_cli_switches=runem_cli_switches
+        runem_cli_switches=runem_cli_switches,
+        add_verbose_switch=False,
     )
     assert runem_stdout
     assert error_raised
@@ -596,13 +703,20 @@ def test_runem_help() -> None:
 
 
 @pytest.mark.parametrize(
+    "verbosity",
+    [
+        True,
+        False,
+    ],
+)
+@pytest.mark.parametrize(
     "switch_to_test",
     [
         "--version",
         "-v",
     ],
 )
-def test_runem_version(switch_to_test: str) -> None:
+def test_runem_version(switch_to_test: str, verbosity: bool) -> None:
     """End-2-end test check that the --version switch works."""
     runem_cli_switches: typing.List[str] = [
         switch_to_test,
@@ -615,6 +729,7 @@ def test_runem_version(switch_to_test: str) -> None:
     ) = _run_full_config_runem(  # pylint: disable=no-value-for-parameter
         runem_cli_switches=runem_cli_switches,
         add_command_one_liner=False,
+        add_verbose_switch=verbosity,
     )
     assert runem_stdout
     assert error_raised
@@ -625,6 +740,20 @@ def test_runem_version(switch_to_test: str) -> None:
     ).absolute()
 
     expected_version_output: typing.List[str] = [version_file.read_text().strip(), ""]
+    if verbosity:
+        expected_version_output = [
+            "runem: hooks: loading user hooks from 'local-user-config.yml'",
+            "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+            "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
+            "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+            "runem: hooks: initialising 2 hooks",
+            "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
+            "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
+            "user local hook'",
+            "runem: hooks: registered hook for 'HookName.ON_EXIT', have 2: echo 'mock "
+            "user home-dir hook'",
+        ] + expected_version_output
+
     assert runem_stdout == expected_version_output
 
 
@@ -655,6 +784,20 @@ def test_runem_bad_validate_switch_jobs(switch_to_test: str) -> None:
         (
             "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
             "'dummy phase 1'"
+        ),
+        "runem: hooks: loading user hooks from 'local-user-config.yml'",
+        "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+        "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
+        "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+        "runem: hooks: initialising 2 hooks",
+        "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
+        (
+            "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
+            "user local hook'"
+        ),
+        (
+            "runem: hooks: registered hook for 'HookName.ON_EXIT', have 2: echo 'mock "
+            "user home-dir hook'"
         ),
         (
             "runem: ERROR: invalid job-name 'non existent job name' for "
@@ -693,6 +836,20 @@ def test_runem_bad_validate_switch_tags(switch_to_test: str) -> None:
             "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
             "'dummy phase 1'"
         ),
+        "runem: hooks: loading user hooks from 'local-user-config.yml'",
+        "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+        "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
+        "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+        "runem: hooks: initialising 2 hooks",
+        "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
+        (
+            "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
+            "user local hook'"
+        ),
+        (
+            "runem: hooks: registered hook for 'HookName.ON_EXIT', have 2: echo 'mock "
+            "user home-dir hook'"
+        ),
         (
             f"runem: ERROR: invalid tag 'non existent tag' for {switch_to_test}, "
             "choose from one of 'dummy tag 1', 'dummy tag 2', "
@@ -729,6 +886,20 @@ def test_runem_bad_validate_switch_phases(switch_to_test: str) -> None:
         (
             "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
             "'dummy phase 1'"
+        ),
+        "runem: hooks: loading user hooks from 'local-user-config.yml'",
+        "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+        "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
+        "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+        "runem: hooks: initialising 2 hooks",
+        "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
+        (
+            "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
+            "user local hook'"
+        ),
+        (
+            "runem: hooks: registered hook for 'HookName.ON_EXIT', have 2: echo 'mock "
+            "user home-dir hook'"
         ),
         f"runem: ERROR: invalid phase 'non existent phase' for {switch_to_test}, "
         "choose from one of 'dummy phase 1', 'dummy phase 2'",
@@ -770,6 +941,20 @@ def test_runem_job_filters_work(verbosity: bool) -> None:
                 "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
                 "'dummy phase 1'"
             ),
+            "runem: hooks: loading user hooks from 'local-user-config.yml'",
+            "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+            "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
+            "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+            "runem: hooks: initialising 2 hooks",
+            "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
+            (
+                "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
+                "user local hook'"
+            ),
+            (
+                "runem: hooks: registered hook for 'HookName.ON_EXIT', have 2: echo 'mock "
+                "user home-dir hook'"
+            ),
             "runem: loaded config from [CONFIG PATH]",
             "runem: found 1 batches, 1 'mock phase' files, ",
             (
@@ -803,6 +988,20 @@ def test_runem_job_filters_work(verbosity: bool) -> None:
             (
                 "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
                 "'dummy phase 1'"
+            ),
+            "runem: hooks: loading user hooks from 'local-user-config.yml'",
+            "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+            "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
+            "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+            "runem: hooks: initialising 2 hooks",
+            "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
+            (
+                "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
+                "user local hook'"
+            ),
+            (
+                "runem: hooks: registered hook for 'HookName.ON_EXIT', have 2: echo 'mock "
+                "user home-dir hook'"
             ),
             "runem: loaded config from [CONFIG PATH]",
             "runem: found 1 batches, 1 'mock phase' files, ",
@@ -868,6 +1067,20 @@ def test_runem_tag_filters_work(verbosity: bool) -> None:
                 "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
                 "'dummy phase 1'"
             ),
+            "runem: hooks: loading user hooks from 'local-user-config.yml'",
+            "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+            "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
+            "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+            "runem: hooks: initialising 2 hooks",
+            "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
+            (
+                "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
+                "user local hook'"
+            ),
+            (
+                "runem: hooks: registered hook for 'HookName.ON_EXIT', have 2: echo 'mock "
+                "user home-dir hook'"
+            ),
             "runem: loaded config from [CONFIG PATH]",
             "runem: found 1 batches, 1 'mock phase' files, ",
             "runem: filtering for tags 'tag only on job 1'",
@@ -890,6 +1103,20 @@ def test_runem_tag_filters_work(verbosity: bool) -> None:
             (
                 "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
                 "'dummy phase 1'"
+            ),
+            "runem: hooks: loading user hooks from 'local-user-config.yml'",
+            "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+            "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
+            "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+            "runem: hooks: initialising 2 hooks",
+            "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
+            (
+                "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
+                "user local hook'"
+            ),
+            (
+                "runem: hooks: registered hook for 'HookName.ON_EXIT', have 2: echo 'mock "
+                "user home-dir hook'"
             ),
             "runem: loaded config from [CONFIG PATH]",
             "runem: found 1 batches, 1 'mock phase' files, ",
@@ -957,6 +1184,20 @@ def test_runem_tag_out_filters_work(verbosity: bool, one_liner: bool) -> None:
                     "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
                     "'dummy phase 1'"
                 ),
+                "runem: hooks: loading user hooks from 'local-user-config.yml'",
+                "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+                "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
+                "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+                "runem: hooks: initialising 2 hooks",
+                "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
+                (
+                    "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
+                    "user local hook'"
+                ),
+                (
+                    "runem: hooks: registered hook for 'HookName.ON_EXIT', have 2: echo 'mock "
+                    "user home-dir hook'"
+                ),
                 "runem: loaded config from [CONFIG PATH]",
                 "runem: found 1 batches, 1 'mock phase' files, ",
                 (
@@ -986,6 +1227,20 @@ def test_runem_tag_out_filters_work(verbosity: bool, one_liner: bool) -> None:
                     "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
                     "'dummy phase 1'"
                 ),
+                "runem: hooks: loading user hooks from 'local-user-config.yml'",
+                "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+                "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
+                "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+                "runem: hooks: initialising 2 hooks",
+                "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
+                (
+                    "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
+                    "user local hook'"
+                ),
+                (
+                    "runem: hooks: registered hook for 'HookName.ON_EXIT', have 2: echo 'mock "
+                    "user home-dir hook'"
+                ),
                 "runem: loaded config from [CONFIG PATH]",
                 "runem: found 1 batches, 1 'mock phase' files, ",
                 (
@@ -1009,6 +1264,20 @@ def test_runem_tag_out_filters_work(verbosity: bool, one_liner: bool) -> None:
         if verbosity:
             # no-one-liner + verbosity
             assert runem_stdout == [
+                "runem: hooks: loading user hooks from 'local-user-config.yml'",
+                "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+                "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
+                "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+                "runem: hooks: initialising 2 hooks",
+                "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
+                (
+                    "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
+                    "user local hook'"
+                ),
+                (
+                    "runem: hooks: registered hook for 'HookName.ON_EXIT', have 2: echo 'mock "
+                    "user home-dir hook'"
+                ),
                 "runem: loaded config from [CONFIG PATH]",
                 "runem: found 1 batches, 1 'mock phase' files, ",
                 (
@@ -1031,6 +1300,20 @@ def test_runem_tag_out_filters_work(verbosity: bool, one_liner: bool) -> None:
         else:
             # no-one-liner + no-verbosity
             assert runem_stdout == [
+                "runem: hooks: loading user hooks from 'local-user-config.yml'",
+                "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+                "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
+                "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+                "runem: hooks: initialising 2 hooks",
+                "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
+                (
+                    "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
+                    "user local hook'"
+                ),
+                (
+                    "runem: hooks: registered hook for 'HookName.ON_EXIT', have 2: echo 'mock "
+                    "user home-dir hook'"
+                ),
                 "runem: loaded config from [CONFIG PATH]",
                 "runem: found 1 batches, 1 'mock phase' files, ",
                 (
@@ -1088,6 +1371,20 @@ def test_runem_tag_out_filters_work_all_tags(verbosity: bool) -> None:
 
     if verbosity:
         assert runem_stdout == [
+            "runem: hooks: loading user hooks from 'local-user-config.yml'",
+            "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+            "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
+            "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+            "runem: hooks: initialising 2 hooks",
+            "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
+            (
+                "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
+                "user local hook'"
+            ),
+            (
+                "runem: hooks: registered hook for 'HookName.ON_EXIT', have 2: echo 'mock "
+                "user home-dir hook'"
+            ),
             "runem: loaded config from [CONFIG PATH]",
             "runem: found 1 batches, 1 'mock phase' files, ",
             (
@@ -1155,6 +1452,20 @@ def test_runem_phase_filters_work(verbosity: bool) -> None:
                 "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
                 "'dummy phase 1'"
             ),
+            "runem: hooks: loading user hooks from 'local-user-config.yml'",
+            "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+            "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
+            "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+            "runem: hooks: initialising 2 hooks",
+            "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
+            (
+                "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
+                "user local hook'"
+            ),
+            (
+                "runem: hooks: registered hook for 'HookName.ON_EXIT', have 2: echo 'mock "
+                "user home-dir hook'"
+            ),
             "runem: loaded config from [CONFIG PATH]",
             "runem: found 1 batches, 1 'mock phase' files, ",
             (
@@ -1172,6 +1483,20 @@ def test_runem_phase_filters_work(verbosity: bool) -> None:
             (
                 "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
                 "'dummy phase 1'"
+            ),
+            "runem: hooks: loading user hooks from 'local-user-config.yml'",
+            "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+            "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
+            "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+            "runem: hooks: initialising 2 hooks",
+            "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
+            (
+                "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
+                "user local hook'"
+            ),
+            (
+                "runem: hooks: registered hook for 'HookName.ON_EXIT', have 2: echo 'mock "
+                "user home-dir hook'"
             ),
             "runem: loaded config from [CONFIG PATH]",
             "runem: found 1 batches, 1 'mock phase' files, ",
@@ -1256,7 +1581,6 @@ def test_progress_updater_with_running_jobs_and_10_jobs(mock_sleep: Mock) -> Non
         job_config = copy.copy(job_config)
         job_config["label"] = f'{job_config["label"]} {idx}'
         all_jobs.append(job_config)
-    pprint(all_jobs)
     with pytest.raises(SleepCalledError), multiprocessing.Manager() as manager:
         _update_progress(
             "dummy label",
@@ -1323,13 +1647,44 @@ def test_progress_updater_with_false(show_spinner: bool) -> None:
         )
 
 
+def _dummy_config_metadata() -> ConfigMetadata:
+    config_metadata: ConfigMetadata = ConfigMetadata(
+        cfg_filepath=pathlib.Path(__file__),
+        phases=("dummy phase 1",),
+        options_config=tuple(),
+        file_filters={
+            "dummy tag": {
+                "tag": "dummy tag",
+                "regex": ".*1.txt",  # should match just one file
+            }
+        },
+        hook_manager=MagicMock(),
+        jobs=defaultdict(list),
+        all_job_names=set(),
+        all_job_phases=set(),
+        all_job_tags=set(),
+    )
+    config_metadata.set_cli_data(
+        args=Namespace(verbose=False, procs=1),
+        jobs_to_run=set(),  # JobNames,
+        phases_to_run=set(),  # JobPhases,
+        tags_to_run=set(),  # ignored JobTags,
+        tags_to_avoid=set(),  # ignored  JobTags,
+        options=InformativeDict({}),  # Options,
+    )
+    return config_metadata
+
+
+DUMMY_MAIN_RETURN: MainReturnType = (
+    _dummy_config_metadata(),  # ConfigMetadata,
+    {},  # job_run_metadatas,
+    IntentionalTestError(),
+)
+
+
 @patch(
     "runem.runem._main",
-    return_value=(
-        (),  # phase_run_oder,
-        (),  # job_run_metadatas,
-        IntentionalTestError(),
-    ),
+    return_value=DUMMY_MAIN_RETURN,
 )
 def test_runem_re_raises_after_reporting(
     main_mock: Mock,
@@ -1409,6 +1764,7 @@ def test_process_jobs_by_phase_early_exits_with_exceptions(
             #     "regex": ".*1.txt",  # should match just one file
             # }
         },
+        hook_manager=MagicMock(),
         jobs=jobs_by_phase,
         all_job_names=set(all_job_names),
         all_job_phases=set(("dummy phase 1",)),
@@ -1521,6 +1877,7 @@ def test_process_jobs_early_exits_with_exceptions(
             #     "regex": ".*1.txt",  # should match just one file
             # }
         },
+        hook_manager=MagicMock(),
         jobs=jobs_by_phase,
         all_job_names=set(all_job_names),
         all_job_phases=set(("dummy phase 1",)),
