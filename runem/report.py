@@ -64,9 +64,11 @@ def replace_bar_graph_characters(text: str, end_str: str, replace_char: str) -> 
 
     # Process each line, replacing block characters if `end_str` is present
     modified_lines = [
-        line.translate(str.maketrans(block_chars, replace_char * len(block_chars)))
-        if end_str in line
-        else line
+        (
+            line.translate(str.maketrans(block_chars, replace_char * len(block_chars)))
+            if end_str in line
+            else line
+        )
         for line in text_lines
     ]
 

@@ -693,12 +693,12 @@ def test_runem_help() -> None:
     # help_dump.write_text(runem_stdout_str)
 
     # we have to strip all whitespace as help adapts to the terminal width
-    stripped_expected_help_output: typing.List[
-        str
-    ] = _remove_first_line_and_split_along_whitespace(help_dump.read_text())
-    stripped_actual_help_output: typing.List[
-        str
-    ] = _remove_first_line_and_split_along_whitespace(runem_stdout_str)
+    stripped_expected_help_output: typing.List[str] = (
+        _remove_first_line_and_split_along_whitespace(help_dump.read_text())
+    )
+    stripped_actual_help_output: typing.List[str] = (
+        _remove_first_line_and_split_along_whitespace(runem_stdout_str)
+    )
     assert stripped_expected_help_output == stripped_actual_help_output
 
 
