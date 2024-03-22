@@ -652,7 +652,8 @@ def test_runem_help() -> None:
         runem_stdout,
         error_raised,
     ) = _run_full_config_runem(  # pylint: disable=no-value-for-parameter
-        runem_cli_switches=runem_cli_switches
+        runem_cli_switches=runem_cli_switches,
+        add_verbose_switch=False,
     )
     assert runem_stdout
     assert error_raised
