@@ -56,7 +56,8 @@ def replace_bar_graph_characters(text: str, end_str: str, replace_char: str) -> 
     """
     # Define the block character and its light shade replacement
     block_chars = (
-        "▏▎▍▋▊█▌▐▄▀─"  # Extend this string with any additional block characters you use
+        "▏▎▍▋▊▉█▌▐▄▀─"  # Extend this string with any additional block characters you use
+        "░·"  # also include the chars we might replace with for special bars
     )
 
     text_lines: typing.List[str] = text.split("\n")
@@ -122,7 +123,7 @@ def _plot_times(
     runem_app_timing: typing.List[JobTiming] = timing_data["_app"]
     job_metadata: JobTiming
     for idx, job_metadata in enumerate(reversed(runem_app_timing)):
-        last_group: bool = idx == 0  # revere sorted
+        last_group: bool = idx == 0  # reverse sorted
         utf8_group = "├" if not last_group else "└"
         job_label, job_time_total = job_metadata["job"]
         labels.insert(0, f"{utf8_group}runem.{job_label}")
@@ -177,7 +178,7 @@ def _gen_jobs_report(
         utf8_job = "├" if not_last else "└"
         utf8_sub_jobs = "│" if not_last else " "
         job_label, job_time_total = job_timing["job"]
-        job_bar_label: str = f"{phase}.{job_label}"
+        job_bar_label: str = f"{job_label}"
         labels.append(f"{utf8_phase_group}{utf8_job}{job_bar_label}")
         times.append(job_time_total.total_seconds())
         job_time_sum += job_time_total
@@ -193,8 +194,7 @@ def _gen_jobs_report(
             if idx == len(sub_command_times) - 1:
                 sub_utf8 = "└"
             labels.append(
-                f"{utf8_phase_group}{utf8_sub_jobs}{sub_utf8}{job_bar_label}"
-                f".{sub_job_label} (+)"
+                f"{utf8_phase_group}{utf8_sub_jobs}{sub_utf8}{sub_job_label} (+)"
             )
             times.append(sub_job_time.total_seconds())
     return job_time_sum

@@ -1,4 +1,5 @@
 import io
+import typing
 from contextlib import redirect_stdout
 from datetime import timedelta
 
@@ -11,6 +12,7 @@ from runem.types import (
     JobTiming,
     OrderedPhases,
 )
+from tests.sanitise_reports_footer import sanitise_reports_footer
 
 
 def test_report_on_run_basic_call() -> None:
@@ -67,16 +69,16 @@ def test_report_on_run_basic_call() -> None:
         run_command_stdout = buf.getvalue()
     assert run_command_stdout.split("\n") == [
         "runem: reports:",
-        "runem (total wall-clock)          [1000.500000]  ████████████████████████████████",
+        "runem (total wall-clock)  [1000.500000]  ████████████████████████████████",
         (
-            " └phase 1 (user-time)             [1252.001001] "
-            " ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░"
+            " └phase 1 (user-time)     [1252.001001]  "
+            "░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░"
         ),
-        "  ├phase 1.job label 2            [1000.001001]  ████████████████████████████████",
-        "  │├phase 1.job label 2.sub1 (+)  [ 500.000000]  ················",
-        "  │└phase 1.job label 2.sub2 (+)  [ 500.000000]  ················",
-        "  ├phase 1.another job 3          [   2.000000]  ▏",
-        "  └phase 1.another job 4          [ 250.000000]  ████████",
+        "  ├job label 2            [1000.001001]  ████████████████████████████████",
+        "  │├sub1 (+)              [ 500.000000]  ················",
+        "  │└sub2 (+)              [ 500.000000]  ················",
+        "  ├another job 3          [   2.000000]  ▏",
+        "  └another job 4          [ 250.000000]  ████████",
         "",
     ]
     # this floating-point comparison should be problematic but its' working for
@@ -130,12 +132,79 @@ def test_report_on_run_reports() -> None:
     assert run_command_stdout.split("\n") == [
         "runem: reports:",
         "runem (total wall-clock)  [   0.000000]",
-        " └phase 1 (user-time)     [1002.001001]  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░",
-        "  ├phase 1.job label 2    [1000.001001]  ███████████████████████████████████████▉",
-        "  └phase 1.another job 3  [   2.000000]  ▏",
+        (
+            " └phase 1 (user-time)     [1002.001001]  "
+            "░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░"
+        ),
+        (
+            "  ├job label 2            [1000.001001]  "
+            "███████████████████████████████████████▉"
+        ),
+        "  └another job 3          [   2.000000]  ▏",
         "runem: report: dummy report label: /dummy/report/url",
         "",
     ]
+
+
+def test_sanitise_reports_footer_removes_all_bar_chars_2() -> None:
+    """Tries to test that we handle all bar-graph characters.
+
+    This ensures we know that we are sanitising the report data nicely.
+    """
+    phase_run_order: typing.List[str] = []
+    job_run_metadatas: JobRunMetadatasByPhase = {}
+    for multiplier in [1]:  # ,2,3,4,5,6,7,8,9,10]:
+        fractional_times: typing.List[JobRunMetadata] = []
+        for seconds in range(15):  # 1 + 2 +3.. +14 = 105 near enough to 100%
+            seconds = seconds * multiplier
+            job_timing: JobTiming = {
+                "job": (f"job {seconds}", timedelta(seconds=seconds)),
+                "commands": [],
+            }
+            job_return: JobReturn = None  # typing.Optional[JobReturnData]
+            job_run_metadata: JobRunMetadata = (job_timing, job_return)
+            fractional_times.append(job_run_metadata)
+        phase_name: str = f"phase {multiplier}"
+        phase_run_order.append(phase_name)
+        job_run_metadatas[phase_name] = fractional_times
+
+    with io.StringIO() as buf, redirect_stdout(buf):
+        system_time_spent: timedelta
+        wall_clock_time_saved: timedelta
+        system_time_spent, wall_clock_time_saved = report_on_run(
+            phase_run_oder=tuple(phase_run_order),
+            job_run_metadatas=job_run_metadatas,
+            wall_clock_for_runem_main=timedelta(
+                # mimic a value that is slightly larger than the largest single
+                # job in the single phase.
+                seconds=15
+            ),
+        )
+        run_command_stdout = sanitise_reports_footer(buf.getvalue())
+    assert run_command_stdout == [
+        "runem: reports:",
+        "runem (total wall-clock)  [ <float>]",
+        " └phase 1 (user-time)     [<float>]",
+        "  ├job 1                  [  <float>]",
+        "  ├job 2                  [  <float>]",
+        "  ├job 3                  [  <float>]",
+        "  ├job 4                  [  <float>]",
+        "  ├job 5                  [  <float>]",
+        "  ├job 6                  [  <float>]",
+        "  ├job 7                  [  <float>]",
+        "  ├job 8                  [  <float>]",
+        "  ├job 9                  [  <float>]",
+        "  ├job 10                 [ <float>]",
+        "  ├job 11                 [ <float>]",
+        "  ├job 12                 [ <float>]",
+        "  ├job 13                 [ <float>]",
+        "  └job 14                 [ <float>]",
+        "",
+    ]
+    # this floating-point comparison should be problematic but its' working for
+    # now... for now.
+    assert wall_clock_time_saved.total_seconds() == 90.0
+    assert system_time_spent.total_seconds() == 105.0
 
 
 def test_print_reports_by_phase() -> None:

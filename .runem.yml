@@ -22,7 +22,7 @@
       - option:
           alias: check
           default: false
-          name: check_only
+          name: check-only
           type: bool
           desc: runs in check-mode, erroring if isort, black or any text-edits would occur
       - option:
@@ -37,7 +37,7 @@
           type: bool
       - option:
           default: false
-          name: install deps
+          name: install-deps
           type: bool
           desc: gets dep-installing job to run
       - option:
@@ -51,25 +51,9 @@
           desc: generate profile information in jobs that can
           type: bool
       - option:
-          alias: u
           default: true
-          desc: update snapshots in jobs that can update data snapshots
-          name: update snapshots
-          type: bool
-      - option:
-          default: true
+          name: unit-test
           desc: run unit tests
-          name: unit test
-          type: bool
-      - option:
-          default: false
-          desc: run unit tests for the firebase function's data
-          name: unit test firebase data
-          type: bool
-      - option:
-          default: false
-          desc: run unit tests for the python code
-          name: unit test python
           type: bool
 - job:
     addr:
