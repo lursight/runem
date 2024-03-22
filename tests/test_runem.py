@@ -417,6 +417,10 @@ def test_runem_with_full_config(verbosity: bool) -> None:
                 "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
                 "'dummy phase 1'"
             ),
+            "runem: hooks: loading user hooks from 'local-user-config.yml'",
+            "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+            "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
+            "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
             "runem: hooks: initialising 2 hooks",
             "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
             (
@@ -466,6 +470,10 @@ def test_runem_with_full_config_verbose() -> None:
             "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
             "'dummy phase 1'"
         ),
+        "runem: hooks: loading user hooks from 'local-user-config.yml'",
+        "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+        "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
+        "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
         "runem: hooks: initialising 2 hooks",
         "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
         (
@@ -514,6 +522,10 @@ def test_runem_with_single_phase() -> None:
             "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
             "'dummy phase 1'"
         ),
+        "runem: hooks: loading user hooks from 'local-user-config.yml'",
+        "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+        "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
+        "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
         "runem: hooks: initialising 2 hooks",
         "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
         (
@@ -560,6 +572,10 @@ def test_runem_with_single_phase_verbose() -> None:
             "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
             "'dummy phase 1'"
         ),
+        "runem: hooks: loading user hooks from 'local-user-config.yml'",
+        "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+        "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
+        "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
         "runem: hooks: initialising 2 hooks",
         "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
         (
@@ -604,11 +620,12 @@ def _remove_first_line_and_split_along_whitespace(
     # contexts:
     # usage: __main__.py [-h] [--jobs JOBS [JOBS ...]]
     # usage: -c [-h] [--jobs JOBS [JOBS ...]]
-    index_of_usage_lines: typing.Tuple[int, ...] = (1, 6)
+    index_of_usage_lines: typing.Tuple[int, ...] = (1, 9)
     usage_line: typing.Optional[str] = None
     for index_of_usage_line in index_of_usage_lines:  # pragma: no cover
-        usage_line = lines[index_of_usage_line]
-        if "usage:" in usage_line:
+        usage_line_candidate: str = lines[index_of_usage_line]
+        if "usage:" in usage_line_candidate:
+            usage_line = usage_line_candidate
             break
     if usage_line is None:  # pragma: no cover
         pprint(lines)
@@ -725,6 +742,10 @@ def test_runem_version(switch_to_test: str, verbosity: bool) -> None:
     expected_version_output: typing.List[str] = [version_file.read_text().strip(), ""]
     if verbosity:
         expected_version_output = [
+            "runem: hooks: loading user hooks from 'local-user-config.yml'",
+            "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+            "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
+            "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
             "runem: hooks: initialising 2 hooks",
             "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
             "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
@@ -764,6 +785,10 @@ def test_runem_bad_validate_switch_jobs(switch_to_test: str) -> None:
             "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
             "'dummy phase 1'"
         ),
+        "runem: hooks: loading user hooks from 'local-user-config.yml'",
+        "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+        "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
+        "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
         "runem: hooks: initialising 2 hooks",
         "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
         (
@@ -811,6 +836,10 @@ def test_runem_bad_validate_switch_tags(switch_to_test: str) -> None:
             "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
             "'dummy phase 1'"
         ),
+        "runem: hooks: loading user hooks from 'local-user-config.yml'",
+        "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+        "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
+        "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
         "runem: hooks: initialising 2 hooks",
         "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
         (
@@ -858,6 +887,10 @@ def test_runem_bad_validate_switch_phases(switch_to_test: str) -> None:
             "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
             "'dummy phase 1'"
         ),
+        "runem: hooks: loading user hooks from 'local-user-config.yml'",
+        "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+        "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
+        "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
         "runem: hooks: initialising 2 hooks",
         "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
         (
@@ -908,6 +941,10 @@ def test_runem_job_filters_work(verbosity: bool) -> None:
                 "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
                 "'dummy phase 1'"
             ),
+            "runem: hooks: loading user hooks from 'local-user-config.yml'",
+            "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+            "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
+            "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
             "runem: hooks: initialising 2 hooks",
             "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
             (
@@ -952,6 +989,10 @@ def test_runem_job_filters_work(verbosity: bool) -> None:
                 "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
                 "'dummy phase 1'"
             ),
+            "runem: hooks: loading user hooks from 'local-user-config.yml'",
+            "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+            "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
+            "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
             "runem: hooks: initialising 2 hooks",
             "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
             (
@@ -1026,6 +1067,10 @@ def test_runem_tag_filters_work(verbosity: bool) -> None:
                 "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
                 "'dummy phase 1'"
             ),
+            "runem: hooks: loading user hooks from 'local-user-config.yml'",
+            "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+            "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
+            "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
             "runem: hooks: initialising 2 hooks",
             "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
             (
@@ -1059,6 +1104,10 @@ def test_runem_tag_filters_work(verbosity: bool) -> None:
                 "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
                 "'dummy phase 1'"
             ),
+            "runem: hooks: loading user hooks from 'local-user-config.yml'",
+            "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+            "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
+            "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
             "runem: hooks: initialising 2 hooks",
             "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
             (
@@ -1135,6 +1184,10 @@ def test_runem_tag_out_filters_work(verbosity: bool, one_liner: bool) -> None:
                     "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
                     "'dummy phase 1'"
                 ),
+                "runem: hooks: loading user hooks from 'local-user-config.yml'",
+                "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+                "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
+                "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
                 "runem: hooks: initialising 2 hooks",
                 "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
                 (
@@ -1174,6 +1227,10 @@ def test_runem_tag_out_filters_work(verbosity: bool, one_liner: bool) -> None:
                     "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
                     "'dummy phase 1'"
                 ),
+                "runem: hooks: loading user hooks from 'local-user-config.yml'",
+                "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+                "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
+                "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
                 "runem: hooks: initialising 2 hooks",
                 "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
                 (
@@ -1207,6 +1264,10 @@ def test_runem_tag_out_filters_work(verbosity: bool, one_liner: bool) -> None:
         if verbosity:
             # no-one-liner + verbosity
             assert runem_stdout == [
+                "runem: hooks: loading user hooks from 'local-user-config.yml'",
+                "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+                "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
+                "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
                 "runem: hooks: initialising 2 hooks",
                 "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
                 (
@@ -1239,6 +1300,10 @@ def test_runem_tag_out_filters_work(verbosity: bool, one_liner: bool) -> None:
         else:
             # no-one-liner + no-verbosity
             assert runem_stdout == [
+                "runem: hooks: loading user hooks from 'local-user-config.yml'",
+                "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+                "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
+                "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
                 "runem: hooks: initialising 2 hooks",
                 "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
                 (
@@ -1306,6 +1371,10 @@ def test_runem_tag_out_filters_work_all_tags(verbosity: bool) -> None:
 
     if verbosity:
         assert runem_stdout == [
+            "runem: hooks: loading user hooks from 'local-user-config.yml'",
+            "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+            "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
+            "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
             "runem: hooks: initialising 2 hooks",
             "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
             (
@@ -1383,6 +1452,10 @@ def test_runem_phase_filters_work(verbosity: bool) -> None:
                 "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
                 "'dummy phase 1'"
             ),
+            "runem: hooks: loading user hooks from 'local-user-config.yml'",
+            "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+            "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
+            "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
             "runem: hooks: initialising 2 hooks",
             "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
             (
@@ -1411,6 +1484,10 @@ def test_runem_phase_filters_work(verbosity: bool) -> None:
                 "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
                 "'dummy phase 1'"
             ),
+            "runem: hooks: loading user hooks from 'local-user-config.yml'",
+            "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+            "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
+            "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
             "runem: hooks: initialising 2 hooks",
             "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
             (

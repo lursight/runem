@@ -89,7 +89,7 @@ def parse_hook_config(
         raise FunctionNotFound(f"Whilst loading job '{hook_name}'. {str(err)}") from err
 
 
-def _parse_job(
+def _parse_job(  # noqa: C901
     cfg_filepath: pathlib.Path,
     job: JobConfig,
     in_out_tags: JobTags,
@@ -118,9 +118,22 @@ def _parse_job(
     try:
         phase_id: PhaseName = job["when"]["phase"]
     except KeyError:
-        fallback_phase = phase_order[0]
-        if warn_missing_phase:
-            log(f"WARNING: no phase found for '{job_name}', using '{fallback_phase}'")
+        try:
+            fallback_phase = phase_order[0]
+            if warn_missing_phase:
+                log(
+                    f"WARNING: no phase found for '{job_name}', using '{fallback_phase}'"
+                )
+        except IndexError:
+            fallback_phase = "<NO PHASES FOUND>"
+            if warn_missing_phase:
+                log(
+                    (
+                        f"WARNING: no phases found for '{job_name}', "
+                        f"or in '{str(cfg_filepath)}', "
+                        f"using '{fallback_phase}'"
+                    )
+                )
         phase_id = fallback_phase
     in_out_jobs_by_phase[phase_id].append(job)
 
@@ -378,10 +391,17 @@ def load_config_metadata(
     user_config_path: pathlib.Path
     for user_config, user_config_path in user_configs:
         user_hooks: Hooks = _load_user_hooks_from_config(user_config, user_config_path)
+        if user_hooks:
+            if verbose:
+                log(f"hooks: loading user hooks from '{str(user_config_path)}'")
         hook_name: HookName
         hooks_for_name: typing.List[HookConfig]
         for hook_name, hooks_for_name in user_hooks.items():
             hooks[hook_name].extend(hooks_for_name)
+            if verbose:
+                log(
+                    f"hooks:\tadded {len(hooks_for_name)} user hooks for '{str(hook_name)}'"
+                )
 
     return generate_config(
         cfg_filepath,

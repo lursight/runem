@@ -289,7 +289,14 @@ def test_parse_global_config_full() -> None:
     assert file_filters == {"dummy tag": {"regex": ".*", "tag": "dummy tag"}}
 
 
-def test_load_config_metadata() -> None:
+@pytest.mark.parametrize(
+    "do_hooks",
+    [
+        True,
+        False,
+    ],
+)
+def test_load_config_metadata(do_hooks: bool) -> None:
     """Test parsing works for a full config."""
     global_config: GlobalSerialisedConfig = {
         "config": {
@@ -317,13 +324,18 @@ def test_load_config_metadata() -> None:
             },
         }
     }
-    hook_config: HookSerialisedConfig = {
-        "hook": {
-            "command": "echo 'test hook command'",
-            "hook_name": HookName("on-exit"),
+    full_config: Config = [global_config, job_config]
+    if do_hooks:
+        # optionally do hooks, to capture verbose logging without having to
+        # write another test.
+        hook_config: HookSerialisedConfig = {
+            "hook": {
+                "command": "echo 'test hook command'",
+                "hook_name": HookName("on-exit"),
+            }
         }
-    }
-    full_config: Config = [global_config, job_config, hook_config]
+        full_config.append(hook_config)
+
     config_file_path = pathlib.Path(__file__).parent / ".runem.yml"
     expected_job: JobConfig = {
         "addr": {
@@ -362,7 +374,10 @@ def test_load_config_metadata() -> None:
         ),
     )
 
-    result: ConfigMetadata = load_config_metadata(full_config, config_file_path, [])
+    with io.StringIO() as buf, redirect_stdout(buf):
+        result: ConfigMetadata = load_config_metadata(full_config, config_file_path, [])
+        stdout = buf.getvalue().split("\n")
+    assert stdout == [""]
     assert result.phases == expected_config_metadata.phases
     assert result.options_config == expected_config_metadata.options_config
     assert result.file_filters == expected_config_metadata.file_filters
@@ -418,6 +433,12 @@ def test_load_config_metadata_hooks() -> None:
             "hook_name": HookName("on-exit"),
         }
     }
+    user_jobs_only_config: JobSerialisedConfig = {
+        "job": {
+            "command": "echo 'should not be seen'",
+            "label": "SHOULD NOT SEE ME",
+        }
+    }
     full_config: Config = [global_config, job_config, hook_config]
     config_file_path = pathlib.Path(__file__).parent / ".runem.yml"
     expected_job: JobConfig = {
@@ -463,6 +484,9 @@ def test_load_config_metadata_hooks() -> None:
     user_config_2: Config = [
         user_hook_config_2,
     ]
+    user_config_jobs_only: Config = [
+        user_jobs_only_config,
+    ]
 
     result: ConfigMetadata = load_config_metadata(
         full_config,
@@ -470,6 +494,7 @@ def test_load_config_metadata_hooks() -> None:
         [
             (user_config_1, pathlib.Path(__file__)),
             (user_config_2, pathlib.Path(__file__)),
+            (user_config_jobs_only, pathlib.Path(__file__)),
         ],
     )
     assert result.phases == expected_config_metadata.phases
@@ -739,11 +764,21 @@ def test_parse_job_with_bad_function(mock_get_job_wrapper: Mock) -> None:
     assert not in_out_tags
 
 
+@pytest.mark.parametrize(
+    "phase_order",
+    [
+        ("phase1", "phase2"),
+        (),
+    ],
+)
 @patch(
     "runem.config_parse.get_job_wrapper",
     return_value=None,
 )
-def test_parse_job_with_missing_phase(mock_get_job_wrapper: Mock) -> None:
+def test_parse_job_with_missing_phase(
+    mock_get_job_wrapper: Mock,
+    phase_order: OrderedPhases,
+) -> None:
     """Test case where job_tags is empty or None."""
     cfg_filepath = pathlib.Path(__file__)
     job_config: JobConfig = {
@@ -756,7 +791,6 @@ def test_parse_job_with_missing_phase(mock_get_job_wrapper: Mock) -> None:
     in_out_jobs_by_phase: PhaseGroupedJobs = defaultdict(list)
     in_out_job_names: JobNames = set()
     in_out_phases: JobPhases = set()
-    phase_order: OrderedPhases = ("phase1", "phase2")
 
     with io.StringIO() as buf, redirect_stdout(buf):
         _parse_job(
