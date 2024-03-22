@@ -73,20 +73,22 @@ def parse_hook_config(
 ) -> None:
     """Get the hook information, verifying validity."""
     try:
-        hook_name: HookName = HookName(hook["hook_name"])
-        if not HookManager.is_valid_hook_name(hook_name):
+        if not HookManager.is_valid_hook_name(hook["hook_name"]):
             raise ValueError(
-                f"invalid hook-name '{hook_name}'. "
+                f"invalid hook-name '{str(hook['hook_name'])}'. "
                 f"Valid hook names are: {[hook.value for hook in HookName]}"
             )
-        hook["hook_name"] = hook_name
+        # cast the hook-name to a HookName type
+        hook["hook_name"] = HookName(hook["hook_name"])
         get_job_wrapper(hook, cfg_filepath)
     except KeyError as err:
         raise ValueError(
             f"hook config entry is missing '{err.args[0]}' key. Have {tuple(hook.keys())}"
         ) from err
     except FunctionNotFound as err:
-        raise FunctionNotFound(f"Whilst loading job '{hook_name}'. {str(err)}") from err
+        raise FunctionNotFound(
+            f"Whilst loading job '{str(hook['hook_name'])}'. {str(err)}"
+        ) from err
 
 
 def _parse_job(  # noqa: C901

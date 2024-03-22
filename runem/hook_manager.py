@@ -32,7 +32,8 @@ class HookManager:
             except ValueError:
                 return False
         # the type is a HookName
-        assert isinstance(hook_name, HookName)
+        if not isinstance(hook_name, HookName):
+            return False
         return True
 
     def register_hook(

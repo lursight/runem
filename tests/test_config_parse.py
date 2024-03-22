@@ -1,5 +1,6 @@
 import io
 import pathlib
+import typing
 import unittest
 from collections import defaultdict
 from contextlib import redirect_stdout
@@ -825,7 +826,7 @@ def test_parse_hook_config_with_in_valid_hook_name() -> None:
     cfg_filepath = pathlib.Path(__file__)
     hook: HookConfig = {
         "command": "echo 'test hook command'",
-        "hook_name": "bd-hook-name",  # type: ignore
+        "hook_name": "bad-hook-name",  # type: ignore
     }
     with pytest.raises(ValueError):
         parse_hook_config(hook, cfg_filepath)
@@ -862,4 +863,21 @@ def test_parse_hook_config_with_bad_function_address() -> None:
         "hook_name": HookName("on-exit"),
     }
     with pytest.raises(FunctionNotFound):
+        parse_hook_config(hook, cfg_filepath)
+
+
+@pytest.mark.parametrize(
+    "hook_type",
+    [
+        "non-existent-hook",
+        123,
+    ],
+)
+def test_parse_hook_config_with_bad_hook_name_types(hook_type: typing.Any) -> None:
+    cfg_filepath = pathlib.Path(__file__)
+    hook: HookConfig = {
+        "command": "echo 'test hook command'",
+        "hook_name": hook_type,
+    }
+    with pytest.raises(ValueError):
         parse_hook_config(hook, cfg_filepath)

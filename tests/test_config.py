@@ -168,6 +168,22 @@ def test_find_local_configs(
 
 
 @patch(
+    "runem.config._find_config_file",
+    return_value=(None, None),
+)
+@patch("pathlib.Path.exists", return_value=False)
+def test_find_local_configs_finds_nothing(
+    path_exists_mock: Mock,
+    find_config_file_mock: Mock,
+) -> None:
+    configs: typing.List[pathlib.Path] = _find_local_configs()
+    assert len(configs) == 0
+    assert not configs
+    find_config_file_mock.assert_called()
+    path_exists_mock.assert_called()
+
+
+@patch(
     "runem.config.load_and_parse_config",
     return_value="DUMMY CONFIG",
 )

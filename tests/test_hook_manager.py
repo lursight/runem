@@ -86,7 +86,14 @@ def _dummy_hook(**kwargs: typing.Any) -> None:
     print("mock_hook_function_function called aok")
 
 
-def test_invoke_hooks(hook_man: HookManager) -> None:
+@pytest.mark.parametrize(
+    "do_hooks",
+    [
+        True,
+        False,
+    ],
+)
+def test_invoke_hooks(do_hooks: bool, hook_man: HookManager) -> None:
     """Test invoking hook functions."""
     mock_hook_function_py_callable: HookConfig = {
         "addr": {"file": __file__, "function": "_dummy_hook"},
@@ -98,8 +105,9 @@ def test_invoke_hooks(hook_man: HookManager) -> None:
         "hook_name": HookName("on-exit"),
     }
     hooks: Hooks = defaultdict(list)
-    hooks[HookName.ON_EXIT].append(mock_hook_function_py_callable)
-    hooks[HookName.ON_EXIT].append(mock_hook_function_bash)
+    if do_hooks:
+        hooks[HookName.ON_EXIT].append(mock_hook_function_py_callable)
+        hooks[HookName.ON_EXIT].append(mock_hook_function_bash)
 
     jobs_by_phase: PhaseGroupedJobs = defaultdict(list)
     all_job_names = ()
@@ -132,34 +140,41 @@ def test_invoke_hooks(hook_man: HookManager) -> None:
         run_command_stdout = buf.getvalue()
 
     run_command_stdout = run_command_stdout.replace(__file__, "<THIS_FILE>")
-    assert run_command_stdout.split("\n") == [
-        "runem: hooks: initialising 2 hooks",
-        "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
-        (
-            "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: "
-            "<THIS_FILE>._dummy_hook"
-        ),
-        (
-            "runem: hooks: registered hook for 'HookName.ON_EXIT', have 2: echo "
-            '"mock_hook_function_bash called aok"'
-        ),
-        "runem: hooks: invoking 2 hooks for 'HookName.ON_EXIT'",
-        "runem: START: 'HookName.ON_EXIT'",
-        "runem: job: running: 'HookName.ON_EXIT'",
-        "mock_hook_function_function called aok",
-        "runem: job: DONE: 'HookName.ON_EXIT': 0:00:00",
-        "runem: START: 'HookName.ON_EXIT'",
-        "runem: job: running: 'HookName.ON_EXIT'",
-        'runem: running: start: HookName.ON_EXIT: echo "mock_hook_function_bash '
-        'called aok"',
-        'runem: HookName.ON_EXIT: "mock_hook_function_bash called aok"',
-        "",
-        'runem: running: done: HookName.ON_EXIT: echo "mock_hook_function_bash called '
-        'aok"',
-        "runem: job: DONE: 'HookName.ON_EXIT': 0:00:00",
+    expected_stdout: typing.List[str] = [
+        "runem: hooks: invoking 0 hooks for 'HookName.ON_EXIT'",
         "runem: hooks: done invoking 'HookName.ON_EXIT'",
         "",
     ]
+    if do_hooks:
+        expected_stdout = [
+            "runem: hooks: initialising 2 hooks",
+            "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
+            (
+                "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: "
+                "<THIS_FILE>._dummy_hook"
+            ),
+            (
+                "runem: hooks: registered hook for 'HookName.ON_EXIT', have 2: echo "
+                '"mock_hook_function_bash called aok"'
+            ),
+            "runem: hooks: invoking 2 hooks for 'HookName.ON_EXIT'",
+            "runem: START: 'HookName.ON_EXIT'",
+            "runem: job: running: 'HookName.ON_EXIT'",
+            "mock_hook_function_function called aok",
+            "runem: job: DONE: 'HookName.ON_EXIT': 0:00:00",
+            "runem: START: 'HookName.ON_EXIT'",
+            "runem: job: running: 'HookName.ON_EXIT'",
+            'runem: running: start: HookName.ON_EXIT: echo "mock_hook_function_bash '
+            'called aok"',
+            'runem: HookName.ON_EXIT: "mock_hook_function_bash called aok"',
+            "",
+            'runem: running: done: HookName.ON_EXIT: echo "mock_hook_function_bash called '
+            'aok"',
+            "runem: job: DONE: 'HookName.ON_EXIT': 0:00:00",
+            "runem: hooks: done invoking 'HookName.ON_EXIT'",
+            "",
+        ]
+    assert run_command_stdout.split("\n") == expected_stdout
 
 
 def test_register_non_existent_hook(hook_man: HookManager) -> None:
