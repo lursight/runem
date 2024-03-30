@@ -77,16 +77,27 @@ def test_runem_job_filters_work_with_no_tags(verbosity: bool) -> None:
 
 
 @pytest.mark.parametrize(
-    "verbosity",
+    "verbosity",  # Parameter for the test function; iterates over True and False.
     [
         True,
         False,
     ],
 )
 def test_should_filter_out_by_tags_with_tags_to_avoid(verbosity: bool) -> None:
-    """Test case where has_tags_to_avoid is not empty."""
+    """Tests we correctly filters out jobs based on tags to avoid.
+
+    Parameters:
+    - verbosity: A boolean indicating whether detailed logging is enabled.
+
+    The test validates two conditions:
+    1. That the job is correctly identified to be filtered out based on the
+       presence of avoided tags.
+    2. That the verbosity of the output matches the expected verbosity level.
+    """
+
+    # Set up a job configuration with specific tags.
     job: JobConfig = {
-        "label": "Job1",
+        "label": "Job1",  # Job identifier.
         "when": {
             "tags": {
                 "tag1",
@@ -94,14 +105,22 @@ def test_should_filter_out_by_tags_with_tags_to_avoid(verbosity: bool) -> None:
             }
         },
     }
-    tags: JobTags = {"tag1"}
-    tags_to_avoid: JobTags = {"tag1", "tag2"}
+    tags: JobTags = {"tag1"}  # Tags present in the job.
+    tags_to_avoid: JobTags = {
+        "tag1",
+        "tag2",
+    }  # Tags that should cause a job to be filtered out.
 
+    # Capture the standard output to verify if the function logs the expected output.
     with io.StringIO() as buf, redirect_stdout(buf):
+        # Call the function under test and capture its return value and the standard output.
         result: bool = _should_filter_out_by_tags(job, tags, tags_to_avoid, verbosity)
         run_command_stdout = buf.getvalue().split("\n")
 
+    # Verify the function correctly identifies the job to be filtered out.
     assert result is True
+
+    # Verify the output matches the expected verbosity level.
     if not verbosity:
         assert run_command_stdout == [""]
     else:

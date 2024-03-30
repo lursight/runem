@@ -55,10 +55,5 @@ exclude_lines =
 ignore_errors = True
 
 [html]
-# Exclude any pyenvs
-omit =
-    */setup.py
-    *env*/*
-
 # Assume we run this from the root dir
 directory=reports/coverage_python

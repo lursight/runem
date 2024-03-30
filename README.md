@@ -6,7 +6,7 @@
 
 ## 1. Overview
 
-The core objective of Run'em's is to minimize the wall-clock time required for executing whatever command-line tools a developer uses (or *should* use). Overall it is designed to enhance iteration speed and boost developer productivity.
+The core objective of Run'em's is to minimize the wall-clock time required for running checks, supporting [shift-left](https://en.wikipedia.org/wiki/Shift-left_testing). Overall it is designed to enhance iteration speed and boost developer productivity.
 
 `runem` is also designed to be easy to learn and simple to use, but `runem` also has many powerful tools for advanced users.
 
