@@ -856,6 +856,70 @@ def test_runem_bad_validate_switch_tags(switch_to_test: str) -> None:
     ]
 
 
+def test_runem_bad_validate_tag_exclude() -> None:
+    """End-2-end test testing that '--not-tags' overrides '--tags'."""
+    runem_cli_switches: typing.List[str] = [
+        "--tags",
+        "dummy tag 1",
+        "--not-tags",
+        "tag only on job 2",
+    ]
+    runem_stdout: typing.List[str]
+    error_raised: typing.Optional[BaseException]
+    (
+        runem_stdout,
+        error_raised,
+    ) = _run_full_config_runem(  # pylint: disable=no-value-for-parameter
+        runem_cli_switches=runem_cli_switches,
+        add_verbose_switch=True,
+    )
+    assert error_raised is None
+    assert runem_stdout == [
+        (
+            "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
+            "'dummy phase 1'"
+        ),
+        "runem: hooks: loading user hooks from 'local-user-config.yml'",
+        "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+        "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
+        "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+        "runem: hooks: initialising 2 hooks",
+        "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
+        (
+            "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
+            "user local hook'"
+        ),
+        (
+            "runem: hooks: registered hook for 'HookName.ON_EXIT', have 2: echo 'mock "
+            "user home-dir hook'"
+        ),
+        "runem: loaded config from [CONFIG PATH]",
+        "runem: found 1 batches, 1 'mock phase' files, ",
+        (
+            "runem: filtering for tags 'dummy tag 1', excluding jobs with tags 'tag "
+            "only on job 2'"
+        ),
+        "runem: will run 2 jobs for phase 'dummy phase 1'",
+        "runem: \t'dummy job label 1', 'echo \"hello world!\"'",
+        (
+            "runem: not running job 'dummy job label 2' because it contains the "
+            "following tags: 'tag only on job 2'"
+        ),
+        "runem: will run 1 jobs for phase 'dummy phase 2'",
+        "runem: \t'hello world'",
+        "runem: Running Phase dummy phase 1",
+        (
+            "runem: Running 'dummy phase 1' with 2 workers (of [NUM CORES] max) "
+            "processing 2 jobs"
+        ),
+        "runem: Running Phase dummy phase 2",
+        (
+            "runem: Running 'dummy phase 2' with 1 workers (of [NUM CORES] max) "
+            "processing 1 jobs"
+        ),
+    ]
+
+
 @pytest.mark.parametrize(
     "switch_to_test",
     [
