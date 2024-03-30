@@ -43,31 +43,17 @@ from tests.intentional_test_error import IntentionalTestError
 from tests.sanitise_reports_footer import sanitise_reports_footer
 
 
-def _remove_x_of_y_workers_log(
-    runem_stdout: typing.List[str],
-    phase: str = "dummy phase 1",
-    num_jobs: int = 2,
-) -> None:
-    """Asserts that the 'x of y' workers text exists and in-place tries to remove it.
+def replace_max_cores(stdout: str) -> str:
+    """Replace instances of '(of X max)' with '(of [NUM CORES] max)' in a given string.
 
-    This is because the number of works changes per machine.
+    Args:
+    s (str): The original string containing '(of X max)' patterns.
+    num_cores (int): The number of cores to insert into the replacement string.
+
+    Returns:
+    str: Modified string with '(of X max)' replaced by '(of [NUM CORES] max)'.
     """
-    machine_specific_job: str = (
-        f"runem: Running '{phase}' with {num_jobs} workers (of "
-        f"{multiprocessing.cpu_count()} max) processing {num_jobs} jobs"
-    )
-    # the index() call will error if the X/Z message isn't found, so we know
-    # it's there, so just remove it.
-    assert machine_specific_job in runem_stdout, runem_stdout
-
-    # remove all instances
-    while True:
-        try:
-            idx = runem_stdout.index(machine_specific_job)
-            del runem_stdout[idx]
-        except ValueError:
-            # not found
-            break
+    return re.sub(r"\(of \d+ max\)", "(of [NUM CORES] max)", stdout)
 
 
 def _strip_reports_footer(runem_stdout: typing.List[str]) -> typing.List[str]:
@@ -360,23 +346,23 @@ def _run_full_config_runem(
             timed_main(argv)
         except BaseException as err:  # pylint: disable=broad-exception-caught
             error_raised = err
-        runem_stdout = (
-            # replace the config path as it's different on different systems
-            buf.getvalue()
-            .replace(str(mocked_config_path), "[CONFIG PATH]")
-            .split("\n")
-        )
+        runem_stdout = buf.getvalue()
+    # normalise the output
+    runem_stdout_lines: typing.List[str] = replace_max_cores(
+        # replace the config path as it's different on different systems
+        runem_stdout.replace(str(mocked_config_path), "[CONFIG PATH]")
+    ).split("\n")
     # job_runner_mock.assert_called()
     got_to_reports: typing.Optional[int] = None
     try:
-        got_to_reports = runem_stdout.index("runem: reports:")
+        got_to_reports = runem_stdout_lines.index("runem: reports:")
     except ValueError:
         pass
 
     if got_to_reports is not None:
         # truncate the stdout up to where the reports are logged
-        runem_stdout = runem_stdout[:got_to_reports]
-    return runem_stdout, error_raised
+        runem_stdout_lines = runem_stdout_lines[:got_to_reports]
+    return runem_stdout_lines, error_raised
 
 
 @pytest.mark.parametrize(
@@ -401,16 +387,22 @@ def test_runem_with_full_config(verbosity: bool) -> None:
     if error_raised is not None:  # pragma: no cover
         print("\n".join(runem_stdout))
         raise error_raised  # re-raise the error that shouldn't have been raised
-    _remove_x_of_y_workers_log(runem_stdout, phase="dummy phase 1", num_jobs=2)
-    _remove_x_of_y_workers_log(runem_stdout, phase="dummy phase 2", num_jobs=2)
 
     if not verbosity:
-        assert [
+        assert runem_stdout == [
             (
                 "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
                 "'dummy phase 1'"
             ),
-        ] == runem_stdout
+            (
+                "runem: Running 'dummy phase 1' with 2 workers (of [NUM CORES] max) "
+                "processing 2 jobs"
+            ),
+            (
+                "runem: Running 'dummy phase 2' with 2 workers (of [NUM CORES] max) "
+                "processing 2 jobs"
+            ),
+        ]
     else:
         assert [
             (
@@ -442,9 +434,15 @@ def test_runem_with_full_config(verbosity: bool) -> None:
             "runem: will run 2 jobs for phase 'dummy phase 2'",
             "runem: \t'dummy job label 2', 'hello world'",
             "runem: Running Phase dummy phase 1",
+            (
+                "runem: Running 'dummy phase 1' with 2 workers (of [NUM CORES] max) "
+                "processing 2 jobs"
+            ),
             "runem: Running Phase dummy phase 2",
-            # "runem: Running 'dummy phase 1' with 1 workers processing 1 jobs",
-            # "runem: Running 'dummy phase 2' with 1 workers processing 1 jobs",
+            (
+                "runem: Running 'dummy phase 2' with 2 workers (of [NUM CORES] max) "
+                "processing 2 jobs"
+            ),
         ] == runem_stdout
 
 
@@ -461,9 +459,6 @@ def test_runem_with_full_config_verbose() -> None:
     )
     if error_raised is not None:  # pragma: no cover
         raise error_raised  # re-raise the error that shouldn't have been raised
-
-    _remove_x_of_y_workers_log(runem_stdout, phase="dummy phase 1", num_jobs=2)
-    _remove_x_of_y_workers_log(runem_stdout, phase="dummy phase 2", num_jobs=2)
 
     assert [
         (
@@ -495,9 +490,9 @@ def test_runem_with_full_config_verbose() -> None:
         "runem: will run 2 jobs for phase 'dummy phase 2'",
         "runem: \t'dummy job label 2', 'hello world'",
         "runem: Running Phase dummy phase 1",
-        # "runem: Running 'dummy phase 1' with 1 workers processing 1 jobs",
+        "runem: Running 'dummy phase 1' with 2 workers (of [NUM CORES] max) processing 2 jobs",
         "runem: Running Phase dummy phase 2",
-        # "runem: Running 'dummy phase 2' with 1 workers processing 1 jobs",
+        "runem: Running 'dummy phase 2' with 2 workers (of [NUM CORES] max) processing 2 jobs",
     ] == runem_stdout
 
 
@@ -514,8 +509,6 @@ def test_runem_with_single_phase() -> None:
     )
     if error_raised is not None:  # pragma: no cover
         raise error_raised  # re-raise the error that shouldn't have been raised
-
-    _remove_x_of_y_workers_log(runem_stdout, num_jobs=2)
 
     assert [
         (
@@ -546,7 +539,10 @@ def test_runem_with_single_phase() -> None:
         "runem: \t'dummy job label 1', 'echo \"hello world!\"'",
         "runem: skipping phase 'dummy phase 2'",
         "runem: Running Phase dummy phase 1",
-        # "runem: Running 'dummy phase 1' with 1 workers processing 1 jobs",
+        (
+            "runem: Running 'dummy phase 1' with 2 workers (of [NUM CORES] max) "
+            "processing 2 jobs"
+        ),
     ] == runem_stdout
 
 
@@ -561,8 +557,6 @@ def test_runem_with_single_phase_verbose() -> None:
     ) = _run_full_config_runem(  # pylint: disable=no-value-for-parameter
         runem_cli_switches=runem_cli_switches
     )
-
-    _remove_x_of_y_workers_log(runem_stdout, num_jobs=2)
 
     if error_raised is not None:  # pragma: no cover
         raise error_raised  # re-raise the error that shouldn't have been raised
@@ -596,7 +590,10 @@ def test_runem_with_single_phase_verbose() -> None:
         "runem: \t'dummy job label 1', 'echo \"hello world!\"'",
         "runem: skipping phase 'dummy phase 2'",
         "runem: Running Phase dummy phase 1",
-        # "runem: Running 'dummy phase 1' with 1 workers processing 1 jobs",
+        (
+            "runem: Running 'dummy phase 1' with 2 workers (of [NUM CORES] max) "
+            "processing 2 jobs"
+        ),
     ]
 
 
@@ -933,8 +930,6 @@ def test_runem_job_filters_work(verbosity: bool) -> None:
     if error_raised is not None:  # pragma: no cover
         raise error_raised  # re-raise the error that shouldn't have been raised
 
-    _remove_x_of_y_workers_log(runem_stdout, num_jobs=1)
-
     if verbosity:
         assert runem_stdout == [
             (
@@ -981,7 +976,10 @@ def test_runem_job_filters_work(verbosity: bool) -> None:
                 "'tag only on job 2'"
             ),
             "runem: Running Phase dummy phase 1",
-            # see above: "runem: Running 'dummy phase 1' with 1 workers processing 1 jobs",
+            (
+                "runem: Running 'dummy phase 1' with 1 workers (of [NUM CORES] max) "
+                "processing 1 jobs"
+            ),
         ]
     else:
         assert runem_stdout == [
@@ -1029,7 +1027,10 @@ def test_runem_job_filters_work(verbosity: bool) -> None:
                 "'tag only on job 2'"
             ),
             "runem: Running Phase dummy phase 1",
-            # see above: "runem: Running 'dummy phase 1' with 1 workers processing 1 jobs",
+            (
+                "runem: Running 'dummy phase 1' with 1 workers (of [NUM CORES] max) "
+                "processing 1 jobs"
+            ),
         ]
 
 
@@ -1058,8 +1059,6 @@ def test_runem_tag_filters_work(verbosity: bool) -> None:
     )
     if error_raised is not None:  # pragma: no cover
         raise error_raised  # re-raise the error that shouldn't have been raised
-
-    _remove_x_of_y_workers_log(runem_stdout)
 
     if verbosity:
         assert runem_stdout == [
@@ -1096,7 +1095,10 @@ def test_runem_tag_filters_work(verbosity: bool) -> None:
             ),
             "runem: No jobs for phase 'dummy phase 2' tags 'tag only on job 1'",
             "runem: Running Phase dummy phase 1",
-            # "runem: Running 'dummy phase 1' with 1 workers processing 1 jobs",
+            (
+                "runem: Running 'dummy phase 1' with 2 workers (of [NUM CORES] max) "
+                "processing 2 jobs"
+            ),
         ]
     else:
         assert runem_stdout == [
@@ -1133,7 +1135,10 @@ def test_runem_tag_filters_work(verbosity: bool) -> None:
             ),
             "runem: No jobs for phase 'dummy phase 2' tags 'tag only on job 1'",
             "runem: Running Phase dummy phase 1",
-            # "runem: Running 'dummy phase 1' with 1 workers processing 1 jobs",
+            (
+                "runem: Running 'dummy phase 1' with 2 workers (of [NUM CORES] max) "
+                "processing 2 jobs"
+            ),
         ]
 
 
@@ -1168,10 +1173,6 @@ def test_runem_tag_out_filters_work(verbosity: bool, one_liner: bool) -> None:
     ) = _run_full_config_runem(  # pylint: disable=no-value-for-parameter
         runem_cli_switches=runem_cli_switches, add_command_one_liner=one_liner
     )
-
-    if one_liner:
-        _remove_x_of_y_workers_log(runem_stdout, phase="dummy phase 1", num_jobs=1)
-    _remove_x_of_y_workers_log(runem_stdout, phase="dummy phase 2", num_jobs=2)
 
     if error_raised is not None:  # pragma: no cover
         raise error_raised  # re-raise the error that shouldn't have been raised
@@ -1213,12 +1214,15 @@ def test_runem_tag_out_filters_work(verbosity: bool, one_liner: bool) -> None:
                 "runem: will run 2 jobs for phase 'dummy phase 2'",
                 "runem: \t'dummy job label 2', 'hello world'",
                 "runem: Running Phase dummy phase 1",
-                # (
-                #     "runem: Running 'dummy phase 1' with 1 workers (of 8 max) "
-                #     "processing 1 jobs"
-                # ),
+                (
+                    "runem: Running 'dummy phase 1' with 1 workers (of [NUM CORES] max) "
+                    "processing 1 jobs"
+                ),
                 "runem: Running Phase dummy phase 2",
-                # "runem: Running 'dummy phase 2' with 1 workers processing 1 jobs",
+                (
+                    "runem: Running 'dummy phase 2' with 2 workers (of [NUM CORES] max) "
+                    "processing 2 jobs"
+                ),
             ]
         else:
             # one-liner + no-verbosity
@@ -1256,9 +1260,15 @@ def test_runem_tag_out_filters_work(verbosity: bool, one_liner: bool) -> None:
                 "runem: will run 2 jobs for phase 'dummy phase 2'",
                 "runem: \t'dummy job label 2', 'hello world'",
                 "runem: Running Phase dummy phase 1",
-                # "runem: Running 'dummy phase 1' with 1 workers (of 8 max) processing 1 jobs",
+                (
+                    "runem: Running 'dummy phase 1' with 1 workers (of [NUM CORES] max) "
+                    "processing 1 jobs"
+                ),
                 "runem: Running Phase dummy phase 2",
-                # "runem: Running 'dummy phase 2' with 1 workers processing 1 jobs",
+                (
+                    "runem: Running 'dummy phase 2' with 2 workers (of [NUM CORES] max) "
+                    "processing 2 jobs"
+                ),
             ]
     else:
         if verbosity:
@@ -1295,7 +1305,10 @@ def test_runem_tag_out_filters_work(verbosity: bool, one_liner: bool) -> None:
                 "runem: will run 2 jobs for phase 'dummy phase 2'",
                 "runem: \t'dummy job label 2', 'hello world'",
                 "runem: Running Phase dummy phase 2",
-                # "runem: Running 'dummy phase 2' with 1 workers processing 1 jobs",
+                (
+                    "runem: Running 'dummy phase 2' with 2 workers (of [NUM CORES] max) "
+                    "processing 2 jobs"
+                ),
             ]
         else:
             # no-one-liner + no-verbosity
@@ -1331,7 +1344,10 @@ def test_runem_tag_out_filters_work(verbosity: bool, one_liner: bool) -> None:
                 "runem: will run 2 jobs for phase 'dummy phase 2'",
                 "runem: \t'dummy job label 2', 'hello world'",
                 "runem: Running Phase dummy phase 2",
-                # "runem: Running 'dummy phase 2' with 1 workers processing 1 jobs",
+                (
+                    "runem: Running 'dummy phase 2' with 2 workers (of [NUM CORES] max) "
+                    "processing 2 jobs"
+                ),
             ]
 
 
@@ -1444,8 +1460,6 @@ def test_runem_phase_filters_work(verbosity: bool) -> None:
     if error_raised is not None:  # pragma: no cover
         raise error_raised  # re-raise the error that shouldn't have been raised
 
-    _remove_x_of_y_workers_log(runem_stdout)
-
     if verbosity:
         assert runem_stdout == [
             (
@@ -1476,7 +1490,10 @@ def test_runem_phase_filters_work(verbosity: bool) -> None:
             "runem: \t'dummy job label 1', 'echo \"hello world!\"'",
             "runem: skipping phase 'dummy phase 2'",
             "runem: Running Phase dummy phase 1",
-            # "runem: Running 'dummy phase 1' with 1 workers processing 1 jobs",
+            (
+                "runem: Running 'dummy phase 1' with 2 workers (of [NUM CORES] max) "
+                "processing 2 jobs"
+            ),
         ]
     else:
         assert runem_stdout == [
@@ -1508,7 +1525,10 @@ def test_runem_phase_filters_work(verbosity: bool) -> None:
             "runem: \t'dummy job label 1', 'echo \"hello world!\"'",
             "runem: skipping phase 'dummy phase 2'",
             "runem: Running Phase dummy phase 1",
-            # "runem: Running 'dummy phase 1' with 1 workers processing 1 jobs",
+            (
+                "runem: Running 'dummy phase 1' with 2 workers (of [NUM CORES] max) "
+                "processing 2 jobs"
+            ),
         ]
 
 
