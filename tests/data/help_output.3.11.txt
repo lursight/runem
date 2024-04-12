@@ -8,6 +8,8 @@ usage: -c [-H] [--jobs JOBS [JOBS ...]]
           [--dummy-option-1---complete-option]
           [--no-dummy-option-1---complete-option] [--dummy-option-2---minimal]
           [--no-dummy-option-2---minimal] [--call-graphs | --no-call-graphs]
+          [-f | --modified-files-only | --no-modified-files-only]
+          [-h | --git-head-files-only | --no-git-head-files-only]
           [--procs PROCS] [--root ROOT_DIR] [--spinner | --no-spinner]
           [--verbose | --no-verbose] [--version | --no-version | -v]
 
@@ -16,6 +18,10 @@ Runs the Lursight Lang test-suite
 [TEST_REPLACED_OPTION_HEADER]
   -H, --help            show this help message and exit
   --call-graphs, --no-call-graphs
+  -f, --modified-files-only, --no-modified-files-only
+                        only use files that have changed
+  -h, --git-head-files-only, --no-git-head-files-only
+                        fast run of files
   --procs PROCS, -j PROCS
                         the number of concurrent test jobs to run, -1 runs all
                         test jobs at the same time ([TEST_REPLACED_CORES] cores available)

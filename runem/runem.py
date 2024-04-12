@@ -41,7 +41,7 @@ from runem.files import find_files
 from runem.job import Job
 from runem.job_execute import job_execute
 from runem.job_filter import filter_jobs
-from runem.log import error, log
+from runem.log import error, log, warn
 from runem.report import report_on_run
 from runem.types import (
     Config,
@@ -290,7 +290,10 @@ def _main(
     os.chdir(config_metadata.cfg_filepath.parent)
 
     file_lists: FilePathListLookup = find_files(config_metadata)
-    assert file_lists
+    if not file_lists:
+        warn("no files found")
+        return (config_metadata, {}, None)
+
     if config_metadata.args.verbose:
         log(f"found {len(file_lists)} batches, ", end="")
         for tag in sorted(file_lists.keys()):

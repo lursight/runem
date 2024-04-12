@@ -118,6 +118,26 @@ def parse_args(
     )
 
     parser.add_argument(
+        "-f",
+        "--modified-files-only",
+        dest="check_modified_files_only",
+        help="only use files that have changed",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        required=False,
+    )
+
+    parser.add_argument(
+        "-h",
+        "--git-head-files-only",
+        dest="check_head_files_only",
+        help="fast run of files",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        required=False,
+    )
+
+    parser.add_argument(
         "--procs",
         "-j",
         # "-n",

@@ -20,6 +20,7 @@ from runem.config_metadata import ConfigMetadata
 from runem.informative_dict import InformativeDict
 from runem.runem import (
     MainReturnType,
+    _main,
     _process_jobs,
     _process_jobs_by_phase,
     _update_progress,
@@ -2002,5 +2003,29 @@ def test_process_jobs_early_exits_with_exceptions(
     assert isinstance(error, IntentionalTestError)
     assert runem_stdout == [
         "runem: Running 'dummy phase 1' with 1 workers (of 1 max) processing 1 jobs",
+        "",
+    ]
+
+
+@patch("runem.runem._determine_run_parameters")
+@patch(
+    "runem.runem.find_files", return_value=[]
+)  # testing when find_files returns empty
+def test_main_handles_no_files(
+    mock_find_files: MagicMock, mock__determine_run_parameters: MagicMock
+) -> None:
+    class MockCfg:
+        def __init__(self) -> None:
+            self.cfg_filepath = pathlib.Path(__file__)
+
+    mock__determine_run_parameters.return_value = MockCfg()
+    with io.StringIO() as buf, redirect_stdout(buf):
+        _main([])
+        runem_stdout = buf.getvalue().split("\n")
+
+    mock_find_files.assert_called_once_with(mock__determine_run_parameters.return_value)
+    mock__determine_run_parameters.assert_called_once_with([])
+    assert runem_stdout == [
+        "runem: WARNING: no files found",
         "",
     ]
