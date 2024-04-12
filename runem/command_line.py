@@ -6,7 +6,7 @@ import typing
 
 from runem.config_metadata import ConfigMetadata
 from runem.informative_dict import InformativeDict
-from runem.log import log
+from runem.log import error, log
 from runem.runem_version import get_runem_version
 from runem.types import JobNames, OptionConfig, OptionsWritable
 from runem.utils import printable_set
@@ -206,9 +206,9 @@ def _validate_filters(
     for name, name_list in (("--jobs", args.jobs), ("--not-jobs", args.jobs_excluded)):
         for job_name in name_list:
             if job_name not in config_metadata.all_job_names:
-                log(
+                error(
                     (
-                        f"ERROR: invalid job-name '{job_name}' for {name}, "
+                        f"invalid job-name '{job_name}' for {name}, "
                         f"choose from one of {printable_set(config_metadata.all_job_names)}"
                     )
                 )
@@ -218,9 +218,9 @@ def _validate_filters(
     for name, tag_list in (("--tags", args.tags), ("--not-tags", args.tags_excluded)):
         for tag in tag_list:
             if tag not in config_metadata.all_job_tags:
-                log(
+                error(
                     (
-                        f"ERROR: invalid tag '{tag}' for {name}, "
+                        f"invalid tag '{tag}' for {name}, "
                         f"choose from one of {printable_set(config_metadata.all_job_tags)}"
                     )
                 )
@@ -233,9 +233,9 @@ def _validate_filters(
     ):
         for phase in phase_list:
             if phase not in config_metadata.all_job_phases:
-                log(
+                error(
                     (
-                        f"ERROR: invalid phase '{phase}' for {name}, "
+                        f"invalid phase '{phase}' for {name}, "
                         f"choose from one of {printable_set(config_metadata.all_job_phases)}"
                     )
                 )

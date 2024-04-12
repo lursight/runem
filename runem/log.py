@@ -14,3 +14,11 @@ def log(msg: str = "", decorate: bool = True, end: typing.Optional[str] = None) 
     # print in a blocking manner, waiting for system resources to free up if a
     # runem job is contending on stdout or similar.
     blocking_print(msg, end=end)
+
+
+def warn(msg: str) -> None:
+    log(f"WARNING: {msg}")
+
+
+def error(msg: str) -> None:
+    log(f"ERROR: {msg}")

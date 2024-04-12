@@ -41,7 +41,7 @@ from runem.files import find_files
 from runem.job import Job
 from runem.job_execute import job_execute
 from runem.job_filter import filter_jobs
-from runem.log import log
+from runem.log import error, log
 from runem.report import report_on_run
 from runem.types import (
     Config,
@@ -267,7 +267,7 @@ def _process_jobs_by_phase(
         )
         if failure_exception is not None:
             if config_metadata.args.verbose:
-                log(f"ERROR: running phase {phase}: aborting run")
+                error(f"running phase {phase}: aborting run")
             return failure_exception
 
     # ALl phases completed aok.

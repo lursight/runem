@@ -5,7 +5,7 @@ import typing
 import yaml
 from packaging.version import Version
 
-from runem.log import log
+from runem.log import error, log
 from runem.runem_version import get_runem_version
 from runem.types import Config, GlobalConfig, GlobalSerialisedConfig, UserConfigMetadata
 
@@ -61,7 +61,7 @@ def _find_project_cfg() -> pathlib.Path:
         return cfg_candidate
 
     # error out and exit as we currently require the cfg file as it lists jobs.
-    log(f"ERROR: Config not found! Looked from {start_dirs}")
+    error(f"Config not found! Looked from {start_dirs}")
     sys.exit(1)
 
 

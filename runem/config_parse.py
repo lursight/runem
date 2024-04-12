@@ -9,7 +9,7 @@ from runem.config_metadata import ConfigMetadata
 from runem.hook_manager import HookManager
 from runem.job import Job
 from runem.job_wrapper import get_job_wrapper
-from runem.log import log
+from runem.log import error, log, warn
 from runem.types import (
     Config,
     ConfigNodes,
@@ -105,8 +105,10 @@ def _parse_job(  # noqa: C901
     job_name: str = Job.get_job_name(job)
     job_names_used = job_name in in_out_job_names
     if job_names_used:
-        log("ERROR: duplicate job label!")
-        log(f"\t'{job['label']}' is used twice or more in {str(cfg_filepath)}")
+        error(
+            "duplicate job label!"
+            f"\t'{job['label']}' is used twice or more in {str(cfg_filepath)}"
+        )
         sys.exit(1)
 
     try:
@@ -123,15 +125,13 @@ def _parse_job(  # noqa: C901
         try:
             fallback_phase = phase_order[0]
             if warn_missing_phase:
-                log(
-                    f"WARNING: no phase found for '{job_name}', using '{fallback_phase}'"
-                )
+                warn(f"no phase found for '{job_name}', using '{fallback_phase}'")
         except IndexError:
             fallback_phase = "<NO PHASES FOUND>"
             if warn_missing_phase:
-                log(
+                warn(
                     (
-                        f"WARNING: no phases found for '{job_name}', "
+                        f"no phases found for '{job_name}', "
                         f"or in '{str(cfg_filepath)}', "
                         f"using '{fallback_phase}'"
                     )
@@ -287,9 +287,7 @@ def parse_config(
 
     if not phase_order:
         if not hooks_only:
-            log(
-                "WARNING: phase ordering not configured! Runs will be non-deterministic!"
-            )
+            warn("phase ordering not configured! Runs will be non-deterministic!")
             phase_order = tuple(job_phases)
 
     # now parse out the job_configs
