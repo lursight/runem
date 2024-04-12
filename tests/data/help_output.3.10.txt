@@ -1,5 +1,5 @@
 runem: WARNING: no phase found for 'echo "hello world!"', using 'dummy phase 1'
-usage: -c [-h] [--jobs JOBS [JOBS ...]]
+usage: -c [-H] [--jobs JOBS [JOBS ...]]
           [--not-jobs JOBS_EXCLUDED [JOBS_EXCLUDED ...]]
           [--phases PHASES [PHASES ...]]
           [--not-phases PHASES_EXCLUDED [PHASES_EXCLUDED ...]]
@@ -14,7 +14,7 @@ usage: -c [-h] [--jobs JOBS [JOBS ...]]
 Runs the Lursight Lang test-suite
 
 [TEST_REPLACED_OPTION_HEADER]
-  -h, --help            show this help message and exit
+  -H, --help            show this help message and exit
   --call-graphs, --no-call-graphs
   --procs PROCS, -j PROCS
                         the number of concurrent test jobs to run, -1 runs all

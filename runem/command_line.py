@@ -22,7 +22,12 @@ def parse_args(
 
     Returns the parsed args, the jobs_names_to_run, job_phases_to_run, job_tags_to_run
     """
-    parser = argparse.ArgumentParser(description="Runs the Lursight Lang test-suite")
+    parser = argparse.ArgumentParser(
+        add_help=False, description="Runs the Lursight Lang test-suite"
+    )
+    parser.add_argument(
+        "-H", "--help", action="help", help="show this help message and exit"
+    )
 
     job_group = parser.add_argument_group("jobs")
     all_job_names: JobNames = set(name for name in config_metadata.all_job_names)
