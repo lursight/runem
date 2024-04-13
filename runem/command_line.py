@@ -6,7 +6,7 @@ import typing
 
 from runem.config_metadata import ConfigMetadata
 from runem.informative_dict import InformativeDict
-from runem.log import log
+from runem.log import error, log
 from runem.runem_version import get_runem_version
 from runem.types import JobNames, OptionConfig, OptionsWritable
 from runem.utils import printable_set
@@ -22,7 +22,12 @@ def parse_args(
 
     Returns the parsed args, the jobs_names_to_run, job_phases_to_run, job_tags_to_run
     """
-    parser = argparse.ArgumentParser(description="Runs the Lursight Lang test-suite")
+    parser = argparse.ArgumentParser(
+        add_help=False, description="Runs the Lursight Lang test-suite"
+    )
+    parser.add_argument(
+        "-H", "--help", action="help", help="show this help message and exit"
+    )
 
     job_group = parser.add_argument_group("jobs")
     all_job_names: JobNames = set(name for name in config_metadata.all_job_names)
@@ -107,6 +112,26 @@ def parse_args(
     parser.add_argument(
         "--call-graphs",
         dest="generate_call_graphs",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        required=False,
+    )
+
+    parser.add_argument(
+        "-f",
+        "--modified-files-only",
+        dest="check_modified_files_only",
+        help="only use files that have changed",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        required=False,
+    )
+
+    parser.add_argument(
+        "-h",
+        "--git-head-files-only",
+        dest="check_head_files_only",
+        help="fast run of files",
         action=argparse.BooleanOptionalAction,
         default=False,
         required=False,
@@ -206,9 +231,9 @@ def _validate_filters(
     for name, name_list in (("--jobs", args.jobs), ("--not-jobs", args.jobs_excluded)):
         for job_name in name_list:
             if job_name not in config_metadata.all_job_names:
-                log(
+                error(
                     (
-                        f"ERROR: invalid job-name '{job_name}' for {name}, "
+                        f"invalid job-name '{job_name}' for {name}, "
                         f"choose from one of {printable_set(config_metadata.all_job_names)}"
                     )
                 )
@@ -218,9 +243,9 @@ def _validate_filters(
     for name, tag_list in (("--tags", args.tags), ("--not-tags", args.tags_excluded)):
         for tag in tag_list:
             if tag not in config_metadata.all_job_tags:
-                log(
+                error(
                     (
-                        f"ERROR: invalid tag '{tag}' for {name}, "
+                        f"invalid tag '{tag}' for {name}, "
                         f"choose from one of {printable_set(config_metadata.all_job_tags)}"
                     )
                 )
@@ -233,9 +258,9 @@ def _validate_filters(
     ):
         for phase in phase_list:
             if phase not in config_metadata.all_job_phases:
-                log(
+                error(
                     (
-                        f"ERROR: invalid phase '{phase}' for {name}, "
+                        f"invalid phase '{phase}' for {name}, "
                         f"choose from one of {printable_set(config_metadata.all_job_phases)}"
                     )
                 )

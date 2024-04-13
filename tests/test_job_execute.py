@@ -394,7 +394,7 @@ def test_job_execute_with_raising_func() -> None:
         "runem: START: 'intentionally throwing'",
         "runem: job: running: 'intentionally throwing'",
         "",
-        "runem: job: ERROR: job 'intentionally throwing' failed to complete!",
+        "runem: ERROR: job: job 'intentionally throwing' failed to complete!",
         "",
     ]
 

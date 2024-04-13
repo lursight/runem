@@ -9,7 +9,7 @@ from runem.config_metadata import ConfigMetadata
 from runem.informative_dict import ReadOnlyInformativeDict
 from runem.job import Job
 from runem.job_wrapper import get_job_wrapper
-from runem.log import log
+from runem.log import error, log
 from runem.types import (
     FilePathListLookup,
     JobConfig,
@@ -92,7 +92,7 @@ def job_execute_inner(
     except BaseException:  # pylint: disable=broad-exception-caught
         # log that we hit an error on this job and re-raise
         log(decorate=False)
-        log(f"job: ERROR: job '{Job.get_job_name(job_config)}' failed to complete!")
+        error(f"job: job '{Job.get_job_name(job_config)}' failed to complete!")
         # re-raise
         raise
 
