@@ -4,6 +4,127 @@ Changelog
 
 (unreleased)
 ------------
+- Merge pull request #47 from lursight/feat/git-fast-files. [Frank
+  Harrison]
+
+  Feat/git fast files
+- Feat(git-files): adds -f and -h for handling changed files and head
+  files. [Frank Harrison]
+
+  This makes using runem for big projects MUCH more effecient.
+- Chore(help): moves help switch from -h -> -H. [Frank Harrison]
+
+  This is so we can add `-h` as `HEAD files`
+- Chore(error-reporting): adds warn() and error() logging types. [Frank
+  Harrison]
+- Merge pull request #46 from lursight/chore/docs. [Frank Harrison]
+
+  Chore/docs
+- Chore(test): adds a new e2e test for tags-to-ignore. [Frank Harrison]
+
+  Once again everything seems to be behaving properly.
+- Chore(docs): annotates the tags-to-exclude test. [Frank Harrison]
+
+  I thought it was buggy, but we have another issue somewhere.
+- Chore(docs): updates the core-goal in the README. [Frank Harrison]
+- Chore(test): adds NUM CORES handling to tests. [Frank Harrison]
+- Chore(coverage): fixes coverage warnings. [Frank Harrison]
+- Merge pull request #45 from lursight/chore/update_deps. [Frank
+  Harrison]
+
+  updates deps
+- Updates deps. [Frank Harrison]
+- Merge pull request #44 from lursight/chore/update_py_black. [Frank
+  Harrison]
+
+  Chore/update py black
+- Chore(black): updates formatting after upgrading black. [Frank
+  Harrison]
+- Chore(deps): upgrades py-black following dependabot. [Frank Harrison]
+- Merge pull request #43 from lursight/feat/user-local-hook_1st_pass.
+  [Frank Harrison]
+
+  Feat/user local hooks (1st pass)
+- Feat(user-local-cfg): fixes for python 3.9 tests. [Frank Harrison]
+- Feat(user-local-cfg): handles situations where jobs are in local
+  configs. [Frank Harrison]
+
+  ... and phases are missing.
+- Chore(docs): stop the help-text test being verbose. [Frank Harrison]
+
+  ... it is unlikely that --help will be used in verbose mode... probs. Sigh.
+- Feat(user-local-cfg): gets user- and local- configs working. [Frank
+  Harrison]
+- Feat(user-local-cfg): splits the project loading into load and parse
+  phases. [Frank Harrison]
+
+  This is so we can use it to load user configs
+- Feat(user-local-cfg): splits the config loading and the ConfigMetadata
+  construction functions. [Frank Harrison]
+
+  This allows re-using the parsing function for N files
+- Feat(hooks): adds a hook system with support for ON_EXIT. [Frank
+  Harrison]
+
+  - we remove the deprecated function-type for jobs
+  - we add support for hooks
+  - add a hooks section to the .runem.yml reader
+  - add a on-exit hook to the runem project's .runem.yml
+- Merge pull request #42 from lursight/feat/prettier_tree_graph. [Frank
+  Harrison]
+
+  Feat/prettier tree graph
+- Feat(prettier-tree-report): changes how we index the leaver on the
+  report-tree. [Frank Harrison]
+
+  Basically removes the duplicate information, reducing visual noise,
+  especially after adding the variously shaded bar-graphs
+- Chore(.runem): uses current best practise for accessing options in
+  runem's own jobs. [Frank Harrison]
+- Chore(.runem): connects the unit-test option to the runem python
+  checks. [Frank Harrison]
+- Chore(.runem): removes defunct options. [Frank Harrison]
+
+  These were left over from lursight's config
+- Chore(.runem): rename switches for consistency. [Frank Harrison]
+- Fix(pretty-tree): adds extra test for bar-graph chars. [Frank
+  Harrison]
+- Chore: typo. [Frank Harrison]
+- Merge pull request #41 from lursight/feat/prettier_tree_graph. [Frank
+  Harrison]
+
+  Feat/prettier tree graph
+- Feat(tree-graph): hangs all tree leaves off of the runem.phases.
+  [Frank Harrison]
+- Feat(tree-graph): adds runem-reports regression checks. [Frank
+  Harrison]
+
+  This means we can capture any changes if they happen to the layout of
+  the graph, as I intended to changed the layout next.
+- Merge pull request #38 from
+  lursight/dependabot/github_actions/softprops/action-gh-release-2.
+  [Frank Harrison]
+
+  chore(deps): bump softprops/action-gh-release from 1 to 2
+- Chore(deps): bump softprops/action-gh-release from 1 to 2.
+  [dependabot[bot]]
+
+  Bumps [softprops/action-gh-release](https://github.com/softprops/action-gh-release) from 1 to 2.
+  - [Release notes](https://github.com/softprops/action-gh-release/releases)
+  - [Changelog](https://github.com/softprops/action-gh-release/blob/master/CHANGELOG.md)
+  - [Commits](https://github.com/softprops/action-gh-release/compare/v1...v2)
+
+  ---
+  updated-dependencies:
+  - dependency-name: softprops/action-gh-release
+    dependency-type: direct:production
+    update-type: version-update:semver-major
+  ...
+
+
+0.0.29 (2024-03-18)
+-------------------
+- Release: version 0.0.29 🚀 [Frank Harrison]
 - Merge pull request #40 from lursight/fix/time_saved. [Frank Harrison]
 
   Fix/time saved
