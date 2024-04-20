@@ -26,26 +26,44 @@ def find_files(config_metadata: ConfigMetadata) -> FilePathListLookup:
 
     file_paths: typing.List[str] = []
 
-    if config_metadata.args.check_modified_files_only:
-        file_paths = (
-            subprocess_check_output(
-                "git diff --name-only",
-                shell=True,
+    if (
+        config_metadata.args.check_modified_files
+        or config_metadata.args.check_head_files
+    ):
+        if config_metadata.args.check_modified_files:
+            # get modified, un-staged files first
+            file_paths.extend(
+                subprocess_check_output(
+                    "git diff --name-only",
+                    shell=True,
+                )
+                .decode("utf-8")
+                .splitlines()
             )
-            .decode("utf-8")
-            .splitlines()
-        )
-    elif config_metadata.args.check_head_files_only:
-        # Fetching modified and added files from the HEAD commit that are still on disk
-        file_paths = (
-            subprocess_check_output(
-                "git diff-tree --no-commit-id --name-only -r HEAD",
-                shell=True,
+            # now get modified, staged files first
+            file_paths.extend(
+                subprocess_check_output(
+                    "git diff --name-only --staged",
+                    shell=True,
+                )
+                .decode("utf-8")
+                .splitlines()
             )
-            .decode("utf-8")
-            .splitlines()
+
+        if config_metadata.args.check_head_files:
+            # Fetching modified and added files from the HEAD commit
+            file_paths.extend(
+                subprocess_check_output(
+                    "git diff-tree --no-commit-id --name-only -r HEAD",
+                    shell=True,
+                )
+                .decode("utf-8")
+                .splitlines()
+            )
+        # ensure files are unique, and still on disk i.e. filter-out deleted files
+        file_paths = list(
+            {file_path for file_path in file_paths if Path(file_path).exists()}
         )
-        file_paths = [file_path for file_path in file_paths if Path(file_path).exists()]
     else:
         # fall-back to all files
         file_paths = (

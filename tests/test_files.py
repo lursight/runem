@@ -12,9 +12,7 @@ from runem.informative_dict import InformativeDict
 from runem.types import FilePathListLookup
 
 
-def _prep_config(
-    check_modified_files_only: bool, check_head_files_only: bool
-) -> ConfigMetadata:
+def _prep_config(check_modified_files: bool, check_head_files: bool) -> ConfigMetadata:
     config_metadata: ConfigMetadata = ConfigMetadata(
         cfg_filepath=pathlib.Path(__file__),
         phases=("dummy phase 1",),
@@ -33,8 +31,8 @@ def _prep_config(
     )
     config_metadata.set_cli_data(
         args=Namespace(
-            check_modified_files_only=check_modified_files_only,
-            check_head_files_only=check_head_files_only,
+            check_modified_files=check_modified_files,
+            check_head_files=check_head_files,
         ),
         jobs_to_run=set(),  # JobNames,
         phases_to_run=set(),  # JobPhases,
@@ -47,14 +45,14 @@ def _prep_config(
 
 
 @pytest.mark.parametrize(
-    "check_head_files_only",
+    "check_head_files",
     [
         True,
         False,
     ],
 )
 @pytest.mark.parametrize(
-    "check_modified_files_only",
+    "check_modified_files",
     [
         True,
         False,
@@ -65,8 +63,8 @@ def _prep_config(
 )
 def test_find_files_basic(
     mock_subprocess_check_output: Mock,
-    check_modified_files_only: bool,
-    check_head_files_only: bool,
+    check_modified_files: bool,
+    check_head_files: bool,
     tmp_path: pathlib.Path,
 ) -> None:
     file_strings: List[str] = []
@@ -77,11 +75,24 @@ def test_find_files_basic(
     mock_subprocess_check_output.return_value = str.encode("\n".join(file_strings))
 
     config_metadata = _prep_config(
-        check_modified_files_only=check_modified_files_only,
-        check_head_files_only=check_head_files_only,
+        check_modified_files=check_modified_files,
+        check_head_files=check_head_files,
     )
     results: FilePathListLookup = find_files(config_metadata)
-    mock_subprocess_check_output.assert_called_once()
-    assert results == {
-        "dummy tag": [file_strings[0]]  # we filter in only the *1* files.
-    }
+    if check_modified_files and check_head_files:
+        assert (
+            mock_subprocess_check_output.call_count == 3
+        ), "twice for modified, once for head"
+        assert results == {
+            "dummy tag": [file_strings[0]]  # we filter in only the *1* files.
+        }
+    elif check_modified_files:
+        assert mock_subprocess_check_output.call_count == 2, "twice for modified"
+        assert results == {
+            "dummy tag": [file_strings[0]]  # we filter in only the *1* files.
+        }
+    else:
+        assert mock_subprocess_check_output.call_count == 1, "once for git ls-files"
+        assert results == {
+            "dummy tag": [file_strings[0]]  # we filter in only the *1* files.
+        }
