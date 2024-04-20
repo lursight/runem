@@ -4,6 +4,19 @@ Changelog
 
 (unreleased)
 ------------
+- Merge pull request #48 from
+  lursight/feat/merge_head_and_modified_files_in_git. [Frank Harrison]
+
+  feat(git-files): allows head, staged and unstaged git files
+- Feat(git-files): allows head, staged and unstaged git files. [Frank
+  Harrison]
+
+  This means we can run fast tests against all files that have recently changed and get better results.
+
+
+0.0.30 (2024-04-13)
+-------------------
+- Release: version 0.0.30 🚀 [Frank Harrison]
 - Merge pull request #47 from lursight/feat/git-fast-files. [Frank
   Harrison]
 
