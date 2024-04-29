@@ -5,7 +5,8 @@ usage: -c [-H] [--jobs JOBS [JOBS ...]] [--not-jobs JOBS_EXCLUDED [JOBS_EXCLUDED
           [--dummy-option-1---complete-option] [--no-dummy-option-1---complete-option]
           [--dummy-option-2---minimal] [--no-dummy-option-2---minimal]
           [--call-graphs | --no-call-graphs] [-f | --modified-files | --no-modified-files]
-          [-h | --git-head-files | --no-git-head-files] [--procs PROCS] [--root ROOT_DIR]
+          [-h | --git-head-files | --no-git-head-files]
+          [--always-files ALWAYS_FILES [ALWAYS_FILES ...]] [--procs PROCS] [--root ROOT_DIR]
           [--root-show | --no-root-show] [--spinner | --no-spinner] [--verbose | --no-verbose]
           [--version | --no-version | -v]
 
@@ -18,6 +19,9 @@ Runs the Lursight Lang test-suite
                         only use files that have changed
   -h, --git-head-files, --no-git-head-files
                         fast run of files
+  --always-files ALWAYS_FILES [ALWAYS_FILES ...]
+                        list of paths/files to always check (overriding -f/-h), if the path
+                        matches the filter regex and if file-paths exist
   --procs PROCS, -j PROCS
                         the number of concurrent test jobs to run, -1 runs all test jobs at the
                         same time ([TEST_REPLACED_CORES] cores available)
