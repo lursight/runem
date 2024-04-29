@@ -1,7 +1,7 @@
 import pathlib
 from argparse import Namespace
 from collections import defaultdict
-from typing import List
+from typing import List, Optional
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
@@ -12,9 +12,14 @@ from runem.informative_dict import InformativeDict
 from runem.types import FilePathListLookup
 
 
-def _prep_config(check_modified_files: bool, check_head_files: bool) -> ConfigMetadata:
+def _prep_config(
+    tmp_path: pathlib.Path,
+    check_modified_files: bool,
+    check_head_files: bool,
+    always_files: Optional[List[str]] = None,
+) -> ConfigMetadata:
     config_metadata: ConfigMetadata = ConfigMetadata(
-        cfg_filepath=pathlib.Path(__file__),
+        cfg_filepath=tmp_path / ".runem.yml.no-exist",  # only the path is used
         phases=("dummy phase 1",),
         options_config=tuple(),
         file_filters={
@@ -33,6 +38,7 @@ def _prep_config(check_modified_files: bool, check_head_files: bool) -> ConfigMe
         args=Namespace(
             check_modified_files=check_modified_files,
             check_head_files=check_head_files,
+            always_files=always_files,
         ),
         jobs_to_run=set(),  # JobNames,
         phases_to_run=set(),  # JobPhases,
@@ -58,11 +64,20 @@ def _prep_config(check_modified_files: bool, check_head_files: bool) -> ConfigMe
         False,
     ],
 )
+@pytest.mark.parametrize(
+    "always_files",
+    [
+        ["1.always", "2.no_exist.always", "3.always"],
+        [],  # empty array
+        None,  # trigger defaults
+    ],
+)
 @patch(
     "runem.files.subprocess_check_output",
 )
 def test_find_files_basic(
     mock_subprocess_check_output: Mock,
+    always_files: Optional[List[str]],
     check_modified_files: bool,
     check_head_files: bool,
     tmp_path: pathlib.Path,
@@ -70,13 +85,25 @@ def test_find_files_basic(
     file_strings: List[str] = []
     for file_str in ("test_file_1.txt", "test_file_2.txt"):
         test_file: pathlib.Path = tmp_path / file_str
-        test_file.write_text("")  # write some empty string aka 'touch' the file
+        test_file.touch()  # write some empty string aka 'touch' the file
         file_strings.append(str(test_file))
     mock_subprocess_check_output.return_value = str.encode("\n".join(file_strings))
 
+    created_always_files: Optional[List[str]] = None
+    if always_files is not None:
+        created_always_files = []
+        for always_file in always_files:
+            file_path: pathlib.Path = tmp_path / always_file
+            if "no_exist" not in always_file:
+                # only create files if they are NOT tagged with 'no_exist'
+                file_path.touch()
+            created_always_files.append(str(file_path))
+
     config_metadata = _prep_config(
+        tmp_path,
         check_modified_files=check_modified_files,
         check_head_files=check_head_files,
+        always_files=created_always_files,
     )
     results: FilePathListLookup = find_files(config_metadata)
     if check_modified_files and check_head_files:

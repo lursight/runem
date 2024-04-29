@@ -74,6 +74,16 @@ def find_files(config_metadata: ConfigMetadata) -> FilePathListLookup:
             .decode("utf-8")
             .splitlines()
         )
+
+    if config_metadata.args.always_files is not None:
+        # a poor-man's version of adding path-regex's
+        existent_files = [
+            filepath
+            for filepath in config_metadata.args.always_files
+            if Path(filepath).exists()
+        ]
+        file_paths.extend(existent_files)
+
     _bucket_file_by_tag(
         file_paths,
         config_metadata,

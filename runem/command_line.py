@@ -136,6 +136,17 @@ def parse_args(
         default=False,
         required=False,
     )
+    parser.add_argument(
+        "--always-files",
+        dest="always_files",
+        help=(
+            "list of paths/files to always check (overriding -f/-h), if the path "
+            "matches the filter regex and if file-paths exist"
+        ),
+        nargs="+",
+        default=None,
+        required=False,
+    )
 
     parser.add_argument(
         "--procs",
