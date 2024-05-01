@@ -149,6 +149,18 @@ def parse_args(
     )
 
     parser.add_argument(
+        "--git-files-since-branch",
+        dest="git_since_branch",
+        help=(
+            "Get the list of paths/files changed between a branch, e.g., since "
+            "'origin/main'. Useful for checking files changed before pushing."
+        ),
+        default=None,  # Default to None if no branch is specified
+        required=False,  # Not required, users may not want to specify a branch
+        type=str,  # Accepts a string input representing the branch name
+    )
+
+    parser.add_argument(
         "--procs",
         "-j",
         # "-n",

@@ -10,7 +10,8 @@ usage: -c [-H] [--jobs JOBS [JOBS ...]]
           [--no-dummy-option-2---minimal] [--call-graphs | --no-call-graphs]
           [-f | --modified-files | --no-modified-files]
           [-h | --git-head-files | --no-git-head-files]
-          [--always-files ALWAYS_FILES [ALWAYS_FILES ...]] [--procs PROCS]
+          [--always-files ALWAYS_FILES [ALWAYS_FILES ...]]
+          [--git-files-since-branch GIT_SINCE_BRANCH] [--procs PROCS]
           [--root ROOT_DIR] [--spinner | --no-spinner]
           [--verbose | --no-verbose] [--version | --no-version | -v]
 
@@ -27,6 +28,10 @@ Runs the Lursight Lang test-suite
                         list of paths/files to always check (overriding
                         -f/-h), if the path matches the filter regex and if
                         file-paths exist
+  --git-files-since-branch GIT_SINCE_BRANCH
+                        Get the list of paths/files changed between a branch,
+                        e.g., since 'origin/main'. Useful for checking files
+                        changed before pushing.
   --procs PROCS, -j PROCS
                         the number of concurrent test jobs to run, -1 runs all
                         test jobs at the same time ([TEST_REPLACED_CORES] cores available)
