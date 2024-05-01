@@ -29,6 +29,7 @@ def find_files(config_metadata: ConfigMetadata) -> FilePathListLookup:
     if (
         config_metadata.args.check_modified_files
         or config_metadata.args.check_head_files
+        or (config_metadata.args.git_since_branch is not None)
     ):
         if config_metadata.args.check_modified_files:
             # get modified, un-staged files first
@@ -60,10 +61,25 @@ def find_files(config_metadata: ConfigMetadata) -> FilePathListLookup:
                 .decode("utf-8")
                 .splitlines()
             )
+
+        if config_metadata.args.git_since_branch is not None:
+            # Add all files changed since a particular branch e..g `origin/main`
+            # Useful for quickly checking branches before pushing.
+            # NOTE: without dependency checking this might report false-positives.
+            target_branch: str = config_metadata.args.git_since_branch
+            file_paths.extend(
+                subprocess_check_output(
+                    f"git diff --name-only {target_branch}...HEAD",
+                    shell=True,
+                )
+                .decode("utf-8")
+                .splitlines()
+            )
         # ensure files are unique, and still on disk i.e. filter-out deleted files
         file_paths = list(
             {file_path for file_path in file_paths if Path(file_path).exists()}
         )
+
     else:
         # fall-back to all files
         file_paths = (
