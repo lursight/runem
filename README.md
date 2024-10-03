@@ -1,6 +1,6 @@
 <!-- [![codecov](https://codecov.io/gh/lursight/runem/branch/main/graph/badge.svg?token=run-test_token_here)](https://codecov.io/gh/lursight/runem) -->
 [![CI](https://github.com/lursight/runem/actions/workflows/main.yml/badge.svg)](https://github.com/lursight/runem/actions/workflows/main.yml)
-[![DOCS](docs/VIEW-DOCS-31c553.svg)](https://lursight.github.io/runem/)
+[![DOCS](https://lursight.github.io/runem/docs/VIEW-DOCS-31c553.svg)](https://lursight.github.io/runem/)
 
 # Run'em: Accelerate Your Development Workflow
 **Boost Efficiency and Save Time**
@@ -38,7 +38,7 @@ Runem is a flexible, multi-process tool designed to speed up your everyday tasks
 - **Tagging**: Easily run specific job groups (e.g., lint, test, python).
 - **Phases**: Organize tasks by phase (e.g., edit, test, deploy).
 - **Configurable Options**: Customize how jobs are executed using simple options.
-- **Declarative**: Jobs are define using simple YAML in [.runem.yml](docs/configuration.md) .
+- **Declarative**: Jobs are define using simple YAML in [.runem.yml](https://lursight.github.io/runem/docs/configuration.html) .
 
 # Using Run'em
 
@@ -76,25 +76,25 @@ runem --help
 
 ### A more complete quick-start
 
-See [quick-start docs](docs/quick_start.md) for more quick-start tips.
+See [quick-start docs](https://lursight.github.io/runem/docs/quick_start.html) for more quick-start tips.
 
 ## Basic Use
 
-See [docs on basic use and use-cases](docs/basic_use.md) for a comprehensive introduction.
+See [docs on basic use and use-cases](https://lursight.github.io/runem/docs/basic_use.html) for a comprehensive introduction.
 
 ## Advanced Use
 
 ### Advanced configuration options
-See [configuration docs](docs/configuration.md) for advanced configuration and use.
+See [configuration docs](https://lursight.github.io/runem/docs/configuration.html) for advanced configuration and use.
 
 ### Custom reports
-See [reporting docs](docs/reports.md) for more information on how reporting works.
+See [reporting docs](https://lursight.github.io/runem/docs/reports.html) for more information on how reporting works.
 
 
 # Help and job discovery
 
 `--help` is designed to help your team discover what jobs and tasks they can automated. Read more at 
-[help and discovery docs](docs/help_and_job_discovery.md).
+[help and discovery docs](https://lursight.github.io/runem/docs/help_and_job_discovery.html).
 
 # Troubleshooting
 
@@ -116,5 +116,5 @@ Read the [CONTRIBUTING.md](CONTRIBUTING.md) file.
 # About runem
 The runem mission is to improve developer velocity at
 [Lursight Ltd.](https://lursight.com), read more about the runem
-[mission](docs/mission.md).
+[mission](https://lursight.github.io/runem/docs/mission.html).
 
