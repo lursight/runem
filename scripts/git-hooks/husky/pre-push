@@ -1,0 +1,37 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+if [ -n "$SKIP_PREPUSH" ]; then
+    # Used by the release process.
+    # sometimes we KNOW that we don't need to verify the commit e.g. when releasing
+    # known-good versions that have already been tested.
+    exit 0
+fi
+
+PRE_PUSH_TEST_DIR="$TMPDIR"/runem-pre-push-ci
+
+# prepare the test-dir
+bash scripts/dev/prepare_pre_push_tests.sh "$PRE_PUSH_TEST_DIR" || exit 12
+
+
+# Now iterate over each branch that is being pushed and test it
+while read local_ref local_sha remote_ref remote_sha
+do
+    printf "runem: pre-push: triggering isolation tests for '%s'(%s) -> '%s'(%s)\\n" "$local_ref" "$local_sha" "$remote_ref" "$remote_sha"
+    if [ "(delete)" = "$local_ref"  ] ; then
+        printf "runem: pre-push: we are deleting '%s' will not test\\n" "$remote_ref"
+    else
+         NOTES="refs/notes/"
+        if [ "${local_ref#*"$NOTES"}" != "$local_ref" ] ; then
+            printf "runem: pre-push: we are pushing '%s' as '%s', will not test\\n" "$NOTES" "$local_ref"
+        else
+            TAGS="refs/tags/"
+            if [ "${remote_ref#*"$TAGS"}" != "$remote_ref" ] ; then
+                printf "runem: pre-push: we are pushing '%s' as '%s', will not test\\n" "$TAGS" "$remote_ref"
+            else
+                # run the tests in check-mode, using the sha so we don't checkout old/bad versions in the ci prepush dir
+                bash ./scripts/dev/pre_push_test_branch.sh "$local_sha" "$local_ref" "$PRE_PUSH_TEST_DIR" || exit 55
+            fi
+        fi
+    fi
+done

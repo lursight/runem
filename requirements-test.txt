@@ -17,6 +17,7 @@ pytest-xdist==3.5.0
 pytest==8.1.1
 setuptools
 termplotlib==0.3.9
+tox
 types-PyYAML==6.0.12.20240311
 requests-mock==1.11.0
 types-setuptools

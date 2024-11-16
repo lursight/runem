@@ -11,6 +11,7 @@ from collections import defaultdict
 from contextlib import redirect_stdout
 from datetime import timedelta
 from pprint import pprint
+from unittest import mock
 from unittest.mock import MagicMock, Mock, patch
 
 # Assuming that the modified _progress_updater function is in a module named runem
@@ -42,6 +43,8 @@ from runem.types import (
 )
 from tests.intentional_test_error import IntentionalTestError
 from tests.sanitise_reports_footer import sanitise_reports_footer
+
+DIR_REPLACEMENT_DIR: str = "[TEST_REPLACED_DIR]"
 
 
 def replace_max_cores(stdout: str) -> str:
@@ -342,7 +345,7 @@ def _run_full_config_runem(
         argv.append("--verbose")
 
     with io.StringIO() as buf, redirect_stdout(buf):
-        # amend the args to have the exec at 0 as expected by argsparse
+        # amend the args to have the exec at 0 as expected by argparse
         try:
             timed_main(argv)
         except BaseException as err:  # pylint: disable=broad-exception-caught
@@ -606,7 +609,7 @@ def _replace_whitespace_with_new_line(input_string: str) -> str:
 def _remove_first_line_and_split_along_whitespace(
     input_string: str,
 ) -> typing.List[str]:
-    """Because of how argsparse prints help, we need to conform it.
+    """Because of how argparse prints help, we need to conform it.
 
     To conform it we replace all whitespace with a single new-line and then split it
     into a list of strings
@@ -642,7 +645,7 @@ def _conform_help_output(help_output: typing.List[str]) -> str:
     # we have to remove the run-dir for root_dir from the output
     runem_stdout_str: str = (
         "\n".join(help_output)
-        .replace(str(pathlib.Path(__file__).parent), "[TEST_REPLACED_DIR]")
+        .replace(str(pathlib.Path(__file__).parent), DIR_REPLACEMENT_DIR)
         .replace(
             f"({os.cpu_count()} cores available)",
             "([TEST_REPLACED_CORES] cores available)",
@@ -654,11 +657,17 @@ def _conform_help_output(help_output: typing.List[str]) -> str:
     return runem_stdout_str
 
 
-def test_runem_help() -> None:
+@patch(
+    "runem.command_line._get_config_dir",
+    return_value=DIR_REPLACEMENT_DIR,
+)
+def test_runem_help(
+    mock_get_config_dir: mock.MagicMock,
+) -> None:
     """End-2-end test check that the help-output hasn't *unexpectedly* changed.
 
     As we build features we want to ensure that the help output stays consistent as we
-    leverage the argsparse system to generate the help for a specific .runem.yml config
+    leverage the argparse system to generate the help for a specific .runem.yml config
     """
     runem_cli_switches: typing.List[str] = ["--help"]
     runem_stdout: typing.List[str]
@@ -688,16 +697,23 @@ def test_runem_help() -> None:
     help_dump: pathlib.Path = (
         pathlib.Path(__file__).parent / "data" / f"help_output.{version_str}.txt"
     ).absolute()
-    help_dump.write_text(runem_stdout_str)
+    if os.environ.get("RUNEM_TEST_WRITE_HELP", False):  # pragma: no cover
+        help_dump.write_text(runem_stdout_str)
 
     # we have to strip all whitespace as help adapts to the terminal width
+    previous_help_content = help_dump.read_text()
     stripped_expected_help_output: typing.List[str] = (
-        _remove_first_line_and_split_along_whitespace(help_dump.read_text())
+        _remove_first_line_and_split_along_whitespace(previous_help_content)
     )
     stripped_actual_help_output: typing.List[str] = (
         _remove_first_line_and_split_along_whitespace(runem_stdout_str)
     )
-    assert stripped_expected_help_output == stripped_actual_help_output
+    assert stripped_expected_help_output == stripped_actual_help_output, (
+        f"{'<' * 100}\n{runem_stdout_str}\n"
+        f"{'=' * 100}{previous_help_content}\n"
+        f"{'>' * 100}\n"
+    )
+    mock_get_config_dir.assert_called_once()
 
 
 @pytest.mark.parametrize(
@@ -751,6 +767,33 @@ def test_runem_version(switch_to_test: str, verbosity: bool) -> None:
             "runem: hooks: registered hook for 'HookName.ON_EXIT', have 2: echo 'mock "
             "user home-dir hook'",
         ] + expected_version_output
+
+    assert runem_stdout == expected_version_output
+
+
+def test_runem_root_show() -> None:
+    """End-2-end test check that the --root-show switch works."""
+    switch_to_test: str = "--root-show"
+    runem_cli_switches: typing.List[str] = [
+        switch_to_test,
+    ]
+    runem_stdout: typing.List[str]
+    error_raised: typing.Optional[BaseException]
+    (
+        runem_stdout,
+        error_raised,
+    ) = _run_full_config_runem(  # pylint: disable=no-value-for-parameter
+        runem_cli_switches=runem_cli_switches,
+        add_command_one_liner=False,
+        add_verbose_switch=False,
+    )
+    assert runem_stdout
+    assert error_raised
+
+    # In this test the config file is mocked o a dummy file in tests/ .
+    runem_checkout_path: pathlib.Path = (pathlib.Path(__file__).parent).absolute()
+
+    expected_version_output: typing.List[str] = [str(runem_checkout_path), ""]
 
     assert runem_stdout == expected_version_output
 

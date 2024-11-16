@@ -5,6 +5,9 @@
       - analysis
     files:
       - filter:
+          tag: yarn-deps
+          regex: "package.json"
+      - filter:
           tag: py
           regex: ".*\\.py$"
       - filter:
@@ -60,6 +63,15 @@
     addr:
       file: scripts/test_hooks/runem_hooks.py
       function: _on_exit_hook
+- job:
+    addr:
+      file: scripts/test_hooks/yarn.py
+      function: _job_yarn_deps
+    label: yarn:deps
+    when:
+      phase: pre-run
+      tags:
+        - yarn-deps
 - job:
     addr:
       file: scripts/test_hooks/py.py

@@ -151,7 +151,7 @@ def parse_args(
         type=int,
     )
 
-    config_dir: pathlib.Path = config_metadata.cfg_filepath.parent
+    config_dir: pathlib.Path = _get_config_dir(config_metadata)
     parser.add_argument(
         "--root",
         dest="root_dir",
@@ -160,6 +160,15 @@ def parse_args(
             "which dir to use as the base-dir for testing, "
             f"defaults to directory containing the config '{config_dir}'"
         ),
+        required=False,
+    )
+
+    parser.add_argument(
+        "--root-show",
+        dest="show_root_path_and_exit",
+        help="show the root-path of runem and exit",
+        action=argparse.BooleanOptionalAction,
+        default=False,
         required=False,
     )
 
@@ -196,6 +205,11 @@ def parse_args(
 
     args = parser.parse_args(argv[1:])
 
+    if args.show_root_path_and_exit:
+        log(str(config_metadata.cfg_filepath.parent), decorate=False)
+        # cleanly exit
+        sys.exit(0)
+
     if args.show_version_and_exit:
         log(str(get_runem_version()), decorate=False)
         # cleanly exit
@@ -217,6 +231,11 @@ def parse_args(
         args, jobs_to_run, phases_to_run, tags_to_run, tags_to_avoid, options
     )
     return config_metadata
+
+
+def _get_config_dir(config_metadata: ConfigMetadata) -> pathlib.Path:
+    """A function to get the path, that we can mock in tests."""
+    return config_metadata.cfg_filepath.parent
 
 
 def _validate_filters(
@@ -338,7 +357,7 @@ def _define_option_args(
 
 
 def _alias_to_switch(switch_name_alias: str, negatise: bool = False) -> str:
-    """Util function to generate a alias switch for argsparse."""
+    """Util function to generate a alias switch for argparse."""
     single_letter_variant = not negatise and len(switch_name_alias) == 1
     if single_letter_variant:
         return f"-{switch_name_alias}"
