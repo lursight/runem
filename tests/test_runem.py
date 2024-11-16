@@ -11,6 +11,7 @@ from collections import defaultdict
 from contextlib import redirect_stdout
 from datetime import timedelta
 from pprint import pprint
+from unittest import mock
 from unittest.mock import MagicMock, Mock, patch
 
 # Assuming that the modified _progress_updater function is in a module named runem
@@ -42,6 +43,8 @@ from runem.types import (
 )
 from tests.intentional_test_error import IntentionalTestError
 from tests.sanitise_reports_footer import sanitise_reports_footer
+
+DIR_REPLACEMENT_DIR: str = "[TEST_REPLACED_DIR]"
 
 
 def replace_max_cores(stdout: str) -> str:
@@ -642,7 +645,7 @@ def _conform_help_output(help_output: typing.List[str]) -> str:
     # we have to remove the run-dir for root_dir from the output
     runem_stdout_str: str = (
         "\n".join(help_output)
-        .replace(str(pathlib.Path(__file__).parent), "[TEST_REPLACED_DIR]")
+        .replace(str(pathlib.Path(__file__).parent), DIR_REPLACEMENT_DIR)
         .replace(
             f"({os.cpu_count()} cores available)",
             "([TEST_REPLACED_CORES] cores available)",
@@ -654,7 +657,13 @@ def _conform_help_output(help_output: typing.List[str]) -> str:
     return runem_stdout_str
 
 
-def test_runem_help() -> None:
+@patch(
+    "runem.command_line._get_config_dir",
+    return_value=DIR_REPLACEMENT_DIR,
+)
+def test_runem_help(
+    mock_get_config_dir: mock.MagicMock,
+) -> None:
     """End-2-end test check that the help-output hasn't *unexpectedly* changed.
 
     As we build features we want to ensure that the help output stays consistent as we
@@ -692,15 +701,19 @@ def test_runem_help() -> None:
         help_dump.write_text(runem_stdout_str)
 
     # we have to strip all whitespace as help adapts to the terminal width
+    previous_help_content = help_dump.read_text()
     stripped_expected_help_output: typing.List[str] = (
-        _remove_first_line_and_split_along_whitespace(help_dump.read_text())
+        _remove_first_line_and_split_along_whitespace(previous_help_content)
     )
     stripped_actual_help_output: typing.List[str] = (
         _remove_first_line_and_split_along_whitespace(runem_stdout_str)
     )
-    assert (
-        stripped_expected_help_output == stripped_actual_help_output
-    ), f"original str output was '{runem_stdout_str}'"
+    assert stripped_expected_help_output == stripped_actual_help_output, (
+        f"{'<' * 100}\n{runem_stdout_str}\n"
+        f"{'=' * 100}{previous_help_content}\n"
+        f"{'>' * 100}\n"
+    )
+    mock_get_config_dir.assert_called_once()
 
 
 @pytest.mark.parametrize(

@@ -151,7 +151,7 @@ def parse_args(
         type=int,
     )
 
-    config_dir: pathlib.Path = config_metadata.cfg_filepath.parent
+    config_dir: pathlib.Path = _get_config_dir(config_metadata)
     parser.add_argument(
         "--root",
         dest="root_dir",
@@ -217,6 +217,11 @@ def parse_args(
         args, jobs_to_run, phases_to_run, tags_to_run, tags_to_avoid, options
     )
     return config_metadata
+
+
+def _get_config_dir(config_metadata: ConfigMetadata) -> pathlib.Path:
+    """A function to get the path, that we can mock in tests."""
+    return config_metadata.cfg_filepath.parent
 
 
 def _validate_filters(
