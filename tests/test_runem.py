@@ -771,6 +771,33 @@ def test_runem_version(switch_to_test: str, verbosity: bool) -> None:
     assert runem_stdout == expected_version_output
 
 
+def test_runem_root_show() -> None:
+    """End-2-end test check that the --root-show switch works."""
+    switch_to_test: str = "--root-show"
+    runem_cli_switches: typing.List[str] = [
+        switch_to_test,
+    ]
+    runem_stdout: typing.List[str]
+    error_raised: typing.Optional[BaseException]
+    (
+        runem_stdout,
+        error_raised,
+    ) = _run_full_config_runem(  # pylint: disable=no-value-for-parameter
+        runem_cli_switches=runem_cli_switches,
+        add_command_one_liner=False,
+        add_verbose_switch=False,
+    )
+    assert runem_stdout
+    assert error_raised
+
+    # In this test the config file is mocked o a dummy file in tests/ .
+    runem_checkout_path: pathlib.Path = (pathlib.Path(__file__).parent).absolute()
+
+    expected_version_output: typing.List[str] = [str(runem_checkout_path), ""]
+
+    assert runem_stdout == expected_version_output
+
+
 @pytest.mark.parametrize(
     "switch_to_test",
     [

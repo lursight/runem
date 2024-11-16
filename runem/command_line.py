@@ -164,6 +164,15 @@ def parse_args(
     )
 
     parser.add_argument(
+        "--root-show",
+        dest="show_root_path_and_exit",
+        help="show the root-path of runem and exit",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        required=False,
+    )
+
+    parser.add_argument(
         "--spinner",
         dest="show_spinner",
         action=argparse.BooleanOptionalAction,
@@ -195,6 +204,11 @@ def parse_args(
     )
 
     args = parser.parse_args(argv[1:])
+
+    if args.show_root_path_and_exit:
+        log(str(config_metadata.cfg_filepath.parent), decorate=False)
+        # cleanly exit
+        sys.exit(0)
 
     if args.show_version_and_exit:
         log(str(get_runem_version()), decorate=False)
