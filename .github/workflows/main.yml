@@ -33,7 +33,7 @@ jobs:
       - name: Reinstall Setuptools for 3.12 bug
         run: pip install setuptools
       - name: Install project
-        run: pip install -e .[test]
+        run: pip install -e .[tests]
       - name: Run backup tests
         run: make test
       - name: Run backup lint
@@ -63,7 +63,7 @@ jobs:
       - name: Install Yarn Deps
         run: yarn install
       - name: Install project
-        run: pip install -e .[test]
+        run: pip install -e .[tests]
       - name: Run tests
         run: python3 -m runem.runem --verbose --no-spinner
       - name: "Upload coverage to Codecov"
@@ -97,7 +97,7 @@ jobs:
       - name: Install Yarn Deps
         run: yarn install
       - name: Install project
-        run: pip install -e .[test]
+        run: pip install -e .[tests]
       - name: Run tests
         run: python3 -m runem.runem --verbose --no-spinner
       - name: Upload Artifacts
@@ -129,7 +129,7 @@ jobs:
   #     - name: Install Yarn Deps
   #       run: yarn install
   #     - name: Install project
-  #       run: pip install -e .[test]
+  #       run: pip install -e .[tests]
   #     - name: Set Python IO encoding to UTF-8
   #       run: echo "PYTHONIOENCODING=utf-8" >> $GITHUB_ENV
   #     - name: run tests

@@ -47,5 +47,5 @@ setup(
     },
     install_requires=read_requirements("requirements.txt"),
     entry_points={"console_scripts": ["runem = runem.__main__:main"]},
-    extras_require={"test": read_requirements("requirements-test.txt")},
+    extras_require={"tests": read_requirements("requirements-test.txt")},
 )
