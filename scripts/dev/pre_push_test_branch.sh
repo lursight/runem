@@ -55,10 +55,7 @@ python3 -m pip install ".[tests]"
 printf "%s running with python: %s: %s\\n" "$LOG_PREFIX" "$(python --version)" "$(which python3)"
 
 printf "%s running tests\\n" "$LOG_PREFIX"
-python3 -m runem \
-                --install-deps \
-                --check-only \
-                || exit 55
+python3 -m tox
 
 
 printf "%s size of pre-push tmp dir:\\n" "$LOG_PREFIX"
