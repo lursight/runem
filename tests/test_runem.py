@@ -698,7 +698,9 @@ def test_runem_help() -> None:
     stripped_actual_help_output: typing.List[str] = (
         _remove_first_line_and_split_along_whitespace(runem_stdout_str)
     )
-    assert stripped_expected_help_output == stripped_actual_help_output
+    assert (
+        stripped_expected_help_output == stripped_actual_help_output
+    ), f"original str output was '{runem_stdout_str}'"
 
 
 @pytest.mark.parametrize(
