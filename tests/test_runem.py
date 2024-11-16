@@ -688,7 +688,8 @@ def test_runem_help() -> None:
     help_dump: pathlib.Path = (
         pathlib.Path(__file__).parent / "data" / f"help_output.{version_str}.txt"
     ).absolute()
-    help_dump.write_text(runem_stdout_str)
+    if os.environ.get("RUNEM_TEST_WRITE_HELP", False):  # pragma: no cover
+        help_dump.write_text(runem_stdout_str)
 
     # we have to strip all whitespace as help adapts to the terminal width
     stripped_expected_help_output: typing.List[str] = (
