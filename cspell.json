@@ -7,7 +7,6 @@
   "ignorePaths": ["**/.pyenv/**", "./build", "*.egg-info/", "HISTORY.md"],
   // words - list of words to be always considered correct
   "words": [
-    "argsparse", // python module
     "autouse", // pytest fixture switch
     "buildah", // Open Container Initiative (OCI) container builder
     "chdir", // python func for chnaging pwd

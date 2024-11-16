@@ -342,7 +342,7 @@ def _run_full_config_runem(
         argv.append("--verbose")
 
     with io.StringIO() as buf, redirect_stdout(buf):
-        # amend the args to have the exec at 0 as expected by argsparse
+        # amend the args to have the exec at 0 as expected by argparse
         try:
             timed_main(argv)
         except BaseException as err:  # pylint: disable=broad-exception-caught
@@ -606,7 +606,7 @@ def _replace_whitespace_with_new_line(input_string: str) -> str:
 def _remove_first_line_and_split_along_whitespace(
     input_string: str,
 ) -> typing.List[str]:
-    """Because of how argsparse prints help, we need to conform it.
+    """Because of how argparse prints help, we need to conform it.
 
     To conform it we replace all whitespace with a single new-line and then split it
     into a list of strings
@@ -658,7 +658,7 @@ def test_runem_help() -> None:
     """End-2-end test check that the help-output hasn't *unexpectedly* changed.
 
     As we build features we want to ensure that the help output stays consistent as we
-    leverage the argsparse system to generate the help for a specific .runem.yml config
+    leverage the argparse system to generate the help for a specific .runem.yml config
     """
     runem_cli_switches: typing.List[str] = ["--help"]
     runem_stdout: typing.List[str]

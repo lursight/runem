@@ -338,7 +338,7 @@ def _define_option_args(
 
 
 def _alias_to_switch(switch_name_alias: str, negatise: bool = False) -> str:
-    """Util function to generate a alias switch for argsparse."""
+    """Util function to generate a alias switch for argparse."""
     single_letter_variant = not negatise and len(switch_name_alias) == 1
     if single_letter_variant:
         return f"-{switch_name_alias}"
