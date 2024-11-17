@@ -4,6 +4,27 @@ Changelog
 
 (unreleased)
 ------------
+- Merge pull request #58 from lursight/fix/completed_job_counts. [Frank
+  Harrison]
+
+  fix(complete-job-count): fixes and simplifies the in-progress report code
+- Fix(complete-job-count): fixes and simplifies the in-progress report
+  code. [Frank Harrison]
+
+  The core problem was that the remaining-job-count didn't match the
+  number of job-labels that were being shown.
+
+  The root-cause was due to some of the job-tasks completing before the
+  `_update_progress()` thread had started monitoring the jobs.
+
+  We fix this by adding a new parameter to the job-executer that tracks
+  when job completed. It's a very simple fix and reduces the overall
+  complexity for about the same cost of threading-primitives.
+
+
+0.1.0 (2024-11-17)
+------------------
+- Release: version 0.1.0 🚀 [Frank Harrison]
 - Merge pull request #57 from lursight/feat/replace_halo_with_rich.
   [Frank Harrison]
 
