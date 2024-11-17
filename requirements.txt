@@ -1,6 +1,8 @@
-halo
 packaging
 PyYAML
+
+# For UI Elements
+rich
 
 # For pre python3.12 Unpack features we need the `typing_extensions` module to
 # be installed.

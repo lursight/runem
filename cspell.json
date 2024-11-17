@@ -40,6 +40,7 @@
     "pytest", // the python module for testing
     "rcfile", // name of a type of config file
     "refs", // git references
+    "renderable", // used by `rich` module, but also is a valid word when rendering things
     "ronseal", // ronseal, does what it says on the tin
     "runem", // this product
     "setuptools", // python module
