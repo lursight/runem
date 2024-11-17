@@ -669,6 +669,8 @@ def test_runem_help(
     As we build features we want to ensure that the help output stays consistent as we
     leverage the argparse system to generate the help for a specific .runem.yml config
     """
+    # Ensure we get fixed-width output.
+    os.environ["RUNEM_FIXED_HELP_WIDTH"] = "1"
     runem_cli_switches: typing.List[str] = ["--help"]
     runem_stdout: typing.List[str]
     error_raised: typing.Optional[BaseException]

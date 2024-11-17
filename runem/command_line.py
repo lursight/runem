@@ -12,6 +12,45 @@ from runem.types import JobNames, OptionConfig, OptionsWritable
 from runem.utils import printable_set
 
 
+class HelpFormatterFixedWidth(argparse.HelpFormatter):
+    """This works around test issues via constant width helo output.
+
+    This ensures that we get more constant for help-text by fixing the width to
+    something reasonable.
+    """
+
+    def __init__(self, prog: typing.Any) -> None:
+        # Override the default width with a fixed width, for tests.
+        super().__init__(
+            prog,
+            # Pretty wide so we do not get wrapping on directories
+            # or process-count output.
+            width=1000,
+        )
+
+
+def _get_argparse_help_formatter() -> typing.Any:
+    """Returns a help-formatter for argparse.
+
+    This is for tests only to fake terminals of a constant with when rendering help
+    output.
+    """
+    # Check environment variable to see if we're in tests and need a fixed width
+    # help output.
+    use_fixed_width = os.getenv("RUNEM_FIXED_HELP_WIDTH", None)
+
+    if use_fixed_width:
+        # Use custom formatter with the width specified in the environment variable
+        return (
+            lambda prog: HelpFormatterFixedWidth(  # pylint: disable=unnecessary-lambda
+                prog
+            )
+        )
+
+    # Use default formatter
+    return argparse.HelpFormatter
+
+
 def parse_args(
     config_metadata: ConfigMetadata, argv: typing.List[str]
 ) -> ConfigMetadata:
@@ -23,7 +62,9 @@ def parse_args(
     Returns the parsed args, the jobs_names_to_run, job_phases_to_run, job_tags_to_run
     """
     parser = argparse.ArgumentParser(
-        add_help=False, description="Runs the Lursight Lang test-suite"
+        add_help=False,
+        description="Runs the Lursight Lang test-suite",
+        formatter_class=_get_argparse_help_formatter(),
     )
     parser.add_argument(
         "-H", "--help", action="help", help="show this help message and exit"
