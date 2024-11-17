@@ -111,6 +111,7 @@ def job_execute_inner(
 def job_execute(
     job_config: JobConfig,
     running_jobs: typing.Dict[str, str],
+    completed_jobs: typing.Dict[str, str],
     config_metadata: ConfigMetadata,
     file_lists: FilePathListLookup,
     **kwargs: Unpack[HookSpecificKwargs],
@@ -127,5 +128,6 @@ def job_execute(
         file_lists,
         **kwargs,
     )
+    completed_jobs[this_id] = running_jobs[this_id]
     del running_jobs[this_id]
     return results

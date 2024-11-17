@@ -1675,11 +1675,12 @@ def test_progress_updater_with_running_jobs(
     show_spinner: bool,
 ) -> None:
     running_jobs: typing.Dict[str, str] = {"job1": "running", "job2": "pending"}
+    completed_jobs: typing.Dict[str, str] = {}
     with pytest.raises(SleepCalledError), multiprocessing.Manager() as manager:
         _update_progress(
             "dummy label",
             running_jobs,
-            seen_jobs=[],
+            completed_jobs,
             all_jobs=[],
             is_running=manager.Value("b", True),
             num_workers=1,
@@ -1690,6 +1691,7 @@ def test_progress_updater_with_running_jobs(
 
 def test_progress_updater_with_running_jobs_and_10_jobs(mock_sleep: Mock) -> None:
     running_jobs: typing.Dict[str, str] = {"job1": "running", "job2": "pending"}
+    completed_jobs: typing.Dict[str, str] = {}
     job_config: JobConfig = {
         "addr": {
             "file": __file__,
@@ -1715,7 +1717,7 @@ def test_progress_updater_with_running_jobs_and_10_jobs(mock_sleep: Mock) -> Non
         _update_progress(
             "dummy label",
             running_jobs,
-            seen_jobs=[],
+            completed_jobs,
             all_jobs=all_jobs,
             is_running=manager.Value("b", True),
             num_workers=1,
@@ -1726,11 +1728,12 @@ def test_progress_updater_with_running_jobs_and_10_jobs(mock_sleep: Mock) -> Non
 
 def test_progress_updater_without_running_jobs(mock_sleep: Mock) -> None:
     running_jobs: typing.Dict[str, str] = {}
+    completed_jobs: typing.Dict[str, str] = {}
     with pytest.raises(SleepCalledError), multiprocessing.Manager() as manager:
         _update_progress(
             "dummy label",
             running_jobs,
-            seen_jobs=[],
+            completed_jobs,
             all_jobs=[],
             is_running=manager.Value("b", True),
             num_workers=1,
@@ -1741,11 +1744,12 @@ def test_progress_updater_without_running_jobs(mock_sleep: Mock) -> None:
 
 def test_progress_updater_with_empty_running_jobs(mock_sleep: Mock) -> None:
     running_jobs: typing.Dict[str, str] = {"job1": ""}
+    completed_jobs: typing.Dict[str, str] = {}
     with pytest.raises(SleepCalledError), multiprocessing.Manager() as manager:
         _update_progress(
             "dummy label",
             running_jobs,
-            seen_jobs=[],
+            completed_jobs,
             all_jobs=[],
             is_running=manager.Value("b", True),
             num_workers=1,
@@ -1769,7 +1773,7 @@ def test_progress_updater_with_false(show_spinner: bool) -> None:
         _update_progress(
             "dummy label",
             running_jobs,
-            [],
+            {},
             [],
             manager.Value("b", False),
             1,
