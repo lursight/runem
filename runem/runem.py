@@ -28,7 +28,7 @@ import typing
 from collections import defaultdict
 from datetime import timedelta
 from itertools import repeat
-from multiprocessing.managers import DictProxy, ListProxy, ValueProxy
+from multiprocessing.managers import DictProxy, ValueProxy
 from timeit import default_timer as timer
 from types import TracebackType
 
@@ -41,7 +41,6 @@ from runem.config import load_project_config, load_user_configs
 from runem.config_metadata import ConfigMetadata
 from runem.config_parse import load_config_metadata
 from runem.files import find_files
-from runem.job import Job
 from runem.job_execute import job_execute
 from runem.job_filter import filter_jobs
 from runem.log import error, log, warn
@@ -123,7 +122,7 @@ class DummySpinner(ConsoleRenderable):  # pragma: no cover
 def _update_progress(
     label: str,
     running_jobs: typing.Dict[str, str],
-    seen_jobs: typing.List[str],
+    completed_jobs: typing.Dict[str, str],
     all_jobs: Jobs,
     is_running: ValueProxy[bool],
     num_workers: int,
@@ -134,7 +133,6 @@ def _update_progress(
     Args:
         label (str): The identifier.
         running_jobs (Dict[str, str]): The currently running jobs.
-        seen_jobs (List[str]): Jobs that the function has previously tracked.
         all_jobs (Jobs): All jobs, encompassing both completed and running jobs.
         is_running (ValueProxy[bool]): Flag indicating if jobs are still running.
         num_workers (int): Indicates the number of workers performing the jobs.
@@ -146,47 +144,25 @@ def _update_progress(
     else:
         spinner = DummySpinner()
 
+    last_running_jobs_set: typing.Set[str] = set()
+
     with rich_console.status(spinner):
-
-        # The set of all job labels, and the set of completed jobs
-        all_job_names: typing.Set[str] = {Job.get_job_name(job) for job in all_jobs}
-        completed_jobs: typing.Set[str] = set()
-
-        # This dataset is used to track changes between iterations
-        last_running_jobs_set: typing.Set[str] = set()
-
         while is_running.value:
             running_jobs_set: typing.Set[str] = set(running_jobs.values())
-            seen_jobs = list(running_jobs_set.union(seen_jobs))  # Update the seen jobs
 
-            # Jobs that have disappeared since last check
-            disappeared_jobs: typing.Set[str] = last_running_jobs_set - running_jobs_set
-
-            # Jobs that have not yet completed
-            remaining_jobs: typing.Set[str] = all_job_names - completed_jobs
-
-            # Check if we're closing to completion
-            workers_retiring: bool = len(remaining_jobs) <= num_workers
-
-            if workers_retiring:
-                # Handle edge case: a task may have disappeared whilst process was sleeping
-                all_completed_jobs: typing.Set[str] = all_job_names - remaining_jobs
-                disappeared_jobs.update(all_completed_jobs - running_jobs_set)
-
-            completed_jobs.update(disappeared_jobs)
-
-            # Prepare progress report
+            # Progress report
             progress: str = f"{len(completed_jobs)}/{len(all_jobs)}"
-            running_jobs_list = printable_set(running_jobs_set)
+            running_jobs_list = printable_set(
+                running_jobs_set
+            )  # Reflect current running jobs accurately
+            report: str = f"{label}: {progress}({num_workers}): {running_jobs_list}"
             if show_spinner:
-                spinner.text = (
-                    f"{label}: {progress}({num_workers}): {running_jobs_list}"
-                )
+                spinner.text = report
+            else:
+                if last_running_jobs_set != running_jobs_set:
+                    rich_console.log(report)
 
-            # Update the tracked dataset for the next iteration
-            last_running_jobs_set = running_jobs_set
-
-            # Sleep to decrease frequency of updates and reduce CPU usage
+            # Sleep for reduced CPU usage
             time.sleep(0.1)
 
 
@@ -225,8 +201,8 @@ def _process_jobs(
     subprocess_error: typing.Optional[BaseException] = None
 
     with multiprocessing.Manager() as manager:
-        seen_jobs: ListProxy[str] = manager.list()
         running_jobs: DictProxy[typing.Any, typing.Any] = manager.dict()
+        completed_jobs: DictProxy[typing.Any, typing.Any] = manager.dict()
         is_running: ValueProxy[bool] = manager.Value("b", True)
 
         terminal_writer_process = multiprocessing.Process(
@@ -234,7 +210,7 @@ def _process_jobs(
             args=(
                 phase,
                 running_jobs,
-                seen_jobs,
+                completed_jobs,
                 jobs,
                 is_running,
                 num_concurrent_procs,
@@ -251,6 +227,7 @@ def _process_jobs(
                     zip(
                         jobs,
                         repeat(running_jobs),
+                        repeat(completed_jobs),
                         repeat(config_metadata),
                         repeat(file_lists),
                     ),

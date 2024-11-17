@@ -95,6 +95,7 @@ class HookManager:
             job_execute(
                 job_config,
                 running_jobs={},
+                completed_jobs={},
                 config_metadata=config_metadata,
                 file_lists=file_lists,
                 **kwargs,
