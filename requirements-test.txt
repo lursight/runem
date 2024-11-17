@@ -1,6 +1,6 @@
 # This requirements are for development and testing only, not for production.
 black==24.3.0
-coverage==7.4.4
+coverage==7.5
 docformatter==1.7.5
 flake8-bugbear==24.2.6
 flake8==7.0.0
@@ -11,10 +11,10 @@ mypy==1.9.0
 pydocstyle==6.3.0
 pylint==3.1.0
 pylama==8.4.1
-pytest-cov==4.1.0
+pytest-cov==6.0.0
 pytest-profiling==1.7.0
-pytest-xdist==3.5.0
-pytest==8.1.1
+pytest-xdist==3.6.1
+pytest==8.3.3
 setuptools
 termplotlib==0.3.9
 tox
