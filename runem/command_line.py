@@ -136,6 +136,29 @@ def parse_args(
         default=False,
         required=False,
     )
+    parser.add_argument(
+        "--always-files",
+        dest="always_files",
+        help=(
+            "list of paths/files to always check (overriding -f/-h), if the path "
+            "matches the filter regex and if file-paths exist"
+        ),
+        nargs="+",
+        default=None,
+        required=False,
+    )
+
+    parser.add_argument(
+        "--git-files-since-branch",
+        dest="git_since_branch",
+        help=(
+            "Get the list of paths/files changed between a branch, e.g., since "
+            "'origin/main'. Useful for checking files changed before pushing."
+        ),
+        default=None,  # Default to None if no branch is specified
+        required=False,  # Not required, users may not want to specify a branch
+        type=str,  # Accepts a string input representing the branch name
+    )
 
     parser.add_argument(
         "--procs",
