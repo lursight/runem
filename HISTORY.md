@@ -4,6 +4,127 @@ Changelog
 
 (unreleased)
 ------------
+- Merge pull request #54 from lursight/chore/use_tox_on_release. [Frank
+  Harrison]
+
+  chore(release): use tox on 'make release'
+- Chore(release): use tox on 'make release' [Frank Harrison]
+
+  This will run the checks across all versions, hopefully making
+  everything more solid.
+- Merge pull request #53 from lursight/dependabot/npm_and_yarn/cross-
+  spawn-7.0.5. [Frank Harrison]
+
+  chore(deps): bump cross-spawn from 7.0.3 to 7.0.5
+- Chore(deps): bump cross-spawn from 7.0.3 to 7.0.5. [dependabot[bot]]
+
+  Bumps [cross-spawn](https://github.com/moxystudio/node-cross-spawn) from 7.0.3 to 7.0.5.
+  - [Changelog](https://github.com/moxystudio/node-cross-spawn/blob/master/CHANGELOG.md)
+  - [Commits](https://github.com/moxystudio/node-cross-spawn/compare/v7.0.3...v7.0.5)
+
+  ---
+  updated-dependencies:
+  - dependency-name: cross-spawn
+    dependency-type: indirect
+  ...
+- Merge pull request #49 from
+  lursight/feat/allow_additional_files_to_be_checked. [Frank Harrison]
+
+  Feat/allow additional files to be checked
+- Feat(file-controls): adds way to get files changed between branches.
+  [Frank Harrison]
+
+  This is useful if we want to do quick checks only on code that has
+  changed since 'main' when pushing, or on a sibling branch or similar.
+
+  For example, if we are using `--exec` in a rebase, we can start running
+  check half-way through the list of commits, instead of every commit, but
+  have the code check all files that have changes - meaning we can see the
+  impact of changes throughout the branch, without working on *every*
+  commit - sometimes this is very useful.
+- Feat(file-controls): adds --always-files switch to force files to be
+  checked. [Frank Harrison]
+
+  Because of how we apply filters, filters for the files are applied
+  before they're passed to the relevant jobs.
+
+  This means that runem can now always check a subset of files, even if
+  they're not in the HEAD or staged files, meaning we can verify if some
+  files that we care about for a rebase or similar are copecetic.
+- Merge pull request #52 from lursight/chore/pre-push_checks. [Frank
+  Harrison]
+
+  Chore/pre push checks
+- Chore(tox): adds tox to run against multiple version of python on pre-
+  push. [Frank Harrison]
+- Chore(pre-push-checks): adds a clean-checkout pre-push git hook.
+  [Frank Harrison]
+- Chore(pre-push-checks): renames setup.py extras test -> tests. [Frank
+  Harrison]
+- Chore(pre-push-checks): adds option to get the root-path from the cli.
+  [Frank Harrison]
+
+  This will support pre-push hooks amongst other things, replacing
+  ENV-variable that other projects I work on use.
+- Chore(help-tests): fixes the tests when dirs are long. [Frank
+  Harrison]
+
+  If the dir-path was too long it would wrap and we could do a simple replace on it.
+- Chore(help-tests): shows the failing output when the help comparrisons
+  fail. [Frank Harrison]
+- Chore(help-tests): stops the help files being overwritten
+  unexpectedly. [Frank Harrison]
+- Chore(typo): fixes argsparse -> argparse. [Frank Harrison]
+- Chore(tox): runs checks against multiple targets of python using tox.
+  [Frank Harrison]
+- Chore(yarn): unconditionally installs yarn deps, at least once, in
+  clean checkouts. [Frank Harrison]
+
+  Reminder that we use yarn because it's simpler and better for
+  spell-checking and git-hooks, mainly because the hooks get
+  auto-installed when the yarn deps are installed.
+- Chore(pretty): updates docs config file missed formatting after
+  pervious PR. [Frank Harrison]
+- Merge pull request #51 from lursight/chore/docs. [Frank Harrison]
+
+  Chore/docs
+- Chore(better-docs): make links in README.md absolute to docs. [Frank
+  Harrison]
+- Chore(better-docs): change label in docs badge to emoticon. [Frank
+  Harrison]
+- Chore(better-docs): adds docs badge and moves others to top. [Frank
+  Harrison]
+- Chore(better-docs): rewrites and restructures the docs. [Frank
+  Harrison]
+
+  We split README into multiple mark-down files in docs/ allowing github
+  pages to publish them via Jekyll.
+- Chore(better-docs): configures Jekyll theme ahead of publish docs as
+  pages. [Frank Harrison]
+
+  We configure the docs in the root-dir so that the index of the Docs site
+  is the same-same as the README.md at the root of the checkout.
+- Merge pull request #50 from
+  lursight/dependabot/npm_and_yarn/micromatch-4.0.8. [Frank Harrison]
+
+  chore(deps): bump micromatch from 4.0.5 to 4.0.8
+- Chore(deps): bump micromatch from 4.0.5 to 4.0.8. [dependabot[bot]]
+
+  Bumps [micromatch](https://github.com/micromatch/micromatch) from 4.0.5 to 4.0.8.
+  - [Release notes](https://github.com/micromatch/micromatch/releases)
+  - [Changelog](https://github.com/micromatch/micromatch/blob/master/CHANGELOG.md)
+  - [Commits](https://github.com/micromatch/micromatch/compare/4.0.5...4.0.8)
+
+  ---
+  updated-dependencies:
+  - dependency-name: micromatch
+    dependency-type: indirect
+  ...
+
+
+0.0.31 (2024-04-20)
+-------------------
+- Release: version 0.0.31 🚀 [Frank Harrison]
 - Merge pull request #48 from
   lursight/feat/merge_head_and_modified_files_in_git. [Frank Harrison]
 
