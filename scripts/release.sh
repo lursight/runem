@@ -11,7 +11,7 @@ if [[ -z "${TAG}" ]]; then
     exit 5
 fi
 echo "Will tag to version ${TAG} after tests"
-python3 -m runem.runem --check
+tox # run all test across all supported python versions
 echo "${TAG}" > runem/VERSION
 ${ENV_PREFIX}gitchangelog > HISTORY.md
 git add runem/VERSION HISTORY.md
