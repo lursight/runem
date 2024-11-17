@@ -209,7 +209,7 @@ def _process_jobs(
             with multiprocessing.Pool(processes=num_concurrent_procs) as pool:
                 # use starmap so we can pass down the job-configs and the args and the files
                 in_out_job_run_metadatas[phase] = pool.starmap(
-                    job_execute,
+                    job_execute,  # no kwargs passed for jobs here
                     zip(
                         jobs,
                         repeat(running_jobs),

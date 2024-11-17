@@ -20,6 +20,7 @@ lib64/
 node_modules/
 parts/
 sdist/
+tox/
 var/
 wheels/
 pip-wheel-metadata/
@@ -42,7 +43,7 @@ pip-delete-this-directory.txt
 # Unit test / coverage reports
 .tox/
 .nox/
-.coverage_report
+.coverage_report*
 .coverage.*
 .cache
 nosetests.xml
@@ -121,6 +122,7 @@ venv.bak/
 
 # mkdocs documentation
 /site
+docs/Gemfile
 
 # mypy
 .mypy_cache/
