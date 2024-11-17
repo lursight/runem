@@ -4,6 +4,73 @@ Changelog
 
 (unreleased)
 ------------
+- Merge pull request #57 from lursight/feat/replace_halo_with_rich.
+  [Frank Harrison]
+
+  feat(rich): moves to using rich instead of halo for spinners
+- Feat(rich): moves to using rich instead of halo for spinners. [Frank
+  Harrison]
+- Merge pull request #56 from lursight/feat/better_job_function_typing.
+  [Frank Harrison]
+
+  feat(better-job-function-typing): adds stronger typing for job and hook tasks
+- Feat(better-job-function-typing): adds stronger typing for job and
+  hook tasks. [Frank Harrison]
+
+  We do this by typing the kwargs convenience variable, for which we need
+  to use `Unpack` (for back compatibility), and `type_extensions` for
+  cross-python-version compatibility (i.e. something that work for all
+  targeted version of python).
+
+  As a side-effect of this we get the benefit of seeing when and where we
+  add extra data into the call-stack for `job_execute()` and it emerges
+  that we only extend the key-word args when we are calling hooks in a
+  non-threaded way, which makes sense.
+
+  We do several things to achieve this:
+    1. We have common parameters passed to both hooks and job-tasks
+        - These common parameters make the hooks and job-task feel similar
+          to develop.
+    2. We put all hook-specific kwargs in one place, and mark each as
+       optional.
+        - this, for now, is mainly because we only have one hook, so this
+          will likely change.
+    3. We share and combine kwargs in a range of inheritance types, mainly
+       to work with(/around?) python-typing, which isn't great in this
+       type of situation.
+- Chore(ignores): adds the tox/ dir to the ignores. [Frank Harrison]
+- Chore(ignores): update git ignore for coverage files and docs gen.
+  [Frank Harrison]
+
+  The docs are recent additions.
+- Merge pull request #55 from lursight/chore/test_improvements. [Frank
+  Harrison]
+
+  Chore/test improvements
+- Chore(coverage): reduce false-positives by deleteing old
+  coverage_report files. [Frank Harrison]
+
+  Sometimes we would have stale .coverage_report.* files left behind where
+  from the multi-distributed pytest runs. These would lead more lines
+  being reported as coverage than actual - aka false-positive test passes
+  for coverage.
+- Chore(help-tests): fixes the help output width in tests. [Frank
+  Harrison]
+
+  This reduces false-negative test results where we get word-splits in
+  directories or between process counters or other dynamic content.
+
+  This was due to the width of the terminal when the test was being run
+  being variant with developer-machine. This uses a fixed-width output,
+  reducing, if not stopping issues.
+- Chore(deps): updates black 24.3.0 -> 24.10.0. [Frank Harrison]
+- Chore(deps): updates to latest pytest 8.1.1 -> 8.3.3 + plugins. [Frank
+  Harrison]
+
+
+0.0.32 (2024-11-17)
+-------------------
+- Release: version 0.0.32 🚀 [Frank Harrison]
 - Merge pull request #54 from lursight/chore/use_tox_on_release. [Frank
   Harrison]
 
