@@ -128,6 +128,15 @@ def _job_py_mypy(
         raise RunCommandUnhandledError(f"runem: mypy mis-config detected: {output}")
 
 
+def _delete_old_coverage_reports(root_path: pathlib.Path) -> None:
+    """To avoid false-positives on coverage we delete the coverage report files."""
+    old_coverage_report_files: typing.List[pathlib.Path] = list(
+        root_path.glob(".coverage_report*")
+    )
+    for old_coverage_report in old_coverage_report_files:
+        old_coverage_report.unlink()
+
+
 def _job_py_pytest(  # noqa: C901 # pylint: disable=too-many-branches,too-many-statements
     **kwargs: typing.Any,
 ) -> JobReturnData:
@@ -154,6 +163,7 @@ def _job_py_pytest(  # noqa: C901 # pylint: disable=too-many-branches,too-many-s
     coverage_switches: typing.List[str] = []
     coverage_cfg = root_path / ".coveragerc"
     if options["coverage"]:
+        _delete_old_coverage_reports(root_path)
         assert coverage_cfg.exists()
         coverage_switches = [
             "--cov=.",
