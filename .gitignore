@@ -20,6 +20,7 @@ lib64/
 node_modules/
 parts/
 sdist/
+tox/
 var/
 wheels/
 pip-wheel-metadata/
