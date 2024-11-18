@@ -19,33 +19,23 @@ then activate it with `source .venv/bin/activate`.
 
 ## Install the project in develop mode
 
-Run `make install` to install the project in develop mode.
+Run `make install` to bootstrap install the project in develop mode.
 
 ## Run the tests to ensure everything is working
 
-Run `make test` to run the tests.
+Run `runem` to run the tests for the first time.
 
 ## Create a new branch to work on your contribution
 
-Run `git checkout -b my_contribution`
+Run `git checkout -b chore/my_contribution`
 
 ## Make your changes
 
 Edit the files using your preferred editor. (we recommend VIM or VSCode)
 
-## Format the code
+## Test, lint and format your changes
 
-Run `make fmt` to format the code.
-
-## Run the linter
-
-Run `make lint` to run the linter.
-
-## Test your changes
-
-Run `make test` to run the tests.
-
-Ensure code coverage report shows `100%` coverage, add tests to your PR.
+Run `runem` to run all checks at light-speed 🚀.
 
 ## Build the docs locally
 
@@ -61,13 +51,14 @@ Example: `fix(package): update setup.py arguments 🎉` (emojis are fine too)
 
 ## Push your changes to your fork
 
-Run `git push origin my_contribution`
+Run `git push my_fork my_contribution`
 
 ## Submit a pull request
 
 On github interface, click on `Pull Request` button.
 
-Wait CI to run and one of the developers will review your PR.
+Wait for CI to run and one of the developers will review your PR.
+
 ## Makefile utilities
 
 This project comes with a `Makefile` that contains a number of useful utility.
