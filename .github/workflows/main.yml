@@ -1,4 +1,4 @@
-# This is a basic workflow to help you get started with Actions
+# Runs runem against itself
 
 name: CI
 
@@ -14,66 +14,59 @@ on:
   workflow_dispatch:
 
 jobs:
-  tests_linux:
+  ci_tests:
     strategy:
       fail-fast: false
       matrix:
         python-version: [3.9, 3.11, 3.12]
-        os: [ubuntu-latest]
+        os: [ubuntu-latest, macos-latest] # Add windows-latest if needed
     runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install Pip
-        run: pip install --user --upgrade pip
-      - name: Uninstall Setuptools for 3.12 bug
-        run: pip uninstall -y setuptools
-      - name: Reinstall Setuptools for 3.12 bug
-        run: pip install setuptools
-      - name: Install Yarn Deps
-        run: yarn install
-      - name: Install project
-        run: pip install -e .[tests]
-      - name: Run tests
-        run: python3 -m runem.runem --verbose --no-spinner
-      - name: "Upload coverage to Codecov"
-        uses: codecov/codecov-action@v4
-      - name: Upload Artifacts
-        if: failure() # This step runs only if any previous step failed
-        uses: actions/upload-artifact@v4
-        with:
-          name: reports-${{ matrix.os }}-python${{ matrix.python-version }}
-          path: /home/runner/work/runem/runem/reports/**
 
-  tests_mac:
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: [3.9, 3.11, 3.12]
-        os: [macos-latest]
-    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install Pip
-        run: pip install --user --upgrade pip
-      - name: Uninstall Setuptools for 3.12 bug
-        run: pip uninstall -y setuptools
-      - name: Reinstall Setuptools for 3.12 bug
-        run: pip install setuptools
+
+      - name: Cache pip
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ matrix.python-version }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Upgrade Pip
+        run: pip install --upgrade pip
+
+      - name: Handle Setuptools Bug for Python 3.12
+        if: matrix.python-version == '3.12'
+        run: |
+          pip uninstall -y setuptools
+          pip install setuptools
+
+      - name: Cache Yarn
+        if: ${{ matrix.os != 'windows-latest' }}
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/yarn
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
       - name: Install Yarn Deps
         run: yarn install
-      - name: Install project
+
+      - name: Install Project
         run: pip install -e .[tests]
-      - name: Run tests
+
+      - name: Run Tests
         run: python3 -m runem.runem --verbose --no-spinner
       - name: Upload Artifacts
         if: failure() # This step runs only if any previous step failed
         uses: actions/upload-artifact@v4
         with:
           name: reports-${{ matrix.os }}-python${{ matrix.python-version }}
-          path: /home/runner/work/runem/runem/reports/**
+          path: reports/**
