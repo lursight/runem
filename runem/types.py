@@ -284,11 +284,11 @@ class CommonKwargs(
     can access from both hooks and job-tasks.
     """
 
-    root_path: pathlib.Path  # the path where the .runem.yml file is
     job: JobConfig  # the job or hook task spec ¢ TODO: rename this
     label: str  # the name of the hook or the job-label
     options: Options  # options passed in on the command line
     procs: int  # the max number of concurrent procs to run
+    root_path: pathlib.Path  # the path where the .runem.yml file is
     verbose: bool  # control log verbosity
 
 
