@@ -16,8 +16,10 @@ from runem.types.common import FilePathList, JobTags
 from runem.types.filters import FilePathListLookup
 from runem.types.runem_config import JobConfig
 from runem.types.types_jobs import (
+    AllKwargs,
     HookSpecificKwargs,
     JobFunction,
+    JobKwargs,
     JobReturn,
     JobTiming,
     TimingEntries,
@@ -79,18 +81,26 @@ def job_execute_inner(
         log(f"job: running: '{Job.get_job_name(job_config)}'")
     reports: JobReturn
     try:
-        assert isinstance(function, JobFunction)
-        reports = function(
-            file_list=file_list,
-            job=job_config,
-            label=Job.get_job_name(job_config),
-            options=ReadOnlyInformativeDict(config_metadata.options),
-            procs=config_metadata.args.procs,
-            record_sub_job_time=_record_sub_job_time,
-            root_path=root_path,
-            verbose=config_metadata.args.verbose,
+        # Define the common args for all jobs and hooks.
+        job_k_args: JobKwargs = {
+            "file_list": file_list,
+            "job": job_config,
+            "label": Job.get_job_name(job_config),
+            "options": ReadOnlyInformativeDict(config_metadata.options),
+            "procs": config_metadata.args.procs,
+            "record_sub_job_time": _record_sub_job_time,
+            "root_path": root_path,
+            "verbose": config_metadata.args.verbose,
+        }
+        # Merge in the hook-specific kwargs (if any) for situations where we are
+        # calling hooks.
+        all_k_args: AllKwargs = {
+            **job_k_args,
             **kwargs,
-        )
+        }
+
+        assert isinstance(function, JobFunction)
+        reports = function(**all_k_args)
     except BaseException:  # pylint: disable=broad-exception-caught
         # log that we hit an error on this job and re-raise
         log(decorate=False)
