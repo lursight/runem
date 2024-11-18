@@ -5,8 +5,8 @@ import pytest
 
 from runem.job import Job, NoJobName
 from runem.types_wip.common import FilePathList, JobTags
+from runem.types_wip.filters import FilePathListLookup
 from runem.types_wip.runem_config import JobConfig
-from runem.types_wip.types import FilePathListLookup
 
 
 @pytest.mark.parametrize(

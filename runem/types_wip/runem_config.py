@@ -2,7 +2,8 @@ import pathlib
 import typing
 
 from runem.types_wip.common import JobName, JobTags, OrderedPhases, PhaseName
-from runem.types_wip.types import HookName, TagFileFilter
+from runem.types_wip.filters import TagFileFilter
+from runem.types_wip.hooks import HookName
 
 
 class OptionConfig(typing.TypedDict, total=False):

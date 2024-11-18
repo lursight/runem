@@ -18,6 +18,8 @@ from runem.types_wip.common import (
     PhaseName,
 )
 from runem.types_wip.errors import FunctionNotFound
+from runem.types_wip.filters import TagFileFilter, TagFileFilters
+from runem.types_wip.hooks import HookName
 from runem.types_wip.runem_config import (
     Config,
     ConfigNodes,
@@ -33,7 +35,6 @@ from runem.types_wip.runem_config import (
     PhaseGroupedJobs,
     TagFileFilterSerialised,
 )
-from runem.types_wip.types import HookName, TagFileFilter, TagFileFilters
 
 
 def _parse_global_config(

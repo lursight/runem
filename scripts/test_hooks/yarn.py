@@ -3,7 +3,7 @@ import pathlib
 from typing_extensions import Unpack
 
 from runem.run_command import run_command
-from runem.types_wip.types import Options, OptionsWritable
+from runem.types_wip.options import Options, OptionsWritable
 from runem.types_wip.types_jobs import JobKwargs
 
 

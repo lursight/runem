@@ -6,8 +6,9 @@ from typing_extensions import Unpack
 
 from runem.log import log
 from runem.run_command import RunCommandUnhandledError, run_command
-from runem.types_public_api import JobKwargs, JobReturnData, Options
+from runem.types_public_api import JobKwargs, JobReturnData
 from runem.types_wip.common import FilePathList, JobName
+from runem.types_wip.options import Options
 
 
 def _job_py_code_reformat(

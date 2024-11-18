@@ -27,6 +27,8 @@ from runem.runem import (
     _update_progress,
     timed_main,
 )
+from runem.types_wip.filters import FilePathListLookup
+from runem.types_wip.hooks import HookName
 from runem.types_wip.runem_config import (
     Config,
     GlobalSerialisedConfig,
@@ -37,7 +39,6 @@ from runem.types_wip.runem_config import (
     PhaseGroupedJobs,
     UserConfigMetadata,
 )
-from runem.types_wip.types import FilePathListLookup, HookName
 from runem.types_wip.types_jobs import JobReturn, JobTiming
 from tests.intentional_test_error import IntentionalTestError
 from tests.sanitise_reports_footer import sanitise_reports_footer
