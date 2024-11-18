@@ -13,12 +13,6 @@ from runem.types_wip.common import (
 )
 
 
-class FunctionNotFound(ValueError):
-    """Thrown when the test-function cannot be found."""
-
-    pass
-
-
 class HookName(Enum):
     # at exit
     ON_EXIT = "on-exit"

@@ -8,7 +8,8 @@ from runem.job_wrapper_python import (
     _load_python_function_from_module,
     get_job_wrapper_py_func,
 )
-from runem.types_wip.types import FunctionNotFound, JobConfig
+from runem.types_wip.errors import FunctionNotFound
+from runem.types_wip.types import JobConfig
 from runem.types_wip.types_jobs import JobFunction
 
 

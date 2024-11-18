@@ -17,10 +17,10 @@ from runem.types_wip.common import (
     OrderedPhases,
     PhaseName,
 )
+from runem.types_wip.errors import FunctionNotFound
 from runem.types_wip.types import (
     Config,
     ConfigNodes,
-    FunctionNotFound,
     GlobalConfig,
     GlobalSerialisedConfig,
     HookConfig,
