@@ -46,13 +46,8 @@ from runem.job_filter import filter_jobs
 from runem.log import error, log, warn
 from runem.report import report_on_run
 from runem.types_wip.common import OrderedPhases, PhaseName
-from runem.types_wip.types import (
-    Config,
-    FilePathListLookup,
-    HookName,
-    Jobs,
-    PhaseGroupedJobs,
-)
+from runem.types_wip.runem_config import Config, Jobs, PhaseGroupedJobs
+from runem.types_wip.types import FilePathListLookup, HookName
 from runem.types_wip.types_jobs import (
     JobReturn,
     JobRunMetadata,

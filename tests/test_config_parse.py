@@ -18,17 +18,17 @@ from runem.config_parse import (
 )
 from runem.types_wip.common import JobNames, JobPhases, JobTags, OrderedPhases
 from runem.types_wip.errors import FunctionNotFound
-from runem.types_wip.types import (
+from runem.types_wip.runem_config import (
     Config,
     GlobalConfig,
     GlobalSerialisedConfig,
     HookConfig,
-    HookName,
     HookSerialisedConfig,
     JobConfig,
     JobSerialisedConfig,
     PhaseGroupedJobs,
 )
+from runem.types_wip.types import HookName
 
 
 def test_parse_job_config() -> None:

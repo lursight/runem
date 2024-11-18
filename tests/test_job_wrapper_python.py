@@ -9,7 +9,7 @@ from runem.job_wrapper_python import (
     get_job_wrapper_py_func,
 )
 from runem.types_wip.errors import FunctionNotFound
-from runem.types_wip.types import JobConfig
+from runem.types_wip.runem_config import JobConfig
 from runem.types_wip.types_jobs import JobFunction
 
 

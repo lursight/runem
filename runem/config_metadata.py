@@ -4,12 +4,8 @@ import typing
 
 from runem.informative_dict import InformativeDict
 from runem.types_wip.common import JobNames, JobPhases, JobTags, OrderedPhases
-from runem.types_wip.types import (
-    OptionConfigs,
-    OptionsWritable,
-    PhaseGroupedJobs,
-    TagFileFilters,
-)
+from runem.types_wip.runem_config import OptionConfigs, PhaseGroupedJobs
+from runem.types_wip.types import OptionsWritable, TagFileFilters
 
 if typing.TYPE_CHECKING:  # pragma: no cover
     from runem.hook_manager import HookManager

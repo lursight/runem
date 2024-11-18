@@ -13,7 +13,8 @@ from runem.config_metadata import ConfigMetadata
 from runem.informative_dict import InformativeDict
 from runem.job_execute import job_execute
 from runem.run_command import RecordSubJobTimeType
-from runem.types_wip.types import FilePathListLookup, JobConfig, PhaseGroupedJobs
+from runem.types_wip.runem_config import JobConfig, PhaseGroupedJobs
+from runem.types_wip.types import FilePathListLookup
 from tests.intentional_test_error import IntentionalTestError
 
 

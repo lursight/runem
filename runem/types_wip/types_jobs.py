@@ -32,7 +32,8 @@ from datetime import timedelta
 from typing_extensions import Unpack
 
 from runem.types_wip.common import FilePathList, PhaseName
-from runem.types_wip.types import JobConfig, Options
+from runem.types_wip.runem_config import JobConfig
+from runem.types_wip.types import Options
 
 ReportName = str
 ReportUrl = typing.Union[str, pathlib.Path]

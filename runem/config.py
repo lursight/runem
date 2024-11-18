@@ -7,7 +7,7 @@ from packaging.version import Version
 
 from runem.log import error, log
 from runem.runem_version import get_runem_version
-from runem.types_wip.types import (
+from runem.types_wip.runem_config import (
     Config,
     GlobalConfig,
     GlobalSerialisedConfig,

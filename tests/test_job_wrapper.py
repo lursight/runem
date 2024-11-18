@@ -3,7 +3,7 @@ from unittest.mock import Mock, patch
 
 from runem import job_runner_simple_command
 from runem.job_wrapper import get_job_wrapper
-from runem.types_wip.types import JobConfig
+from runem.types_wip.runem_config import JobConfig
 from runem.types_wip.types_jobs import JobFunction
 
 DUMMY_FUNCTION: JobFunction = (
