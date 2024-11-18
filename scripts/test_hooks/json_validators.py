@@ -3,8 +3,7 @@ import pathlib
 from typing_extensions import Unpack
 
 from runem.run_command import run_command
-from runem.types_wip.common import FilePathList
-from runem.types_wip.types_jobs import JobKwargs
+from runem.types_public_api import FilePathList, JobKwargs
 
 
 def _json_validate(
