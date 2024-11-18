@@ -3,22 +3,20 @@ import typing
 from enum import Enum
 
 from runem.informative_dict import InformativeDict, ReadOnlyInformativeDict
+from runem.types_wip.common import (
+    FilePathList,
+    JobName,
+    JobTag,
+    JobTags,
+    OrderedPhases,
+    PhaseName,
+)
 
 
 class FunctionNotFound(ValueError):
     """Thrown when the test-function cannot be found."""
 
     pass
-
-
-# meta-data types
-JobName = str
-JobTag = str
-JobNames = typing.Set[JobName]
-JobPhases = typing.Set[str]
-JobTags = typing.Set[JobTag]
-PhaseName = str
-OrderedPhases = typing.Tuple[PhaseName, ...]
 
 
 class HookName(Enum):
@@ -58,8 +56,6 @@ class TagFileFilter(typing.TypedDict):
 
 
 TagFileFilters = typing.Dict[JobTag, TagFileFilter]
-FilePathSerialise = str
-FilePathList = typing.List[FilePathSerialise]
 FilePathListLookup = typing.DefaultDict[JobTag, FilePathList]
 
 

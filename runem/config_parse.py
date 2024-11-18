@@ -10,6 +10,13 @@ from runem.hook_manager import HookManager
 from runem.job import Job
 from runem.job_wrapper import get_job_wrapper
 from runem.log import error, log, warn
+from runem.types_wip.common import (
+    JobNames,
+    JobPhases,
+    JobTags,
+    OrderedPhases,
+    PhaseName,
+)
 from runem.types_wip.types import (
     Config,
     ConfigNodes,
@@ -21,15 +28,10 @@ from runem.types_wip.types import (
     Hooks,
     HookSerialisedConfig,
     JobConfig,
-    JobNames,
-    JobPhases,
     JobSerialisedConfig,
-    JobTags,
     JobWhen,
     OptionConfigs,
-    OrderedPhases,
     PhaseGroupedJobs,
-    PhaseName,
     TagFileFilter,
     TagFileFilters,
     TagFileFilterSerialised,

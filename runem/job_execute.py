@@ -12,7 +12,8 @@ from runem.informative_dict import ReadOnlyInformativeDict
 from runem.job import Job
 from runem.job_wrapper import get_job_wrapper
 from runem.log import error, log
-from runem.types_wip.types import FilePathList, FilePathListLookup, JobConfig, JobTags
+from runem.types_wip.common import FilePathList, JobTags
+from runem.types_wip.types import FilePathListLookup, JobConfig
 from runem.types_wip.types_jobs import (
     HookSpecificKwargs,
     JobFunction,

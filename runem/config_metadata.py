@@ -3,13 +3,10 @@ import pathlib
 import typing
 
 from runem.informative_dict import InformativeDict
+from runem.types_wip.common import JobNames, JobPhases, JobTags, OrderedPhases
 from runem.types_wip.types import (
-    JobNames,
-    JobPhases,
-    JobTags,
     OptionConfigs,
     OptionsWritable,
-    OrderedPhases,
     PhaseGroupedJobs,
     TagFileFilters,
 )

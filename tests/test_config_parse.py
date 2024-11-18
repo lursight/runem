@@ -16,6 +16,7 @@ from runem.config_parse import (
     parse_hook_config,
     parse_job_config,
 )
+from runem.types_wip.common import JobNames, JobPhases, JobTags, OrderedPhases
 from runem.types_wip.types import (
     Config,
     FunctionNotFound,
@@ -25,11 +26,7 @@ from runem.types_wip.types import (
     HookName,
     HookSerialisedConfig,
     JobConfig,
-    JobNames,
-    JobPhases,
     JobSerialisedConfig,
-    JobTags,
-    OrderedPhases,
     PhaseGroupedJobs,
 )
 
