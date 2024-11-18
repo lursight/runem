@@ -35,6 +35,9 @@ from runem.types.common import FilePathList, PhaseName
 from runem.types.options import Options
 from runem.types.runem_config import JobConfig
 
+if typing.TYPE_CHECKING:  # pragma: no cover
+    from runem.config_metadata import ConfigMetadata
+
 ReportName = str
 ReportUrl = typing.Union[str, pathlib.Path]
 ReportUrlInfo = typing.Tuple[ReportName, ReportUrl]
@@ -79,12 +82,12 @@ class CommonKwargs(
     can access from both hooks and job-tasks.
     """
 
+    config_metadata: "ConfigMetadata"  # gives greater context to jobs and hooks
     job: JobConfig  # the job or hook task spec ¢ TODO: rename this
     label: str  # the name of the hook or the job-label
     options: Options  # options passed in on the command line
     procs: int  # the max number of concurrent procs to run
     root_path: pathlib.Path  # the path where the .runem.yml file is
-    # TODO: config_metadata: ConfigMetadata
     verbose: bool  # control log verbosity
 
 

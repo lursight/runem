@@ -83,6 +83,7 @@ def job_execute_inner(
     try:
         # Define the common args for all jobs and hooks.
         job_k_args: JobKwargs = {
+            "config_metadata": config_metadata,
             "file_list": file_list,
             "job": job_config,
             "label": Job.get_job_name(job_config),
