@@ -45,18 +45,15 @@ from runem.job_execute import job_execute
 from runem.job_filter import filter_jobs
 from runem.log import error, log, warn
 from runem.report import report_on_run
-from runem.types import (
-    Config,
-    FilePathListLookup,
-    HookName,
+from runem.types.common import OrderedPhases, PhaseName
+from runem.types.filters import FilePathListLookup
+from runem.types.hooks import HookName
+from runem.types.runem_config import Config, Jobs, PhaseGroupedJobs
+from runem.types.types_jobs import (
     JobReturn,
     JobRunMetadata,
     JobRunMetadatasByPhase,
-    Jobs,
     JobTiming,
-    OrderedPhases,
-    PhaseGroupedJobs,
-    PhaseName,
 )
 from runem.utils import printable_set
 

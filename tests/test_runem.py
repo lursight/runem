@@ -27,20 +27,19 @@ from runem.runem import (
     _update_progress,
     timed_main,
 )
-from runem.types import (
+from runem.types.filters import FilePathListLookup
+from runem.types.hooks import HookName
+from runem.types.runem_config import (
     Config,
-    FilePathListLookup,
     GlobalSerialisedConfig,
-    HookName,
     HookSerialisedConfig,
     JobConfig,
-    JobReturn,
     Jobs,
     JobSerialisedConfig,
-    JobTiming,
     PhaseGroupedJobs,
     UserConfigMetadata,
 )
+from runem.types.types_jobs import JobReturn, JobTiming
 from tests.intentional_test_error import IntentionalTestError
 from tests.sanitise_reports_footer import sanitise_reports_footer
 

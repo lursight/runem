@@ -8,7 +8,9 @@ from runem.job_wrapper_python import (
     _load_python_function_from_module,
     get_job_wrapper_py_func,
 )
-from runem.types import FunctionNotFound, JobConfig, JobFunction
+from runem.types.errors import FunctionNotFound
+from runem.types.runem_config import JobConfig
+from runem.types.types_jobs import JobFunction
 
 
 def test_get_job_function(tmp_path: pathlib.Path) -> None:

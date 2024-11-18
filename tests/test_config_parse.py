@@ -16,20 +16,17 @@ from runem.config_parse import (
     parse_hook_config,
     parse_job_config,
 )
-from runem.types import (
+from runem.types.common import JobNames, JobPhases, JobTags, OrderedPhases
+from runem.types.errors import FunctionNotFound
+from runem.types.hooks import HookName
+from runem.types.runem_config import (
     Config,
-    FunctionNotFound,
     GlobalConfig,
     GlobalSerialisedConfig,
     HookConfig,
-    HookName,
     HookSerialisedConfig,
     JobConfig,
-    JobNames,
-    JobPhases,
     JobSerialisedConfig,
-    JobTags,
-    OrderedPhases,
     PhaseGroupedJobs,
 )
 

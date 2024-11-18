@@ -6,7 +6,7 @@ from typing_extensions import Unpack
 
 from runem.log import log
 from runem.run_command import RunCommandUnhandledError, run_command
-from runem.types import FilePathList, JobKwargs, JobName, JobReturnData, OptionsWritable
+from runem.types import FilePathList, JobKwargs, JobName, JobReturnData, Options
 
 
 def _job_py_code_reformat(
@@ -14,7 +14,7 @@ def _job_py_code_reformat(
 ) -> None:
     """Runs python formatting code in serial order as one influences the other."""
     label: JobName = kwargs["label"]
-    options: OptionsWritable = kwargs["options"]
+    options: Options = kwargs["options"]
     python_files: FilePathList = kwargs["file_list"]
 
     # put into 'check' mode if requested on the command line
@@ -143,7 +143,7 @@ def _job_py_pytest(  # noqa: C901 # pylint: disable=too-many-branches,too-many-s
     **kwargs: Unpack[JobKwargs],
 ) -> JobReturnData:
     label: JobName = kwargs["label"]
-    options: OptionsWritable = kwargs["options"]
+    options: Options = kwargs["options"]
     procs: int = kwargs["procs"]
     root_path: pathlib.Path = kwargs["root_path"]
 
@@ -276,7 +276,7 @@ def _job_py_pytest(  # noqa: C901 # pylint: disable=too-many-branches,too-many-s
 def _install_python_requirements(
     **kwargs: Unpack[JobKwargs],
 ) -> None:
-    options: OptionsWritable = kwargs["options"]
+    options: Options = kwargs["options"]
     root_path: pathlib.Path = kwargs["root_path"]
     if not (options["install-deps"]):
         # not enabled

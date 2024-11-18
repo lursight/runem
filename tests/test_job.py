@@ -4,7 +4,9 @@ from collections import defaultdict
 import pytest
 
 from runem.job import Job, NoJobName
-from runem.types import FilePathList, FilePathListLookup, JobConfig, JobTags
+from runem.types.common import FilePathList, JobTags
+from runem.types.filters import FilePathListLookup
+from runem.types.runem_config import JobConfig
 
 
 @pytest.mark.parametrize(

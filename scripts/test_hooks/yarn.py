@@ -3,7 +3,7 @@ import pathlib
 from typing_extensions import Unpack
 
 from runem.run_command import run_command
-from runem.types import JobKwargs, Options, OptionsWritable
+from runem.types import JobKwargs, Options
 
 
 def _job_yarn_deps(
@@ -35,7 +35,7 @@ def _job_prettier(
 
     TODO: connect me up!
     """
-    options: OptionsWritable = kwargs["options"]
+    options: Options = kwargs["options"]
     command_variant = "pretty"
     if options["check-only"]:
         command_variant = "prettyCheck"

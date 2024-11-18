@@ -4,14 +4,13 @@ from collections import defaultdict
 from datetime import timedelta
 
 from runem.log import log
-from runem.types import (
+from runem.types.common import OrderedPhases, PhaseName
+from runem.types.types_jobs import (
     JobReturn,
     JobRunMetadatasByPhase,
     JobRunReportByPhase,
     JobRunTimesByPhase,
     JobTiming,
-    OrderedPhases,
-    PhaseName,
     ReportUrlInfo,
     ReportUrls,
     TimingEntries,

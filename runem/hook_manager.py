@@ -7,15 +7,10 @@ from runem.config_metadata import ConfigMetadata
 from runem.job import Job
 from runem.job_execute import job_execute
 from runem.log import log
-from runem.types import (
-    FilePathListLookup,
-    HookConfig,
-    HookName,
-    Hooks,
-    HookSpecificKwargs,
-    HooksStore,
-    JobConfig,
-)
+from runem.types.filters import FilePathListLookup
+from runem.types.hooks import HookName
+from runem.types.runem_config import HookConfig, Hooks, HooksStore, JobConfig
+from runem.types.types_jobs import HookSpecificKwargs
 
 
 class HookManager:

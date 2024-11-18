@@ -10,28 +10,23 @@ from runem.hook_manager import HookManager
 from runem.job import Job
 from runem.job_wrapper import get_job_wrapper
 from runem.log import error, log, warn
-from runem.types import (
+from runem.types.common import JobNames, JobPhases, JobTags, OrderedPhases, PhaseName
+from runem.types.errors import FunctionNotFound
+from runem.types.filters import TagFileFilter, TagFileFilters
+from runem.types.hooks import HookName
+from runem.types.runem_config import (
     Config,
     ConfigNodes,
-    FunctionNotFound,
     GlobalConfig,
     GlobalSerialisedConfig,
     HookConfig,
-    HookName,
     Hooks,
     HookSerialisedConfig,
     JobConfig,
-    JobNames,
-    JobPhases,
     JobSerialisedConfig,
-    JobTags,
     JobWhen,
     OptionConfigs,
-    OrderedPhases,
     PhaseGroupedJobs,
-    PhaseName,
-    TagFileFilter,
-    TagFileFilters,
     TagFileFilterSerialised,
 )
 
