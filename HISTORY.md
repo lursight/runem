@@ -4,6 +4,56 @@ Changelog
 
 (unreleased)
 ------------
+- Chore(actions): simplifies code paths for actions. [Frank Harrison]
+- Chore(contrib): removes the Makefile commands that have been removed.
+  [Frank Harrison]
+
+  .. this should have been in the last PR.
+- Chore(contrib): update the CONTRIBUTING docs and removes defunct
+  scripts from Makefile. [Frank Harrison]
+- Chore(faster-actions): removes redundant github actions. [Frank
+  Harrison]
+
+  This should speed up github actions, but it may lead to more false-positives as we are relying on runem to be working and realiabel to run our own checks....
+
+  This could come back to bite us.
+- Chore(extra-ctx): adds config_metadata to job kw-args. [Frank
+  Harrison]
+
+  This allows much greater depth of testing based on other jobs-inclusion and metadata.
+- Chore(extra-ctx): moves the job-task calling to use kwargs explicitly.
+  [Frank Harrison]
+- Chore(extra-ctx): sort kwargs passed to jobs. [Frank Harrison]
+- Merge pull request #59 from lursight/chore/cleaner_type_exports.
+  [Frank Harrison]
+
+  Chore/cleaner type exports
+- Chore(clean-types): fixes false-negative from 'isort --check' [Frank
+  Harrison]
+- Chore(clean-types): makes the public_api the actual exported api of
+  the types module. [Frank Harrison]
+
+  I think this could be better
+- Chore(clean-types): renames type_wip -> types. [Frank Harrison]
+- Chore(clean-types): fixes up more of the test-hooks (badly named) for
+  runem itself. [Frank Harrison]
+- Chore(clean-types): splits out the rest of the types. [Frank Harrison]
+- Chore(clean-types): moves config and serialisationtypes to own file.
+  [Frank Harrison]
+- Chore(clean-types): moves error into new errors.py types file. [Frank
+  Harrison]
+- Chore(clean-types): starts moving some types into 'common' [Frank
+  Harrison]
+- Chore(clean-types): moves the types into types/wip whilst I work out
+  the public API. [Frank Harrison]
+- Chore(clean-types): splits out the job and hook execution types, ahead
+  of building a better public api for type exports. [Frank Harrison]
+- Chore(clean-types): sorts the job kwargs. [Frank Harrison]
+
+
+0.1.1 (2024-11-17)
+------------------
+- Release: version 0.1.1 🚀 [Frank Harrison]
 - Merge pull request #58 from lursight/fix/completed_job_counts. [Frank
   Harrison]
 
