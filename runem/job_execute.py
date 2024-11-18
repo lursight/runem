@@ -81,15 +81,14 @@ def job_execute_inner(
     try:
         assert isinstance(function, JobFunction)
         reports = function(
-            options=ReadOnlyInformativeDict(config_metadata.options),
             file_list=file_list,
+            job=job_config,
+            label=Job.get_job_name(job_config),
+            options=ReadOnlyInformativeDict(config_metadata.options),
             procs=config_metadata.args.procs,
+            record_sub_job_time=_record_sub_job_time,
             root_path=root_path,
             verbose=config_metadata.args.verbose,
-            # unpack useful data points from the job_config
-            label=Job.get_job_name(job_config),
-            job=job_config,
-            record_sub_job_time=_record_sub_job_time,
             **kwargs,
         )
     except BaseException:  # pylint: disable=broad-exception-caught
