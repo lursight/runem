@@ -12,10 +12,10 @@ from runem.types import (
     HookConfig,
     HookName,
     Hooks,
-    HookSpecificKwargs,
     HooksStore,
     JobConfig,
 )
+from runem.types_wip.types_jobs import HookSpecificKwargs
 
 
 class HookManager:

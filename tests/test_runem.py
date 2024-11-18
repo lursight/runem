@@ -34,13 +34,12 @@ from runem.types import (
     HookName,
     HookSerialisedConfig,
     JobConfig,
-    JobReturn,
     Jobs,
     JobSerialisedConfig,
-    JobTiming,
     PhaseGroupedJobs,
     UserConfigMetadata,
 )
+from runem.types_wip.types_jobs import JobReturn, JobTiming
 from tests.intentional_test_error import IntentionalTestError
 from tests.sanitise_reports_footer import sanitise_reports_footer
 

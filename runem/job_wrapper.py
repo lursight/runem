@@ -5,7 +5,8 @@ from runem.job_runner_simple_command import (
     validate_simple_command,
 )
 from runem.job_wrapper_python import get_job_wrapper_py_func
-from runem.types import JobFunction, JobWrapper
+from runem.types import JobWrapper
+from runem.types_wip.types_jobs import JobFunction
 
 
 def get_job_wrapper(job_wrapper: JobWrapper, cfg_filepath: pathlib.Path) -> JobFunction:

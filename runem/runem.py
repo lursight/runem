@@ -49,14 +49,16 @@ from runem.types import (
     Config,
     FilePathListLookup,
     HookName,
-    JobReturn,
-    JobRunMetadata,
-    JobRunMetadatasByPhase,
     Jobs,
-    JobTiming,
     OrderedPhases,
     PhaseGroupedJobs,
     PhaseName,
+)
+from runem.types_wip.types_jobs import (
+    JobReturn,
+    JobRunMetadata,
+    JobRunMetadatasByPhase,
+    JobTiming,
 )
 from runem.utils import printable_set
 

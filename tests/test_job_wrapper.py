@@ -3,7 +3,8 @@ from unittest.mock import Mock, patch
 
 from runem import job_runner_simple_command
 from runem.job_wrapper import get_job_wrapper
-from runem.types import JobConfig, JobFunction
+from runem.types import JobConfig
+from runem.types_wip.types_jobs import JobFunction
 
 DUMMY_FUNCTION: JobFunction = (
     "intentionally bad type as string to test call"  # type: ignore[assignment]
