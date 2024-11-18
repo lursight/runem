@@ -45,11 +45,11 @@ from runem.job_execute import job_execute
 from runem.job_filter import filter_jobs
 from runem.log import error, log, warn
 from runem.report import report_on_run
-from runem.types_wip.common import OrderedPhases, PhaseName
-from runem.types_wip.filters import FilePathListLookup
-from runem.types_wip.hooks import HookName
-from runem.types_wip.runem_config import Config, Jobs, PhaseGroupedJobs
-from runem.types_wip.types_jobs import (
+from runem.types.common import OrderedPhases, PhaseName
+from runem.types.filters import FilePathListLookup
+from runem.types.hooks import HookName
+from runem.types.runem_config import Config, Jobs, PhaseGroupedJobs
+from runem.types.types_jobs import (
     JobReturn,
     JobRunMetadata,
     JobRunMetadatasByPhase,

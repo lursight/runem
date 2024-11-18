@@ -10,17 +10,11 @@ from runem.hook_manager import HookManager
 from runem.job import Job
 from runem.job_wrapper import get_job_wrapper
 from runem.log import error, log, warn
-from runem.types_wip.common import (
-    JobNames,
-    JobPhases,
-    JobTags,
-    OrderedPhases,
-    PhaseName,
-)
-from runem.types_wip.errors import FunctionNotFound
-from runem.types_wip.filters import TagFileFilter, TagFileFilters
-from runem.types_wip.hooks import HookName
-from runem.types_wip.runem_config import (
+from runem.types.common import JobNames, JobPhases, JobTags, OrderedPhases, PhaseName
+from runem.types.errors import FunctionNotFound
+from runem.types.filters import TagFileFilter, TagFileFilters
+from runem.types.hooks import HookName
+from runem.types.runem_config import (
     Config,
     ConfigNodes,
     GlobalConfig,

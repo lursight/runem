@@ -4,8 +4,8 @@ from contextlib import redirect_stdout
 from datetime import timedelta
 
 from runem.report import _print_reports_by_phase, report_on_run
-from runem.types_wip.common import OrderedPhases
-from runem.types_wip.types_jobs import (
+from runem.types.common import OrderedPhases
+from runem.types.types_jobs import (
     JobReturn,
     JobRunMetadata,
     JobRunMetadatasByPhase,

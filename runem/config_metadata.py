@@ -3,10 +3,10 @@ import pathlib
 import typing
 
 from runem.informative_dict import InformativeDict
-from runem.types_wip.common import JobNames, JobPhases, JobTags, OrderedPhases
-from runem.types_wip.filters import TagFileFilters
-from runem.types_wip.options import OptionsWritable
-from runem.types_wip.runem_config import OptionConfigs, PhaseGroupedJobs
+from runem.types.common import JobNames, JobPhases, JobTags, OrderedPhases
+from runem.types.filters import TagFileFilters
+from runem.types.options import OptionsWritable
+from runem.types.runem_config import OptionConfigs, PhaseGroupedJobs
 
 if typing.TYPE_CHECKING:  # pragma: no cover
     from runem.hook_manager import HookManager

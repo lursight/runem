@@ -4,8 +4,8 @@ from collections import defaultdict
 from runem.config_metadata import ConfigMetadata
 from runem.job import Job
 from runem.log import log
-from runem.types_wip.common import JobNames, JobPhases, JobTags, PhaseName
-from runem.types_wip.runem_config import JobConfig, PhaseGroupedJobs
+from runem.types.common import JobNames, JobPhases, JobTags, PhaseName
+from runem.types.runem_config import JobConfig, PhaseGroupedJobs
 from runem.utils import printable_set
 
 

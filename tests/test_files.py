@@ -9,7 +9,7 @@ import pytest
 from runem.config_metadata import ConfigMetadata
 from runem.files import find_files
 from runem.informative_dict import InformativeDict
-from runem.types_wip.filters import FilePathListLookup
+from runem.types.filters import FilePathListLookup
 
 
 def _prep_config(

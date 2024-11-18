@@ -1,6 +1,6 @@
 import typing
 
-from runem.types_wip.common import FilePathList, JobTag
+from runem.types.common import FilePathList, JobTag
 
 
 class TagFileFilter(typing.TypedDict):

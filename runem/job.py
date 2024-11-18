@@ -1,8 +1,8 @@
 import typing
 
-from runem.types_wip.common import FilePathList, JobTags
-from runem.types_wip.filters import FilePathListLookup
-from runem.types_wip.runem_config import JobConfig, JobWhen
+from runem.types.common import FilePathList, JobTags
+from runem.types.filters import FilePathListLookup
+from runem.types.runem_config import JobConfig, JobWhen
 
 
 class NoJobName(ValueError):

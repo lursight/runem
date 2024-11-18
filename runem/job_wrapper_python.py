@@ -3,9 +3,9 @@ import sys
 from importlib.util import module_from_spec
 from importlib.util import spec_from_file_location as module_spec_from_file_location
 
-from runem.types_wip.errors import FunctionNotFound
-from runem.types_wip.runem_config import JobWrapper
-from runem.types_wip.types_jobs import JobFunction
+from runem.types.errors import FunctionNotFound
+from runem.types.runem_config import JobWrapper
+from runem.types.types_jobs import JobFunction
 
 
 def _load_python_function_from_module(

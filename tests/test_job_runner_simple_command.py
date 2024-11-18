@@ -4,7 +4,7 @@ from unittest.mock import Mock, patch
 
 from runem.job import Job
 from runem.job_runner_simple_command import job_runner_simple_command
-from runem.types_wip.runem_config import JobConfig
+from runem.types.runem_config import JobConfig
 
 
 @patch(

@@ -11,8 +11,8 @@ import pytest
 from runem.config_metadata import ConfigMetadata
 from runem.informative_dict import InformativeDict
 from runem.job_filter import _get_jobs_matching, _should_filter_out_by_tags, filter_jobs
-from runem.types_wip.common import JobTags
-from runem.types_wip.runem_config import JobConfig, PhaseGroupedJobs
+from runem.types.common import JobTags
+from runem.types.runem_config import JobConfig, PhaseGroupedJobs
 
 
 @pytest.mark.parametrize(
