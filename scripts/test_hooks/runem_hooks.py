@@ -3,7 +3,7 @@ from datetime import timedelta
 
 from typing_extensions import Unpack
 
-from runem.types_public_api import HookKwargs
+from runem.types import HookKwargs
 
 
 def _on_exit_hook(

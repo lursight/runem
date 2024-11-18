@@ -3,7 +3,7 @@ import pathlib
 from typing_extensions import Unpack
 
 from runem.run_command import run_command
-from runem.types_public_api import JobKwargs, Options
+from runem.types import JobKwargs, Options
 
 
 def _job_yarn_deps(
