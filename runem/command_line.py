@@ -8,7 +8,7 @@ from runem.config_metadata import ConfigMetadata
 from runem.informative_dict import InformativeDict
 from runem.log import error, log
 from runem.runem_version import get_runem_version
-from runem.types import JobNames, OptionConfig, OptionsWritable
+from runem.types_wip.types import JobNames, OptionConfig, OptionsWritable
 from runem.utils import printable_set
 
 

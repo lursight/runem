@@ -8,7 +8,7 @@ from unittest.mock import Mock, patch
 import pytest
 
 from runem.config import _find_local_configs, load_project_config, load_user_configs
-from runem.types import Config, GlobalConfig
+from runem.types_wip.types import Config, GlobalConfig
 
 
 def test_load_project_config(tmp_path: pathlib.Path) -> None:

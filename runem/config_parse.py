@@ -10,7 +10,7 @@ from runem.hook_manager import HookManager
 from runem.job import Job
 from runem.job_wrapper import get_job_wrapper
 from runem.log import error, log, warn
-from runem.types import (
+from runem.types_wip.types import (
     Config,
     ConfigNodes,
     FunctionNotFound,

@@ -27,7 +27,7 @@ from runem.runem import (
     _update_progress,
     timed_main,
 )
-from runem.types import (
+from runem.types_wip.types import (
     Config,
     FilePathListLookup,
     GlobalSerialisedConfig,

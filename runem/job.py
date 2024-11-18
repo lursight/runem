@@ -1,6 +1,12 @@
 import typing
 
-from runem.types import FilePathList, FilePathListLookup, JobConfig, JobTags, JobWhen
+from runem.types_wip.types import (
+    FilePathList,
+    FilePathListLookup,
+    JobConfig,
+    JobTags,
+    JobWhen,
+)
 
 
 class NoJobName(ValueError):

@@ -45,7 +45,7 @@ from runem.job_execute import job_execute
 from runem.job_filter import filter_jobs
 from runem.log import error, log, warn
 from runem.report import report_on_run
-from runem.types import (
+from runem.types_wip.types import (
     Config,
     FilePathListLookup,
     HookName,

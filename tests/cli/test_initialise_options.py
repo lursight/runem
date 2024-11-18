@@ -8,7 +8,7 @@ import pytest
 
 from runem.command_line import initialise_options
 from runem.config_metadata import ConfigMetadata
-from runem.types import JobConfig, PhaseGroupedJobs
+from runem.types_wip.types import JobConfig, PhaseGroupedJobs
 
 Options = Dict[str, bool]
 

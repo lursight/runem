@@ -2,7 +2,7 @@ import argparse
 
 from runem.config_metadata import ConfigMetadata
 from runem.informative_dict import InformativeDict
-from runem.types import OptionsWritable
+from runem.types_wip.types import OptionsWritable
 
 
 def initialise_options(

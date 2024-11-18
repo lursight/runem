@@ -4,7 +4,7 @@ from collections import defaultdict
 from runem.config_metadata import ConfigMetadata
 from runem.job import Job
 from runem.log import log
-from runem.types import (
+from runem.types_wip.types import (
     JobConfig,
     JobNames,
     JobPhases,

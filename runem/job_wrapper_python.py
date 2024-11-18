@@ -3,7 +3,7 @@ import sys
 from importlib.util import module_from_spec
 from importlib.util import spec_from_file_location as module_spec_from_file_location
 
-from runem.types import FunctionNotFound, JobWrapper
+from runem.types_wip.types import FunctionNotFound, JobWrapper
 from runem.types_wip.types_jobs import JobFunction
 
 

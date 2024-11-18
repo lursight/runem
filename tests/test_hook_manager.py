@@ -11,7 +11,7 @@ import pytest
 from runem.config_metadata import ConfigMetadata
 from runem.hook_manager import HookManager
 from runem.informative_dict import InformativeDict
-from runem.types import HookConfig, HookName, Hooks, PhaseGroupedJobs
+from runem.types_wip.types import HookConfig, HookName, Hooks, PhaseGroupedJobs
 
 mock_hook_function: HookConfig = {
     "command": "echo 'test hook command'",

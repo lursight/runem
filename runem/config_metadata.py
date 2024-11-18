@@ -3,7 +3,7 @@ import pathlib
 import typing
 
 from runem.informative_dict import InformativeDict
-from runem.types import (
+from runem.types_wip.types import (
     JobNames,
     JobPhases,
     JobTags,

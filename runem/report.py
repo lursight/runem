@@ -4,7 +4,7 @@ from collections import defaultdict
 from datetime import timedelta
 
 from runem.log import log
-from runem.types import OrderedPhases, PhaseName
+from runem.types_wip.types import OrderedPhases, PhaseName
 from runem.types_wip.types_jobs import (
     JobReturn,
     JobRunMetadatasByPhase,

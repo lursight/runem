@@ -7,7 +7,12 @@ from packaging.version import Version
 
 from runem.log import error, log
 from runem.runem_version import get_runem_version
-from runem.types import Config, GlobalConfig, GlobalSerialisedConfig, UserConfigMetadata
+from runem.types_wip.types import (
+    Config,
+    GlobalConfig,
+    GlobalSerialisedConfig,
+    UserConfigMetadata,
+)
 
 CFG_FILE_YAML = pathlib.Path(".runem.yml")
 

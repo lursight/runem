@@ -5,7 +5,7 @@ from pathlib import Path
 from subprocess import check_output as subprocess_check_output
 
 from runem.config_metadata import ConfigMetadata
-from runem.types import FilePathListLookup
+from runem.types_wip.types import FilePathListLookup
 
 
 def find_files(config_metadata: ConfigMetadata) -> FilePathListLookup:

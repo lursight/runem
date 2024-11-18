@@ -2,7 +2,7 @@ import shlex
 import typing
 
 from runem.run_command import run_command
-from runem.types import JobConfig
+from runem.types_wip.types import JobConfig
 
 
 def validate_simple_command(command_string: str) -> typing.List[str]:

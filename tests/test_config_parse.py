@@ -16,7 +16,7 @@ from runem.config_parse import (
     parse_hook_config,
     parse_job_config,
 )
-from runem.types import (
+from runem.types_wip.types import (
     Config,
     FunctionNotFound,
     GlobalConfig,
