@@ -4,6 +4,7 @@ import typing
 from typing_extensions import Unpack
 
 from runem.run_command import run_command
+from runem.types.common import FilePathList
 from runem.types.runem_config import JobConfig
 from runem.types.types_jobs import AllKwargs
 
@@ -25,11 +26,21 @@ def job_runner_simple_command(
     job_config: JobConfig = kwargs["job"]
     command_string: str = job_config["command"]
 
+    command_string_files: str = command_string
+    if "{file_list}" in command_string:
+        file_list: FilePathList = kwargs["file_list"]
+        file_list_with_quotes: typing.List[str] = [
+            f'"{str(file_path)}"' for file_path in file_list
+        ]
+        command_string_files = command_string.replace(
+            "{file_list}", " ".join(file_list_with_quotes)
+        )
+
     # use shlex to handle parsing of the command string, a non-trivial problem.
-    result = validate_simple_command(command_string)
+    cmd = validate_simple_command(command_string_files)
 
     # preserve quotes for consistent handling of strings and avoid the "word
     # splitting" problem for unix-like shells.
-    result_with_quotes = [f'"{token}"' if " " in token else token for token in result]
+    cmd_with_quotes = [f'"{token}"' if " " in token else token for token in cmd]
 
-    run_command(cmd=result_with_quotes, **kwargs)
+    run_command(cmd=cmd_with_quotes, **kwargs)
