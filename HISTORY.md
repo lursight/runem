@@ -4,6 +4,33 @@ Changelog
 
 (unreleased)
 ------------
+- Merge pull request #63 from
+  lursight/dependabot/github_actions/actions/cache-4. [Frank Harrison]
+
+  chore(deps): bump actions/cache from 3 to 4
+- Chore(deps): bump actions/cache from 3 to 4. [dependabot[bot]]
+
+  Bumps [actions/cache](https://github.com/actions/cache) from 3 to 4.
+  - [Release notes](https://github.com/actions/cache/releases)
+  - [Changelog](https://github.com/actions/cache/blob/main/RELEASES.md)
+  - [Commits](https://github.com/actions/cache/compare/v3...v4)
+
+  ---
+  updated-dependencies:
+  - dependency-name: actions/cache
+    dependency-type: direct:production
+    update-type: version-update:semver-major
+  ...
+- Feat(simple-files): adds ability to pass file-lists to simple-
+  commands. [Frank Harrison]
+- Feat(simple-files): strongly types the simple job executor. [Frank
+  Harrison]
+- Feat(simple-files): fixes docstring. [Frank Harrison]
+
+
+0.1.2 (2024-11-18)
+------------------
+- Release: version 0.1.2 🚀 [Frank Harrison]
 - Chore(actions): simplifies code paths for actions. [Frank Harrison]
 - Chore(contrib): removes the Makefile commands that have been removed.
   [Frank Harrison]
