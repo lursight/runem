@@ -1780,7 +1780,7 @@ def test_progress_updater_with_false(show_spinner: bool) -> None:
         )
 
 
-def _dummy_config_metadata() -> ConfigMetadata:
+def gen_dummy_config_metadata() -> ConfigMetadata:
     config_metadata: ConfigMetadata = ConfigMetadata(
         cfg_filepath=pathlib.Path(__file__),
         phases=("dummy phase 1",),
@@ -1809,7 +1809,7 @@ def _dummy_config_metadata() -> ConfigMetadata:
 
 
 DUMMY_MAIN_RETURN: MainReturnType = (
-    _dummy_config_metadata(),  # ConfigMetadata,
+    gen_dummy_config_metadata(),  # ConfigMetadata,
     {},  # job_run_metadatas,
     IntentionalTestError(),
 )
