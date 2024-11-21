@@ -6,7 +6,7 @@ from runem.types.runem_config import JobConfig
 
 
 def validate_simple_command(command_string: str) -> typing.List[str]:
-    # use shlex to handle parsing of the command string, a non-trivial problem.
+    """Use shlex to handle parsing of the command string, a non-trivial problem."""
     split_command: typing.List[str] = shlex.split(command_string)
     return split_command
 
