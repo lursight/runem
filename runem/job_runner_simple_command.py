@@ -1,8 +1,11 @@
 import shlex
 import typing
 
+from typing_extensions import Unpack
+
 from runem.run_command import run_command
 from runem.types.runem_config import JobConfig
+from runem.types.types_jobs import AllKwargs
 
 
 def validate_simple_command(command_string: str) -> typing.List[str]:
@@ -12,7 +15,7 @@ def validate_simple_command(command_string: str) -> typing.List[str]:
 
 
 def job_runner_simple_command(
-    **kwargs: typing.Any,
+    **kwargs: Unpack[AllKwargs],
 ) -> None:
     """Parses the command and tries to run it via the system.
 
