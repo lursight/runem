@@ -11,6 +11,12 @@ class NoJobName(ValueError):
     pass
 
 
+class BadWhenConfigLocation(ValueError):
+    """The job-config does not contain a label and can't be coerced to crate one."""
+
+    pass
+
+
 class Job:
     """A class with utility functions for jobs.
 
@@ -27,6 +33,16 @@ class Job:
 
         TODO: make a non-static member function
         """
+        if "tags" in job:
+            raise BadWhenConfigLocation(
+                "'tags' should be listed inside the 'when' config for jobs"
+            )
+
+        if "phase" in job:
+            raise BadWhenConfigLocation(
+                "'phase' should be listed inside the 'when' config for jobs"
+            )
+
         if "when" not in job or "tags" not in job["when"]:
             # handle the special case where we have No tags
             return None
