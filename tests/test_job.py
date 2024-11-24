@@ -3,7 +3,7 @@ from collections import defaultdict
 
 import pytest
 
-from runem.job import Job, NoJobName
+from runem.job import BadWhenConfigLocation, Job, NoJobName
 from runem.types.common import FilePathList, JobTags
 from runem.types.filters import FilePathListLookup
 from runem.types.runem_config import JobConfig
@@ -25,6 +25,24 @@ def test_get_job_tags(
 ) -> None:
     result: typing.Optional[JobTags] = Job.get_job_tags(job_config)
     assert result == expected_result
+
+
+def test_get_job_tags_bad_tags_path() -> None:
+    """Tests that the 'tags' entry is on 'when' and not on root."""
+    job_config: JobConfig = {  # type: ignore[typeddict-unknown-key]
+        "tags": ["dummy tags"],
+    }
+    with pytest.raises(BadWhenConfigLocation):
+        Job.get_job_tags(job_config)
+
+
+def test_get_job_tags_bad_phase_path() -> None:
+    """Tests that the 'phase' entry is on 'when' and not on root."""
+    job_config: JobConfig = {  # type: ignore[typeddict-unknown-key]
+        "phase": "dummy tags",
+    }
+    with pytest.raises(BadWhenConfigLocation):
+        Job.get_job_tags(job_config)
 
 
 @pytest.fixture(name="file_lists")
