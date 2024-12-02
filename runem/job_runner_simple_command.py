@@ -3,8 +3,10 @@ import typing
 
 from typing_extensions import Unpack
 
+from runem.config_metadata import ConfigMetadata
 from runem.run_command import run_command
 from runem.types.common import FilePathList
+from runem.types.options import OptionsWritable
 from runem.types.runem_config import JobConfig
 from runem.types.types_jobs import AllKwargs
 
@@ -36,8 +38,24 @@ def job_runner_simple_command(
             "{file_list}", " ".join(file_list_with_quotes)
         )
 
+    config_metadata: ConfigMetadata = kwargs["config_metadata"]
+    options: OptionsWritable = config_metadata.options
+    command_string_options: str = command_string_files
+    for name, value in options.items():
+        # For now, just pass `--option-name`, `--check` or similar to the
+        # command line. At some point we will want this to be cleverer, but
+        # this will do for now.
+        option_search = f"{{{name}}}"
+        if option_search in command_string_files:
+            replacement = ""
+            if value:
+                replacement = f"--{name}"
+            command_string_options = command_string_options.replace(
+                option_search, replacement
+            )
+
     # use shlex to handle parsing of the command string, a non-trivial problem.
-    cmd = validate_simple_command(command_string_files)
+    cmd = validate_simple_command(command_string_options)
 
     # preserve quotes for consistent handling of strings and avoid the "word
     # splitting" problem for unix-like shells.
