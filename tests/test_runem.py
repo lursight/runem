@@ -1803,7 +1803,7 @@ def gen_dummy_config_metadata() -> ConfigMetadata:
         phases_to_run=set(),  # JobPhases,
         tags_to_run=set(),  # ignored JobTags,
         tags_to_avoid=set(),  # ignored  JobTags,
-        options=InformativeDict({}),  # Options,
+        options=InformativeDict({"option_on": True, "option_off": False}),  # Options,
     )
     return config_metadata
 
