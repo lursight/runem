@@ -191,6 +191,7 @@ def _job_py_pytest(  # noqa: C901 # pylint: disable=too-many-branches,too-many-s
         "python3",
         "-m",
         "pytest",
+        "--color=yes",
         *threading_switches,
         # "-c",
         # str(pytest_cfg),
