@@ -4,6 +4,27 @@ Changelog
 
 (unreleased)
 ------------
+- Merge pull request #67 from lursight/feat/prettier_logging. [Frank
+  Harrison]
+
+  feat(rich): prettier logging with rich
+- Feat(rich): disable markup handling. [Frank Harrison]
+
+  We got errors running logging through rich in CiCd where
+  [/path/to/thing] was being seen as rich markup, specifically as a rich
+  markup close-tag.
+
+  This stops parsing strings as markup and therefore works around the
+  error.
+- Feat(rich): prettier logging with rich. [Frank Harrison]
+
+  It also makes the logging more useful in different contexts by removing
+  tabs and so on.
+
+
+0.3.0 (2024-12-03)
+------------------
+- Release: version 0.3.0 🚀 [Frank Harrison]
 - Merge pull request #66 from
   lursight/feat/option_switches_in_simple_commands. [Frank Harrison]
 
