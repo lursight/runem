@@ -4,6 +4,29 @@ Changelog
 
 (unreleased)
 ------------
+- Merge pull request #66 from
+  lursight/feat/option_switches_in_simple_commands. [Frank Harrison]
+
+  Feat/option switches in simple commands
+- Chore(pytest): force colour output in pytest, makes it easier to read.
+  [Frank Harrison]
+- Feat(option-switches): adds ability to turn on/off switches in simple
+  commands. [Frank Harrison]
+
+  THis is pretty noddy for now, but it means we can do more things like
+  run `black` or `ruff` with `--check` enabled... as well as some other
+  switches.
+- Merge pull request #65 from lursight/feat/error_on_misplaced_config.
+  [Frank Harrison]
+
+  feat(where-errors): errors when 'tags' and 'phase' are not under 'where'
+- Feat(where-errors): errors when 'tags' and 'phase' are not under
+  'where' [Frank Harrison]
+
+
+0.2.0 (2024-11-21)
+------------------
+- Release: version 0.2.0 🚀 [Frank Harrison]
 - Merge pull request #63 from
   lursight/dependabot/github_actions/actions/cache-4. [Frank Harrison]
 
