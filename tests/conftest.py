@@ -5,7 +5,21 @@ import typing
 
 import pytest
 
+from runem.blocking_print import _reset_console, _reset_console_for_tests
+
 FixtureRequest = typing.Any
+
+
+@pytest.fixture(autouse=True)
+def use_test_rich_print(request: FixtureRequest) -> typing.Generator[None, None, None]:
+    """Each test should use the test-version of the `rich` print function.
+
+    This is so we get deterministic output with out timestamps nor auto-wrapping console
+    output.
+    """
+    _reset_console_for_tests()
+    yield
+    _reset_console()
 
 
 # each test runs on cwd to its temp dir

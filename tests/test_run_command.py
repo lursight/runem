@@ -300,7 +300,7 @@ def test_run_command_basic_call_non_standard_exit_ok_code_verbose(
     # check the log output hasn't changed. Update as needed.
     assert run_command_stdout == (
         "runem: running: start: test command: ls\n"
-        "runem: 	allowed return ids are: 3\n"
+        "runem:  allowed return ids are: 3\n"
         "runem: test command: test output\n"
         "runem: running: done: test command: ls\n"
     )
