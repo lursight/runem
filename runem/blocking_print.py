@@ -11,7 +11,10 @@ def _reset_console() -> Console:
     """
     global RICH_CONSOLE  # pylint: disable=global-statement
 
-    RICH_CONSOLE = Console(log_path=False)
+    RICH_CONSOLE = Console(
+        log_path=False,  # Do NOT print the source path.
+        markup=False,  # Do NOT print markup e.g. `[blink]Don't Panic![/blink]`.
+    )
     return RICH_CONSOLE
 
 
@@ -25,7 +28,12 @@ def _reset_console_for_tests() -> None:
     ... so we can have deterministic tests.
     """
     global RICH_CONSOLE  # pylint: disable=global-statement
-    RICH_CONSOLE = Console(log_path=False, log_time=False, width=999)
+    RICH_CONSOLE = Console(
+        log_path=False,  # Do NOT print the source path.
+        log_time=False,  # Do not prefix with log time e.g. `[time] log message`.
+        markup=False,  # Do NOT print markup e.g. `[blink]Don't Panic![/blink]`.
+        width=999,  # A very wide width.
+    )
 
 
 def blocking_print(
