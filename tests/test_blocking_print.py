@@ -8,7 +8,7 @@ from runem import blocking_print
 
 @pytest.fixture(name="mock_print")
 def mock_print_fixture() -> typing.Generator[MagicMock, None, None]:
-    with patch("runem.blocking_print.print") as mock_print:
+    with patch("runem.blocking_print.RICH_CONSOLE.print") as mock_print:
         yield mock_print
 
 
@@ -23,7 +23,7 @@ def test_blocking_print_success_first_try(
 ) -> None:
     """Test that blocking_print prints the message successfully on the first try."""
     blocking_print.blocking_print("Test message")
-    mock_print.assert_called_once_with("Test message", end=None)
+    mock_print.assert_called_once_with("Test message", end="\n")
     mock_sleep.assert_not_called()
 
 
@@ -57,7 +57,7 @@ def test_blocking_print_empty_message(
 ) -> None:
     """Test that blocking_print handles an empty message."""
     blocking_print.blocking_print()
-    mock_print.assert_called_once_with("", end=None)
+    mock_print.assert_called_once_with("", end="\n")
     mock_sleep.assert_not_called()
 
 

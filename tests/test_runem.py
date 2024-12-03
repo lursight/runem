@@ -110,16 +110,17 @@ def test_runem_basic_with_config(
         runem_stdout: typing.List[str] = sanitise_reports_footer(buf.getvalue())
         assert [] == _strip_reports_footer(runem_stdout)
 
-        assert [
-            "runem: reports:",
-            "runem (total wall-clock)  [<float>]",
-            "├runem.pre-build          [<float>]",
-            "└runem.run-phases         [<float>]",
-            " └mock phase (user-time)  [<float>]",
-            "runem: DONE: runem took: <float>, saving you <float>, without runem you "
-            "would have waited <float>",
-            "",
-        ] == runem_stdout
+    pprint(runem_stdout)
+    assert runem_stdout == [
+        "runem: reports:",
+        "runem (total wall-clock)  [<float>]",
+        "├runem.pre-build          [<float>]",
+        "└runem.run-phases         [<float>]",
+        " └mock phase (user-time)  [<float>]",
+        "runem: DONE: runem took: <float>, saving you <float>, without runem you "
+        "would have waited <float>",
+        "",
+    ]
     load_config_metadata_mock.assert_called_once()
 
 
@@ -156,7 +157,7 @@ def test_runem_basic_with_config_no_options(
         # with pytest.raises(SystemExit):
         timed_main(["--help"])
         runem_stdout = buf.getvalue()
-        assert [
+        assert sanitise_reports_footer(runem_stdout) == [
             "runem: reports:",
             "runem (total wall-clock)  [<float>]",
             "├runem.pre-build          [<float>]",
@@ -165,7 +166,7 @@ def test_runem_basic_with_config_no_options(
             "runem: DONE: runem took: <float>, saving you <float>, without runem you "
             "would have waited <float>",
             "",
-        ] == sanitise_reports_footer(runem_stdout)
+        ]
 
 
 MOCK_JOB_EXECUTE_INNER_RET: typing.Tuple[JobTiming, JobReturn] = (
@@ -407,17 +408,17 @@ def test_runem_with_full_config(verbosity: bool) -> None:
             ),
         ]
     else:
-        assert [
+        assert runem_stdout == [
             (
                 "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
                 "'dummy phase 1'"
             ),
             "runem: hooks: loading user hooks from 'local-user-config.yml'",
-            "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+            "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
             "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
-            "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+            "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
             "runem: hooks: initialising 2 hooks",
-            "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
+            "runem: hooks:   initialising 2 hooks for 'HookName.ON_EXIT'",
             (
                 "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
                 "user local hook'"
@@ -433,9 +434,9 @@ def test_runem_with_full_config(verbosity: bool) -> None:
                 "'tag only on job 1', 'tag only on job 2'"
             ),
             "runem: will run 2 jobs for phase 'dummy phase 1'",
-            "runem: \t'dummy job label 1', 'echo \"hello world!\"'",
+            "runem:  'dummy job label 1', 'echo \"hello world!\"'",
             "runem: will run 2 jobs for phase 'dummy phase 2'",
-            "runem: \t'dummy job label 2', 'hello world'",
+            "runem:  'dummy job label 2', 'hello world'",
             "runem: Running Phase dummy phase 1",
             (
                 "runem: Running 'dummy phase 1' with 2 workers (of [NUM CORES] max) "
@@ -446,7 +447,7 @@ def test_runem_with_full_config(verbosity: bool) -> None:
                 "runem: Running 'dummy phase 2' with 2 workers (of [NUM CORES] max) "
                 "processing 2 jobs"
             ),
-        ] == runem_stdout
+        ]
 
 
 def test_runem_with_full_config_verbose() -> None:
@@ -463,17 +464,17 @@ def test_runem_with_full_config_verbose() -> None:
     if error_raised is not None:  # pragma: no cover
         raise error_raised  # re-raise the error that shouldn't have been raised
 
-    assert [
+    assert runem_stdout == [
         (
             "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
             "'dummy phase 1'"
         ),
         "runem: hooks: loading user hooks from 'local-user-config.yml'",
-        "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+        "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
         "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
-        "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+        "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
         "runem: hooks: initialising 2 hooks",
-        "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
+        "runem: hooks:   initialising 2 hooks for 'HookName.ON_EXIT'",
         (
             "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
             "user local hook'"
@@ -489,14 +490,14 @@ def test_runem_with_full_config_verbose() -> None:
             "'tag only on job 1', 'tag only on job 2'"
         ),
         "runem: will run 2 jobs for phase 'dummy phase 1'",
-        "runem: \t'dummy job label 1', 'echo \"hello world!\"'",
+        "runem:  'dummy job label 1', 'echo \"hello world!\"'",
         "runem: will run 2 jobs for phase 'dummy phase 2'",
-        "runem: \t'dummy job label 2', 'hello world'",
+        "runem:  'dummy job label 2', 'hello world'",
         "runem: Running Phase dummy phase 1",
         "runem: Running 'dummy phase 1' with 2 workers (of [NUM CORES] max) processing 2 jobs",
         "runem: Running Phase dummy phase 2",
         "runem: Running 'dummy phase 2' with 2 workers (of [NUM CORES] max) processing 2 jobs",
-    ] == runem_stdout
+    ]
 
 
 def test_runem_with_single_phase() -> None:
@@ -513,17 +514,17 @@ def test_runem_with_single_phase() -> None:
     if error_raised is not None:  # pragma: no cover
         raise error_raised  # re-raise the error that shouldn't have been raised
 
-    assert [
+    assert runem_stdout == [
         (
             "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
             "'dummy phase 1'"
         ),
         "runem: hooks: loading user hooks from 'local-user-config.yml'",
-        "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+        "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
         "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
-        "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+        "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
         "runem: hooks: initialising 2 hooks",
-        "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
+        "runem: hooks:   initialising 2 hooks for 'HookName.ON_EXIT'",
         (
             "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
             "user local hook'"
@@ -539,14 +540,14 @@ def test_runem_with_single_phase() -> None:
             "'tag only on job 1', 'tag only on job 2'"
         ),
         "runem: will run 2 jobs for phase 'dummy phase 1'",
-        "runem: \t'dummy job label 1', 'echo \"hello world!\"'",
+        "runem:  'dummy job label 1', 'echo \"hello world!\"'",
         "runem: skipping phase 'dummy phase 2'",
         "runem: Running Phase dummy phase 1",
         (
             "runem: Running 'dummy phase 1' with 2 workers (of [NUM CORES] max) "
             "processing 2 jobs"
         ),
-    ] == runem_stdout
+    ]
 
 
 def test_runem_with_single_phase_verbose() -> None:
@@ -570,11 +571,11 @@ def test_runem_with_single_phase_verbose() -> None:
             "'dummy phase 1'"
         ),
         "runem: hooks: loading user hooks from 'local-user-config.yml'",
-        "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+        "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
         "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
-        "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+        "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
         "runem: hooks: initialising 2 hooks",
-        "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
+        "runem: hooks:   initialising 2 hooks for 'HookName.ON_EXIT'",
         (
             "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
             "user local hook'"
@@ -590,7 +591,7 @@ def test_runem_with_single_phase_verbose() -> None:
             "'tag only on job 1', 'tag only on job 2'"
         ),
         "runem: will run 2 jobs for phase 'dummy phase 1'",
-        "runem: \t'dummy job label 1', 'echo \"hello world!\"'",
+        "runem:  'dummy job label 1', 'echo \"hello world!\"'",
         "runem: skipping phase 'dummy phase 2'",
         "runem: Running Phase dummy phase 1",
         (
@@ -758,11 +759,11 @@ def test_runem_version(switch_to_test: str, verbosity: bool) -> None:
     if verbosity:
         expected_version_output = [
             "runem: hooks: loading user hooks from 'local-user-config.yml'",
-            "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+            "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
             "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
-            "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+            "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
             "runem: hooks: initialising 2 hooks",
-            "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
+            "runem: hooks:   initialising 2 hooks for 'HookName.ON_EXIT'",
             "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
             "user local hook'",
             "runem: hooks: registered hook for 'HookName.ON_EXIT', have 2: echo 'mock "
@@ -828,11 +829,11 @@ def test_runem_bad_validate_switch_jobs(switch_to_test: str) -> None:
             "'dummy phase 1'"
         ),
         "runem: hooks: loading user hooks from 'local-user-config.yml'",
-        "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+        "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
         "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
-        "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+        "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
         "runem: hooks: initialising 2 hooks",
-        "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
+        "runem: hooks:   initialising 2 hooks for 'HookName.ON_EXIT'",
         (
             "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
             "user local hook'"
@@ -879,11 +880,11 @@ def test_runem_bad_validate_switch_tags(switch_to_test: str) -> None:
             "'dummy phase 1'"
         ),
         "runem: hooks: loading user hooks from 'local-user-config.yml'",
-        "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+        "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
         "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
-        "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+        "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
         "runem: hooks: initialising 2 hooks",
-        "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
+        "runem: hooks:   initialising 2 hooks for 'HookName.ON_EXIT'",
         (
             "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
             "user local hook'"
@@ -925,11 +926,11 @@ def test_runem_bad_validate_tag_exclude() -> None:
             "'dummy phase 1'"
         ),
         "runem: hooks: loading user hooks from 'local-user-config.yml'",
-        "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+        "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
         "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
-        "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+        "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
         "runem: hooks: initialising 2 hooks",
-        "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
+        "runem: hooks:   initialising 2 hooks for 'HookName.ON_EXIT'",
         (
             "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
             "user local hook'"
@@ -945,13 +946,13 @@ def test_runem_bad_validate_tag_exclude() -> None:
             "only on job 2'"
         ),
         "runem: will run 2 jobs for phase 'dummy phase 1'",
-        "runem: \t'dummy job label 1', 'echo \"hello world!\"'",
+        "runem:  'dummy job label 1', 'echo \"hello world!\"'",
         (
             "runem: not running job 'dummy job label 2' because it contains the "
             "following tags: 'tag only on job 2'"
         ),
         "runem: will run 1 jobs for phase 'dummy phase 2'",
-        "runem: \t'hello world'",
+        "runem:  'hello world'",
         "runem: Running Phase dummy phase 1",
         (
             "runem: Running 'dummy phase 1' with 2 workers (of [NUM CORES] max) "
@@ -994,11 +995,11 @@ def test_runem_bad_validate_switch_phases(switch_to_test: str) -> None:
             "'dummy phase 1'"
         ),
         "runem: hooks: loading user hooks from 'local-user-config.yml'",
-        "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+        "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
         "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
-        "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+        "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
         "runem: hooks: initialising 2 hooks",
-        "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
+        "runem: hooks:   initialising 2 hooks for 'HookName.ON_EXIT'",
         (
             "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
             "user local hook'"
@@ -1046,11 +1047,11 @@ def test_runem_job_filters_work(verbosity: bool) -> None:
                 "'dummy phase 1'"
             ),
             "runem: hooks: loading user hooks from 'local-user-config.yml'",
-            "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+            "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
             "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
-            "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+            "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
             "runem: hooks: initialising 2 hooks",
-            "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
+            "runem: hooks:   initialising 2 hooks for 'HookName.ON_EXIT'",
             (
                 "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
                 "user local hook'"
@@ -1070,7 +1071,7 @@ def test_runem_job_filters_work(verbosity: bool) -> None:
                 "in the list of job names. See --jobs and --not-jobs"
             ),
             "runem: will run 1 jobs for phase 'dummy phase 1'",
-            "runem: \t'dummy job label 1'",
+            "runem:  'dummy job label 1'",
             (
                 "runem: not running job 'dummy job label 2' because it isn't in the list "
                 "of job names. See --jobs and --not-jobs"
@@ -1097,11 +1098,11 @@ def test_runem_job_filters_work(verbosity: bool) -> None:
                 "'dummy phase 1'"
             ),
             "runem: hooks: loading user hooks from 'local-user-config.yml'",
-            "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+            "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
             "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
-            "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+            "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
             "runem: hooks: initialising 2 hooks",
-            "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
+            "runem: hooks:   initialising 2 hooks for 'HookName.ON_EXIT'",
             (
                 "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
                 "user local hook'"
@@ -1121,7 +1122,7 @@ def test_runem_job_filters_work(verbosity: bool) -> None:
                 "the list of job names. See --jobs and --not-jobs"
             ),
             "runem: will run 1 jobs for phase 'dummy phase 1'",
-            "runem: \t'dummy job label 1'",
+            "runem:  'dummy job label 1'",
             (
                 "runem: not running job 'dummy job label 2' because it isn't in the list of "
                 "job names. See --jobs and --not-jobs"
@@ -1176,11 +1177,11 @@ def test_runem_tag_filters_work(verbosity: bool) -> None:
                 "'dummy phase 1'"
             ),
             "runem: hooks: loading user hooks from 'local-user-config.yml'",
-            "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+            "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
             "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
-            "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+            "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
             "runem: hooks: initialising 2 hooks",
-            "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
+            "runem: hooks:   initialising 2 hooks for 'HookName.ON_EXIT'",
             (
                 "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
                 "user local hook'"
@@ -1193,7 +1194,7 @@ def test_runem_tag_filters_work(verbosity: bool) -> None:
             "runem: found 1 batches, 1 'mock phase' files, ",
             "runem: filtering for tags 'tag only on job 1'",
             "runem: will run 2 jobs for phase 'dummy phase 1'",
-            "runem: \t'dummy job label 1', 'echo \"hello world!\"'",
+            "runem:  'dummy job label 1', 'echo \"hello world!\"'",
             (
                 "runem: not running job 'dummy job label 2' because it doesn't have "
                 "any of the following tags: 'tag only on job 1'"
@@ -1216,11 +1217,11 @@ def test_runem_tag_filters_work(verbosity: bool) -> None:
                 "'dummy phase 1'"
             ),
             "runem: hooks: loading user hooks from 'local-user-config.yml'",
-            "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+            "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
             "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
-            "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+            "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
             "runem: hooks: initialising 2 hooks",
-            "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
+            "runem: hooks:   initialising 2 hooks for 'HookName.ON_EXIT'",
             (
                 "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
                 "user local hook'"
@@ -1233,7 +1234,7 @@ def test_runem_tag_filters_work(verbosity: bool) -> None:
             "runem: found 1 batches, 1 'mock phase' files, ",
             "runem: filtering for tags 'tag only on job 1'",
             "runem: will run 2 jobs for phase 'dummy phase 1'",
-            "runem: \t'dummy job label 1', 'echo \"hello world!\"'",
+            "runem:  'dummy job label 1', 'echo \"hello world!\"'",
             (
                 "runem: not running job 'dummy job label 2' because it doesn't have "
                 "any of the following tags: 'tag only on job 1'"
@@ -1295,11 +1296,11 @@ def test_runem_tag_out_filters_work(verbosity: bool, one_liner: bool) -> None:
                     "'dummy phase 1'"
                 ),
                 "runem: hooks: loading user hooks from 'local-user-config.yml'",
-                "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+                "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
                 "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
-                "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+                "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
                 "runem: hooks: initialising 2 hooks",
-                "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
+                "runem: hooks:   initialising 2 hooks for 'HookName.ON_EXIT'",
                 (
                     "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
                     "user local hook'"
@@ -1319,9 +1320,9 @@ def test_runem_tag_out_filters_work(verbosity: bool, one_liner: bool) -> None:
                     "the following tags: 'tag only on job 1'"
                 ),
                 "runem: will run 1 jobs for phase 'dummy phase 1'",
-                "runem: \t'echo \"hello world!\"'",
+                "runem:  'echo \"hello world!\"'",
                 "runem: will run 2 jobs for phase 'dummy phase 2'",
-                "runem: \t'dummy job label 2', 'hello world'",
+                "runem:  'dummy job label 2', 'hello world'",
                 "runem: Running Phase dummy phase 1",
                 (
                     "runem: Running 'dummy phase 1' with 1 workers (of [NUM CORES] max) "
@@ -1341,11 +1342,11 @@ def test_runem_tag_out_filters_work(verbosity: bool, one_liner: bool) -> None:
                     "'dummy phase 1'"
                 ),
                 "runem: hooks: loading user hooks from 'local-user-config.yml'",
-                "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+                "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
                 "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
-                "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+                "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
                 "runem: hooks: initialising 2 hooks",
-                "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
+                "runem: hooks:   initialising 2 hooks for 'HookName.ON_EXIT'",
                 (
                     "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
                     "user local hook'"
@@ -1365,9 +1366,9 @@ def test_runem_tag_out_filters_work(verbosity: bool, one_liner: bool) -> None:
                     "the following tags: 'tag only on job 1'"
                 ),
                 "runem: will run 1 jobs for phase 'dummy phase 1'",
-                "runem: \t'echo \"hello world!\"'",
+                "runem:  'echo \"hello world!\"'",
                 "runem: will run 2 jobs for phase 'dummy phase 2'",
-                "runem: \t'dummy job label 2', 'hello world'",
+                "runem:  'dummy job label 2', 'hello world'",
                 "runem: Running Phase dummy phase 1",
                 (
                     "runem: Running 'dummy phase 1' with 1 workers (of [NUM CORES] max) "
@@ -1384,11 +1385,11 @@ def test_runem_tag_out_filters_work(verbosity: bool, one_liner: bool) -> None:
             # no-one-liner + verbosity
             assert runem_stdout == [
                 "runem: hooks: loading user hooks from 'local-user-config.yml'",
-                "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+                "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
                 "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
-                "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+                "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
                 "runem: hooks: initialising 2 hooks",
-                "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
+                "runem: hooks:   initialising 2 hooks for 'HookName.ON_EXIT'",
                 (
                     "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
                     "user local hook'"
@@ -1412,7 +1413,7 @@ def test_runem_tag_out_filters_work(verbosity: bool, one_liner: bool) -> None:
                     "'dummy tag 2', 'tag only on job 2'"
                 ),
                 "runem: will run 2 jobs for phase 'dummy phase 2'",
-                "runem: \t'dummy job label 2', 'hello world'",
+                "runem:  'dummy job label 2', 'hello world'",
                 "runem: Running Phase dummy phase 2",
                 (
                     "runem: Running 'dummy phase 2' with 2 workers (of [NUM CORES] max) "
@@ -1423,11 +1424,11 @@ def test_runem_tag_out_filters_work(verbosity: bool, one_liner: bool) -> None:
             # no-one-liner + no-verbosity
             assert runem_stdout == [
                 "runem: hooks: loading user hooks from 'local-user-config.yml'",
-                "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+                "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
                 "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
-                "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+                "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
                 "runem: hooks: initialising 2 hooks",
-                "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
+                "runem: hooks:   initialising 2 hooks for 'HookName.ON_EXIT'",
                 (
                     "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
                     "user local hook'"
@@ -1451,7 +1452,7 @@ def test_runem_tag_out_filters_work(verbosity: bool, one_liner: bool) -> None:
                     "'dummy tag 2', 'tag only on job 2'"
                 ),
                 "runem: will run 2 jobs for phase 'dummy phase 2'",
-                "runem: \t'dummy job label 2', 'hello world'",
+                "runem:  'dummy job label 2', 'hello world'",
                 "runem: Running Phase dummy phase 2",
                 (
                     "runem: Running 'dummy phase 2' with 2 workers (of [NUM CORES] max) "
@@ -1497,11 +1498,11 @@ def test_runem_tag_out_filters_work_all_tags(verbosity: bool) -> None:
     if verbosity:
         assert runem_stdout == [
             "runem: hooks: loading user hooks from 'local-user-config.yml'",
-            "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+            "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
             "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
-            "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+            "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
             "runem: hooks: initialising 2 hooks",
-            "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
+            "runem: hooks:   initialising 2 hooks for 'HookName.ON_EXIT'",
             (
                 "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
                 "user local hook'"
@@ -1576,11 +1577,11 @@ def test_runem_phase_filters_work(verbosity: bool) -> None:
                 "'dummy phase 1'"
             ),
             "runem: hooks: loading user hooks from 'local-user-config.yml'",
-            "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+            "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
             "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
-            "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+            "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
             "runem: hooks: initialising 2 hooks",
-            "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
+            "runem: hooks:   initialising 2 hooks for 'HookName.ON_EXIT'",
             (
                 "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
                 "user local hook'"
@@ -1596,7 +1597,7 @@ def test_runem_phase_filters_work(verbosity: bool) -> None:
                 "'tag only on job 2'"
             ),
             "runem: will run 2 jobs for phase 'dummy phase 1'",
-            "runem: \t'dummy job label 1', 'echo \"hello world!\"'",
+            "runem:  'dummy job label 1', 'echo \"hello world!\"'",
             "runem: skipping phase 'dummy phase 2'",
             "runem: Running Phase dummy phase 1",
             (
@@ -1611,11 +1612,11 @@ def test_runem_phase_filters_work(verbosity: bool) -> None:
                 "'dummy phase 1'"
             ),
             "runem: hooks: loading user hooks from 'local-user-config.yml'",
-            "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+            "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
             "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
-            "runem: hooks:\tadded 1 user hooks for 'HookName.ON_EXIT'",
+            "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
             "runem: hooks: initialising 2 hooks",
-            "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
+            "runem: hooks:   initialising 2 hooks for 'HookName.ON_EXIT'",
             (
                 "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
                 "user local hook'"
@@ -1631,7 +1632,7 @@ def test_runem_phase_filters_work(verbosity: bool) -> None:
                 "'tag only on job 1', 'tag only on job 2'"
             ),
             "runem: will run 2 jobs for phase 'dummy phase 1'",
-            "runem: \t'dummy job label 1', 'echo \"hello world!\"'",
+            "runem:  'dummy job label 1', 'echo \"hello world!\"'",
             "runem: skipping phase 'dummy phase 2'",
             "runem: Running Phase dummy phase 1",
             (

@@ -36,6 +36,7 @@ from rich.console import Console, ConsoleOptions, ConsoleRenderable, RenderResul
 from rich.spinner import Spinner
 from rich.text import Text
 
+from runem.blocking_print import RICH_CONSOLE
 from runem.command_line import parse_args
 from runem.config import load_project_config, load_user_configs
 from runem.config_metadata import ConfigMetadata
@@ -56,8 +57,6 @@ from runem.types.types_jobs import (
     JobTiming,
 )
 from runem.utils import printable_set
-
-rich_console = Console()
 
 
 def _determine_run_parameters(argv: typing.List[str]) -> ConfigMetadata:
@@ -143,7 +142,7 @@ def _update_progress(
 
     last_running_jobs_set: typing.Set[str] = set()
 
-    with rich_console.status(spinner):
+    with RICH_CONSOLE.status(spinner):
         while is_running.value:
             running_jobs_set: typing.Set[str] = set(running_jobs.values())
 
@@ -157,7 +156,7 @@ def _update_progress(
                 spinner.text = report
             else:
                 if last_running_jobs_set != running_jobs_set:
-                    rich_console.log(report)
+                    RICH_CONSOLE.log(report)
 
             # Sleep for reduced CPU usage
             time.sleep(0.1)

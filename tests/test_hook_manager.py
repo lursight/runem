@@ -149,7 +149,7 @@ def test_invoke_hooks(do_hooks: bool, hook_man: HookManager) -> None:
     if do_hooks:
         expected_stdout = [
             "runem: hooks: initialising 2 hooks",
-            "runem: hooks:\tinitialising 2 hooks for 'HookName.ON_EXIT'",
+            "runem: hooks:   initialising 2 hooks for 'HookName.ON_EXIT'",
             (
                 "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: "
                 "<THIS_FILE>._dummy_hook"
