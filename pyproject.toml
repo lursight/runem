@@ -4,7 +4,6 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "runem"
-version = "0.0.0" # Replace with the content of runem/VERSION
 description = "Awesome runem created by lursight"
 readme = "README.md"
 requires-python = ">=3.7"
@@ -33,6 +32,7 @@ dependencies = [
   # be installed.
   "typing_extensions>3.0.0",
 ]
+dynamic = ["version"]
 
 [project.urls]
 Homepage = "https://github.com/lursight/runem/"
