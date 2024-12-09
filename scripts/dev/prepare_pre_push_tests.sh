@@ -24,7 +24,7 @@ if [ -z "$RUNEM_CHECKOUT" ]; then
 fi
 
 if [ ! -d "$RUNEM_CHECKOUT" ]; then
-  printf "RUNEM_CHECKOUT path does not exit %s\\n" "$RUNEM_CHECKOUT"
+  printf "RUNEM_CHECKOUT path does not exist as dir %s\\n" "$RUNEM_CHECKOUT"
   exit 2
 fi
 
