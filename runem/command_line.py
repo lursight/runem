@@ -53,6 +53,14 @@ def _get_argparse_help_formatter() -> typing.Any:
     return argparse.HelpFormatter
 
 
+def error_on_log_logic(verbose: bool, silent: bool) -> None:
+    """Simply errors if we get logical inconsistencies in the logging-logic."""
+    if verbose and silent:
+        log("cannot parse '--verbose' and '--silent'")
+        # error exit
+        sys.exit(1)
+
+
 def parse_args(
     config_metadata: ConfigMetadata, argv: typing.List[str]
 ) -> ConfigMetadata:
@@ -239,6 +247,16 @@ def parse_args(
     )
 
     parser.add_argument(
+        "--silent",
+        "-s",
+        dest="silent",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help=("Whether to show warning messages or not. "),
+        required=False,
+    )
+
+    parser.add_argument(
         "--spinner",
         dest="show_spinner",
         action=argparse.BooleanOptionalAction,
@@ -270,6 +288,8 @@ def parse_args(
     )
 
     args = parser.parse_args(argv[1:])
+
+    error_on_log_logic(args.verbose, args.silent)
 
     if args.show_root_path_and_exit:
         log(str(config_metadata.cfg_filepath.parent), decorate=False)

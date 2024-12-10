@@ -189,7 +189,14 @@ def test_job_execute_basic_call_verbose() -> None:
     )
 
 
-def test_job_execute_empty_files() -> None:
+@pytest.mark.parametrize(
+    "silent",
+    [
+        True,
+        False,
+    ],
+)
+def test_job_execute_empty_files(silent: bool) -> None:
     job_config: JobConfig = {
         "addr": {
             "file": __file__,
@@ -229,7 +236,7 @@ def test_job_execute_empty_files() -> None:
         ),
     )
     config_metadata.set_cli_data(
-        args=Namespace(verbose=True, procs=1),
+        args=Namespace(verbose=(not silent), procs=1, silent=silent),
         jobs_to_run=set((job_config["label"])),  # JobNames,
         phases_to_run=set(),  # ignored JobPhases,
         tags_to_run=set(),  # ignored JobTags,
@@ -245,12 +252,15 @@ def test_job_execute_empty_files() -> None:
         config_metadata,
         file_lists,
     )
-    assert stdout == (
-        "runem: START: 'reformat py'\n"
-        "runem: WARNING: skipping job 'reformat py', no files for job\n"
-        # "runem: job: running: 'reformat py'\n"
-        # "runem: job: DONE: 'reformat py': 0:00:00\n"
-    )
+    if silent:
+        assert stdout == ""
+    else:
+        assert stdout == (
+            "runem: START: 'reformat py'\n"
+            "runem: WARNING: skipping job 'reformat py', no files for job\n"
+            # "runem: job: running: 'reformat py'\n"
+            # "runem: job: DONE: 'reformat py': 0:00:00\n"
+        )
 
 
 def test_job_execute_with_ctx_cwd() -> None:

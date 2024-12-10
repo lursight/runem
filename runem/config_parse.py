@@ -149,6 +149,7 @@ def parse_job_config(
     in_out_job_names: JobNames,
     in_out_phases: JobPhases,
     phase_order: OrderedPhases,
+    silent: bool = False,
 ) -> None:
     """Parses and validates a job-entry read in from disk.
 
@@ -208,6 +209,7 @@ def parse_job_config(
                 in_out_job_names,
                 in_out_phases,
                 phase_order,
+                warn_missing_phase=(not silent),
             )
     except KeyError as err:
         raise ValueError(
@@ -215,8 +217,11 @@ def parse_job_config(
         ) from err
 
 
-def parse_config(
-    config: Config, cfg_filepath: pathlib.Path, hooks_only: bool = False
+def parse_config(  # noqa: C901
+    config: Config,
+    cfg_filepath: pathlib.Path,
+    silent: bool = False,
+    hooks_only: bool = False,
 ) -> typing.Tuple[
     Hooks,  # hooks:
     OrderedPhases,  # phase_order:
@@ -282,7 +287,10 @@ def parse_config(
 
     if not phase_order:
         if not hooks_only:
-            warn("phase ordering not configured! Runs will be non-deterministic!")
+            if silent:  # pragma: no cover
+                pass
+            else:
+                warn("phase ordering not configured! Runs will be non-deterministic!")
             phase_order = tuple(job_phases)
 
     # now parse out the job_configs
@@ -301,6 +309,7 @@ def parse_config(
             in_out_job_names=job_names,
             in_out_phases=job_phases,
             phase_order=phase_order,
+            silent=silent,
         )
     return (
         hooks,
@@ -341,7 +350,9 @@ def generate_config(
 
 
 def _load_user_hooks_from_config(
-    user_config: Config, cfg_filepath: pathlib.Path
+    user_config: Config,
+    cfg_filepath: pathlib.Path,
+    silent: bool,
 ) -> Hooks:
     hooks: Hooks
     (
@@ -353,7 +364,7 @@ def _load_user_hooks_from_config(
         _,
         _,
         _,
-    ) = parse_config(user_config, cfg_filepath, hooks_only=True)
+    ) = parse_config(user_config, cfg_filepath, silent, hooks_only=True)
     return hooks
 
 
@@ -361,6 +372,7 @@ def load_config_metadata(
     config: Config,
     cfg_filepath: pathlib.Path,
     user_configs: typing.List[typing.Tuple[Config, pathlib.Path]],
+    silent: bool = False,
     verbose: bool = False,
 ) -> ConfigMetadata:
     hooks: Hooks
@@ -380,12 +392,14 @@ def load_config_metadata(
         job_names,
         job_phases,
         tags,
-    ) = parse_config(config, cfg_filepath)
+    ) = parse_config(config, cfg_filepath, silent)
 
     user_config: Config
     user_config_path: pathlib.Path
     for user_config, user_config_path in user_configs:
-        user_hooks: Hooks = _load_user_hooks_from_config(user_config, user_config_path)
+        user_hooks: Hooks = _load_user_hooks_from_config(
+            user_config, user_config_path, silent
+        )
         if user_hooks:
             if verbose:
                 log(f"hooks: loading user hooks from '{str(user_config_path)}'")

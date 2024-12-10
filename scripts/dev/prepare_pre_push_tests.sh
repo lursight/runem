@@ -17,7 +17,7 @@ function RUN_LABELED_CMD {
 }
 
 # Get the root-checkout path of runem:
-RUNEM_CHECKOUT=$(runem --root-show | grep -v "runem: ")
+RUNEM_CHECKOUT=$(runem --root-show --silent | grep -v "runem: ")
 if [ -z "$RUNEM_CHECKOUT" ]; then
   printf "RUNEM_CHECKOUT not set %s\\n" "$RUNEM_CHECKOUT"
   exit 2

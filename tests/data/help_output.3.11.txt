@@ -1,5 +1,5 @@
 runem: WARNING: no phase found for 'echo "hello world!"', using 'dummy phase 1'
-usage: -c [-H] [--jobs JOBS [JOBS ...]] [--not-jobs JOBS_EXCLUDED [JOBS_EXCLUDED ...]] [--phases PHASES [PHASES ...]] [--not-phases PHASES_EXCLUDED [PHASES_EXCLUDED ...]] [--tags TAGS [TAGS ...]] [--not-tags TAGS_EXCLUDED [TAGS_EXCLUDED ...]] [--dummy-option-1---complete-option] [--no-dummy-option-1---complete-option] [--dummy-option-2---minimal] [--no-dummy-option-2---minimal] [--call-graphs | --no-call-graphs] [-f | --modified-files | --no-modified-files] [-h | --git-head-files | --no-git-head-files] [--always-files ALWAYS_FILES [ALWAYS_FILES ...]] [--git-files-since-branch GIT_SINCE_BRANCH] [--procs PROCS] [--root ROOT_DIR] [--root-show | --no-root-show] [--spinner | --no-spinner] [--verbose | --no-verbose] [--version | --no-version | -v]
+usage: -c [-H] [--jobs JOBS [JOBS ...]] [--not-jobs JOBS_EXCLUDED [JOBS_EXCLUDED ...]] [--phases PHASES [PHASES ...]] [--not-phases PHASES_EXCLUDED [PHASES_EXCLUDED ...]] [--tags TAGS [TAGS ...]] [--not-tags TAGS_EXCLUDED [TAGS_EXCLUDED ...]] [--dummy-option-1---complete-option] [--no-dummy-option-1---complete-option] [--dummy-option-2---minimal] [--no-dummy-option-2---minimal] [--call-graphs | --no-call-graphs] [-f | --modified-files | --no-modified-files] [-h | --git-head-files | --no-git-head-files] [--always-files ALWAYS_FILES [ALWAYS_FILES ...]] [--git-files-since-branch GIT_SINCE_BRANCH] [--procs PROCS] [--root ROOT_DIR] [--root-show | --no-root-show] [--silent | --no-silent | -s] [--spinner | --no-spinner] [--verbose | --no-verbose] [--version | --no-version | -v]
 
 Runs the Lursight Lang test-suite
 
@@ -19,6 +19,8 @@ Runs the Lursight Lang test-suite
   --root ROOT_DIR       which dir to use as the base-dir for testing, defaults to directory containing the config '[TEST_REPLACED_DIR]'
   --root-show, --no-root-show
                         show the root-path of runem and exit
+  --silent, --no-silent, -s
+                        Whether to show warning messages or not.
   --spinner, --no-spinner
                         Whether to show the progress spinner or not. Helps reduce log-spam in ci/cd.
   --verbose, --no-verbose

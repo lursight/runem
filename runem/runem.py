@@ -37,7 +37,7 @@ from rich.spinner import Spinner
 from rich.text import Text
 
 from runem.blocking_print import RICH_CONSOLE
-from runem.command_line import parse_args
+from runem.command_line import error_on_log_logic, parse_args
 from runem.config import load_project_config, load_user_configs
 from runem.config_metadata import ConfigMetadata
 from runem.config_parse import load_config_metadata
@@ -67,12 +67,19 @@ def _determine_run_parameters(argv: typing.List[str]) -> ConfigMetadata:
 
     Return a ConfigMetadata object with all the required information.
     """
+
+    # Because we want to be able to show logging whilst parsing .runem.yml config, we
+    # need to check the state of the logging-verbosity switches here, manually, as well.
+    verbose = "--verbose" in argv
+    silent = ("--silent" in argv) or ("-s" in argv)
+    error_on_log_logic(verbose, silent)
+
     config: Config
     cfg_filepath: pathlib.Path
     config, cfg_filepath = load_project_config()
     user_configs: typing.List[typing.Tuple[Config, pathlib.Path]] = load_user_configs()
     config_metadata: ConfigMetadata = load_config_metadata(
-        config, cfg_filepath, user_configs, verbose=("--verbose" in argv)
+        config, cfg_filepath, user_configs, silent, verbose=("--verbose" in argv)
     )
 
     # Now we parse the cli arguments extending them with information from the
