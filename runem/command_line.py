@@ -138,7 +138,9 @@ def parse_args(
         nargs="+",
         default=config_metadata.all_job_tags,
         help=(
-            "Only jobs with the given tags. "
+            # TODO: clarify the logic by which we add/remove jobs based on tags
+            #       e.g. exclusive-in, union, x-or etc.
+            "Only run jobs with the given tags. "
             f"Defaults to '{sorted(config_metadata.all_job_tags)}'."
         ),
         required=False,

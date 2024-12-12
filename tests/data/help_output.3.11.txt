@@ -42,7 +42,7 @@ phases:
 
 tags:
   --tags TAGS [TAGS ...]
-                        Only jobs with the given tags. Defaults to '['dummy tag 1', 'dummy tag 2', 'tag only on job 1', 'tag only on job 2']'.
+                        Only run jobs with the given tags. Defaults to '['dummy tag 1', 'dummy tag 2', 'tag only on job 1', 'tag only on job 2']'.
   --not-tags TAGS_EXCLUDED [TAGS_EXCLUDED ...]
                         Removes one or more tags from the list of job tags to be run. Options are '['dummy tag 1', 'dummy tag 2', 'tag only on job 1', 'tag only on job 2']'.
 
