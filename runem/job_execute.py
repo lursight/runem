@@ -11,7 +11,7 @@ from runem.config_metadata import ConfigMetadata
 from runem.informative_dict import ReadOnlyInformativeDict
 from runem.job import Job
 from runem.job_wrapper import get_job_wrapper
-from runem.log import error, log
+from runem.log import error, log, warn
 from runem.types.common import FilePathList, JobTags
 from runem.types.filters import FilePathListLookup
 from runem.types.runem_config import JobConfig
@@ -50,7 +50,8 @@ def job_execute_inner(
 
     if not file_list:
         # no files to work on
-        log(f"WARNING: skipping job '{label}', no files for job")
+        if not config_metadata.args.silent:
+            warn(f"skipping job '{label}', no files for job")
         return {
             "job": (f"{label}: no files!", timedelta(0)),
             "commands": [],

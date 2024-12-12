@@ -223,6 +223,7 @@ def _run_full_config_runem(
     load_config_metadata_mock: Mock,
     runem_cli_switches: typing.List[str],
     add_verbose_switch: bool = True,
+    add_silent_switch: bool = False,
     add_command_one_liner: bool = True,
 ) -> typing.Tuple[typing.List[str], typing.Optional[BaseException]]:
     """A wrapper around running runem e2e tests.
@@ -343,6 +344,8 @@ def _run_full_config_runem(
     ]
     if add_verbose_switch:
         argv.append("--verbose")
+    if add_silent_switch:
+        argv.append("--silent")
 
     with io.StringIO() as buf, redirect_stdout(buf):
         # amend the args to have the exec at 0 as expected by argparse
@@ -376,7 +379,14 @@ def _run_full_config_runem(
         False,
     ],
 )
-def test_runem_with_full_config(verbosity: bool) -> None:
+@pytest.mark.parametrize(
+    "silent",
+    [
+        True,
+        False,
+    ],
+)
+def test_runem_with_full_config(verbosity: bool, silent: bool) -> None:
     """End-2-end test with a full config."""
     runem_cli_switches: typing.List[str] = []  # default switches/behaviour
     runem_stdout: typing.List[str]
@@ -387,26 +397,49 @@ def test_runem_with_full_config(verbosity: bool) -> None:
     ) = _run_full_config_runem(  # pylint: disable=no-value-for-parameter
         runem_cli_switches=runem_cli_switches,
         add_verbose_switch=verbosity,
+        add_silent_switch=silent,
     )
-    if error_raised is not None:  # pragma: no cover
-        print("\n".join(runem_stdout))
-        raise error_raised  # re-raise the error that shouldn't have been raised
+    if error_raised is not None:
+        if not (silent and verbosity):  # pragma: no cover
+            # No special handling, this is an unexpected case, so just print the output
+            # for debugging, and re-raise.
+            print("\n".join(runem_stdout))
+            raise error_raised  # re-raise the error that shouldn't have been raised
+        assert isinstance(error_raised, SystemExit)
+        assert runem_stdout == [
+            "runem: cannot parse '--verbose' and '--silent'",
+            "",
+        ]
+        return
 
     if not verbosity:
-        assert runem_stdout == [
-            (
-                "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
-                "'dummy phase 1'"
-            ),
-            (
-                "runem: Running 'dummy phase 1' with 2 workers (of [NUM CORES] max) "
-                "processing 2 jobs"
-            ),
-            (
-                "runem: Running 'dummy phase 2' with 2 workers (of [NUM CORES] max) "
-                "processing 2 jobs"
-            ),
-        ]
+        if silent:
+
+            assert runem_stdout == [
+                (
+                    "runem: Running 'dummy phase 1' with 2 workers (of [NUM CORES] max) "
+                    "processing 2 jobs"
+                ),
+                (
+                    "runem: Running 'dummy phase 2' with 2 workers (of [NUM CORES] max) "
+                    "processing 2 jobs"
+                ),
+            ]
+        else:
+            assert runem_stdout == [
+                (
+                    "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
+                    "'dummy phase 1'"
+                ),
+                (
+                    "runem: Running 'dummy phase 1' with 2 workers (of [NUM CORES] max) "
+                    "processing 2 jobs"
+                ),
+                (
+                    "runem: Running 'dummy phase 2' with 2 workers (of [NUM CORES] max) "
+                    "processing 2 jobs"
+                ),
+            ]
     else:
         assert runem_stdout == [
             (
