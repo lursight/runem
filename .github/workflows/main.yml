@@ -57,7 +57,9 @@ jobs:
             ${{ runner.os }}-yarn-
 
       - name: Install Yarn Deps
-        run: yarn install
+        run: |
+          corepack enable
+          yarn install
 
       - name: Install Project
         run: pip install -e .[tests]
