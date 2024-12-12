@@ -278,23 +278,15 @@ def _install_python_requirements(
     **kwargs: Unpack[JobKwargs],
 ) -> None:
     options: Options = kwargs["options"]
-    root_path: pathlib.Path = kwargs["root_path"]
     if not (options["install-deps"]):
         # not enabled
         return
-    requirements_path = root_path
-    requirements_files = list(requirements_path.glob("requirements*.txt"))
-    if not requirements_files:
-        raise RuntimeError(
-            f"runem: requirements files not found at {str(requirements_path.absolute())}"
-        )
     cmd = [
         "python3",
         "-m",
         "pip",
         "install",
-        "--upgrade",
+        "-e",
+        ".[tests]",
     ]
-    for req_file in requirements_files:
-        cmd.extend(["--requirement", str(req_file)])
     run_command(cmd=cmd, **kwargs)

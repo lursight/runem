@@ -1,0 +1,74 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "runem"
+description = "Awesome runem created by lursight"
+readme = "README.md"
+requires-python = ">=3.7"
+authors = [
+    { name = "lursight" }
+]
+license = { text = "Specify your license here" }
+keywords = ["example", "runem"]
+classifiers = [
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+]
+
+dependencies = [
+  # `packaging` is probably not needed after moving to pyproject.toml
+  "packaging>=22.0",
+  "PyYAML>=5.0.0",
+
+  # For UI Elements
+  "rich>10.0.0",
+
+  # For pre python3.12 Unpack features we need the `typing_extensions` module to
+  # be installed.
+  "typing_extensions>3.0.0",
+]
+dynamic = ["version"]
+
+[project.urls]
+Homepage = "https://github.com/lursight/runem/"
+
+[tool.setuptools.packages.find]
+exclude = ["tests", ".github"]
+
+[project.scripts]
+runem = "runem.__main__:main"
+
+[tool.setuptools.package-data]
+runem = ["VERSION"]
+
+[project.optional-dependencies]
+tests = [
+  # This requirements are for development and testing only, not for production.
+  "black==24.10.0",
+  "coverage==7.5",
+  "docformatter==1.7.5",
+  "flake8-bugbear==24.2.6",
+  "flake8==7.0.0",
+  "gitchangelog==3.0.4",
+  "isort==5.13.2",
+  "mkdocs==1.5.3",
+  "mypy==1.9.0",
+  "pydocstyle==6.3.0",
+  "pylint==3.1.0",
+  "pylama==8.4.1",
+  "pytest-cov==6.0.0",
+  "pytest-profiling==1.7.0",
+  "pytest-xdist==3.6.1",
+  "pytest==8.3.3",
+  "setuptools",
+  "termplotlib==0.3.9",
+  "tox",
+  "types-PyYAML==6.0.12.20240311",
+  "requests-mock==1.11.0",
+  "types-setuptools",
+]
