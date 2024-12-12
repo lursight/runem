@@ -21,5 +21,6 @@
     "type": "git",
     "url": "git@github.com:lursight/runem.git"
   },
-  "author": "Frank Harrison <frank@lursight.com>"
+  "author": "Frank Harrison <frank@lursight.com>",
+  "packageManager": "yarn@4.5.0"
 }
