@@ -22,7 +22,6 @@ def _job_yarn_deps(
     install_cmd = [
         "yarn",
         "install",
-        "--immutable",
     ]
 
     run_command(cmd=install_cmd, **kwargs)
