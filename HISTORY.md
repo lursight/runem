@@ -4,6 +4,47 @@ Changelog
 
 (unreleased)
 ------------
+- Merge pull request #71 from lursight/feat/pyproject. [Frank Harrison]
+
+  Feat/pyproject
+- Feat(pyproject): changes how we chose to install deps during a runem
+  deps-install. [Frank Harrison]
+- Feat(pyproject): tests the build works in ci/cd. [Frank Harrison]
+
+  I'd rather find out that this has failed before we get to the deploy-phase.
+- Feat(pyproject): makes the version dynamic again, reading from the
+  VERSION file. [Frank Harrison]
+- Feat(pyproject): ports setup.py to pyproject.toml, more future proof.
+  [Frank Harrison]
+
+  Makes the project more future-proof by moving to pyproject.
+- Merge pull request #70 from lursight/chore/typo. [Frank Harrison]
+
+  chore(docs): improves the help comments for --tags options
+- Chore(docs): improves the help comments for --tags options. [Frank
+  Harrison]
+- Merge pull request #69 from lursight/feat/silent. [Frank Harrison]
+
+  Feat/silent
+- Chore(pre-push): adds '--silent' option ahead of improving pre-push.
+  [Frank Harrison]
+- Chore(pre-push): fixes typo in error. [Frank Harrison]
+- Chore(help-test): updates the help text, I think after updating the
+  width in the test-render. [Frank Harrison]
+- Merge pull request #68 from lursight/chore/yarn_update. [Frank
+  Harrison]
+
+  Chore/yarn update
+- Chore(nodejs): try and enable corepack in ci/cd. [Frank Harrison]
+- Chore(nodejs): refreshes the yarn deps lock file. [Frank Harrison]
+- Chore(nodejs): removes the immutable options. [Frank Harrison]
+- Chore(nodejs): updates the yarn tool version we prefer. [Frank
+  Harrison]
+
+
+0.4.0 (2024-12-03)
+------------------
+- Release: version 0.4.0 🚀 [Frank Harrison]
 - Merge pull request #67 from lursight/feat/prettier_logging. [Frank
   Harrison]
 
