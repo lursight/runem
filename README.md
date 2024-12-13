@@ -9,11 +9,11 @@ Run’em is your definitive blueprint of tasks and commands—instantly discover
 
 ## Core Strengths
 
-**Blueprint** - discover tasks and onboard smoothly
-**Parallel**  - get results quicker
-**Simple**  - define task easily
-**Extensible** - add tasks quickly
-**Filters** - powerful task selection
+**Blueprint** - discover tasks and onboard smoothly\
+**Parallel**  - get results quicker\
+**Simple**  - define task easily\
+**Extensible** - add tasks quickly\
+**Filters** - powerful task selection\
 **Reports** - see metrics on tasks
 
 ## Why Run’em?
