@@ -2,119 +2,116 @@
 [![CI](https://github.com/lursight/runem/actions/workflows/main.yml/badge.svg)](https://github.com/lursight/runem/actions/workflows/main.yml)
 [![DOCS](https://lursight.github.io/runem/docs/VIEW-DOCS-31c553.svg)](https://lursight.github.io/runem/)
 
-# Run'em: Accelerate Your Development Workflow
-**Boost Efficiency and Save Time**
-Runem is a flexible, multi-process tool designed to speed up your everyday tasks by running them in parallel. Whether you're testing, linting, or deploying, runem helps you work smarter and faster.
+# Run’em
 
-## Why Choose Run'em?
-- **Streamlined Task Management**: Configure tasks with ease using declarative .runem.yml files.
-- **Multiprocess Execution**: Run multiple tasks simultaneously, minimizing wall-clock time.
-- **Optimized for Monorepos**: Supports multiple projects and task types, with easy filtering and configuration.
-- **Detailed Reporting**: Get insights into task execution time and efficiency gains.
+**Your Blueprint of Commands. Your Engine of Parallel Execution.**
+Run’em is your definitive blueprint of tasks and commands—instantly discoverable, effortlessly parallel, and elegantly extensible.
+
+## Core Strengths
+
+**Blueprint** - discover tasks and onboard smoothly
+**Parallel**  - get results quicker
+**Simple**  - define task easily
+**Extensible** - add tasks quickly
+**Filters** - powerful task selection
+**Reports** - see metrics on tasks
+
+## Why Run’em?
+- **Command Blueprint:** Instantly see and run all your tasks. No guesswork, no rummaging.
+- **Effortless Parallelism:** Execute tasks side-by-side to obliterate downtime.
+- **Simple YAML Declarations:** Define everything in one `.runem.yml`.
+- **Extensible & Smart:** Adapt to monorepos, complex workflows, and evolving needs.
+- **Discoverable by Design:** `runem --help` guides your team, new hires, or contributors to every defined command.
 
 ## Contents
-- [Run'em: Accelerate Your Development Workflow](#runem-accelerate-your-development-workflow)
-  - [Why Choose Run'em?](#why-choose-runem)
+- [Run’em](#runem)
+  - [Core Strengths](#core-strengths)
+  - [Why Run’em?](#why-runem)
   - [Contents](#contents)
-- [Features At A Glance:](#features-at-a-glance)
-- [Using Run'em](#using-runem)
-  - [Installation](#installation)
-  - [Quick-start](#quick-start)
-  - [Basic quick-start](#basic-quick-start)
-    - [A more complete quick-start](#a-more-complete-quick-start)
-  - [Basic Use](#basic-use)
-  - [Advanced Use](#advanced-use)
-    - [Advanced configuration options](#advanced-configuration-options)
-    - [Custom reports](#custom-reports)
-- [Help and job discovery](#help-and-job-discovery)
+- [Highlights](#highlights)
+- [Quick Start](#quick-start)
+- [Basic Use](#basic-use)
+- [Advanced Use](#advanced-use)
+- [Help & Discovery](#help--discovery)
 - [Troubleshooting](#troubleshooting)
-- [Contributing to and supporting runem](#contributing-to-and-supporting-runem)
-  - [Development](#development)
-  - [Sponsor](#sponsor)
-- [About runem](#about-runem)
+- [Contribute & Support](#contribute--support)
+- [About Run’em](#about-runem)
 
+# Highlights
+## Blueprint of Commands:
+The blueprint (available via `--help`) gives you a manifest of all jobs and tasks in a
+project. A single source of truth for all tasks.
+## Parallel Execution:
+Maximise speed with automatic concurrency. Runem tries to run all tasks as quickly as
+possible, looking at resources, with dependencies. It is not yet a full
+dependency-execution graph, but by version 1.0.0 it will be.
+## Filtering:
+Use powerful and flexible filtering. Select or excluded tasks by `tags`, `name` and
+`phase`. Chose the task to be run based on your needs, right now.
 
-# Features At A Glance:
-- **Tagging**: Easily run specific job groups (e.g., lint, test, python).
-- **Phases**: Organize tasks by phase (e.g., edit, test, deploy).
-- **Configurable Options**: Customize how jobs are executed using simple options.
-- **Declarative**: Jobs are define using simple YAML in [.runem.yml](https://lursight.github.io/runem/docs/configuration.html) .
+You can also customise filtering by adding your own command `options`.
 
-# Using Run'em
+See `--tags`, `--not-tags`, `--jobs`, `--not-jobs`, `--phases` and `--not-phases`.
+## Powerful Insights:** Understand what ran, how fast, and what failed.
+**Quiet by Default:** Focus on what matters, and reveal detail only when needed.
 
-## Installation
-
+# Quick Start
+**Install:**
 ```bash
 pip install runem
 ```
+**Define a task:**
 
-## Quick-start
-
-## Basic quick-start
-Create the following `.runem.yml` file at the root of your project:
-
-```yml
-- job:
+```yaml
+`# .runem.yml
+ - job:
     command: echo "hello world!"
 ```
 
-Then anywhere in your project run `runem` to see how and when that task is run, and how long it took:
+**Run:**
+
 ```bash
 runem
 ```
 
-To see the actual log output you will need to use `--verbose` as `runem` hides anything that isn't important. Only failures and reports are considered important.
+Run multiple commands in parallel, see timing, and keep output minimal. Need detail?
+
 ```bash
-# Or, to see "hello world!", use --verbose
-runem --verbose  # add --verbose to see the actual output
+runem --verbose
 ```
 
-To see how you can control your job use `--help`:
-```bash
-runem --help
-```
+[Quick Start Docs](https://lursight.github.io/runem/docs/quick_start.html)
 
-### A more complete quick-start
+# Basic Use
 
-See [quick-start docs](https://lursight.github.io/runem/docs/quick_start.html) for more quick-start tips.
+Get comfortable with typical workflows:
+[Basic Use Docs](https://lursight.github.io/runem/docs/basic_use.html)
 
-## Basic Use
+# Advanced Use
 
-See [docs on basic use and use-cases](https://lursight.github.io/runem/docs/basic_use.html) for a comprehensive introduction.
+Scale up with multi-phase configs, filtered execution, and custom reporting:
+[Advanced Configuration](https://lursight.github.io/runem/docs/configuration.html)
+[Custom Reporting](https://lursight.github.io/runem/docs/reports.html)
 
-## Advanced Use
+# Help & Discovery
 
-### Advanced configuration options
-See [configuration docs](https://lursight.github.io/runem/docs/configuration.html) for advanced configuration and use.
-
-### Custom reports
-See [reporting docs](https://lursight.github.io/runem/docs/reports.html) for more information on how reporting works.
-
-
-# Help and job discovery
-
-`--help` is designed to help your team discover what jobs and tasks they can automated. Read more at 
-[help and discovery docs](https://lursight.github.io/runem/docs/help_and_job_discovery.html).
+`runem --help` is your radar—instantly mapping out every available task:
+[Help & Job Discovery](https://lursight.github.io/runem/docs/help_and_job_discovery.html)
 
 # Troubleshooting
 
-See [troubleshooting and known issues docs](https://lursight.github.io/runem/docs/troubleshooting_known_issues.html).
+Swift solutions to common issues:
+[Troubleshooting & Known Issues](https://lursight.github.io/runem/docs/troubleshooting_known_issues.html)
 
 ---
-# Contributing to and supporting runem
 
-Awesome runem created by lursight
+# Contribute & Support
 
-## Development
+Brought to you by [Lursight Ltd.](https://lursight.com) and an open community.
+[CONTRIBUTING.md](CONTRIBUTING.md)
+[❤️ Sponsor](https://github.com/sponsors/lursight/)
 
-Read the [CONTRIBUTING.md](CONTRIBUTING.md) file.
+# About Run’em
 
-## Sponsor
-
-[❤️ Sponsor this project](https://github.com/sponsors/lursight/)
-
-# About runem
-The runem mission is to improve developer velocity at
-[Lursight Ltd.](https://lursight.com), read more about the runem
-[mission](https://lursight.github.io/runem/docs/mission.html).
+Run’em exists to accelerate your team’s delivery and reduce complexity. Learn about our [Mission](https://lursight.github.io/runem/docs/mission.html).
 
