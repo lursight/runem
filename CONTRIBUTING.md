@@ -4,6 +4,8 @@ runem welcomes contributions from the community.
 
 **You need PYTHON3!**
 
+We strongly recommend `pyenv` (see https://github.com/pyenv/pyenv#readme)
+
 This instructions are for linux base systems. (Linux, MacOS, BSD, etc.)
 ## Setting up your own fork of this repo.
 
@@ -37,6 +39,21 @@ Edit the files using your preferred editor. (we recommend VIM or VSCode)
 
 Run `runem` to run all checks at light-speed 🚀.
 
+Run against a single version of python
+
+- `runem`
+
+Run runem check using `tox` to test against a range of python versions
+
+- `tox`
+
+### Updating the `--help` output tests
+
+Sometimes when you've updated switches and so on, we need to update the tests that check
+for _unexpected_ changed.
+
+- `RUNEM_TEST_WRITE_HELP=1 tox`
+
 ## Build the docs locally
 
 Run `make docs` to build the docs.
@@ -47,11 +64,16 @@ Ensure your new changes are documented.
 
 This project uses [conventional git commit messages](https://www.conventionalcommits.org/en/v1.0.0/).
 
-Example: `fix(package): update setup.py arguments 🎉` (emojis are fine too)
+Examples: 
+ - `chore(package): update setup.py arguments 🎉` (emojis are fine too)
+ - `feat(fancy): adds fancy feature 🚀`
+ - `fix(some-bug): splats some annoying bug 🐞`
 
 ## Push your changes to your fork
 
 Run `git push my_fork my_contribution`
+
+NOTE: `runem` will be run via `tox` on pre-push
 
 ## Submit a pull request
 
