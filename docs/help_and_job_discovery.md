@@ -7,10 +7,6 @@ $ python -m runem --help
 # or
 $ runem  --help
 ```
-
-<details>
-<summary>For example</summary>
-
 ```
 usage: runem.py [-h] [--jobs JOBS [JOBS ...]] [--not-jobs JOBS_EXCLUDED [JOBS_EXCLUDED ...]] [--phases PHASES [PHASES ...]]
                 [--not-phases PHASES_EXCLUDED [PHASES_EXCLUDED ...]] [--tags TAGS [TAGS ...]] [--not-tags TAGS_EXCLUDED [TAGS_EXCLUDED ...]]
@@ -74,4 +70,3 @@ job-param overrides:
   --unit-test           run unit tests
   --no-unit-test        turn off run unit tests
 ```
-</details>
