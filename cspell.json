@@ -35,6 +35,7 @@
     "negatise", //made up word for args utils
     "prettifier", // npm module for auto-formatting code
     "procs", // runem switch for managing the number of proccesses we want to run
+    "pyenv", // a utility for managing python enviroments
     "pylint", // python module
     "pypi", // the python package index
     "pytest", // the python module for testing
