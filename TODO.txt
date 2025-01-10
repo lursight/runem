@@ -1,0 +1,48 @@
+- obvious short-hand 🩳🫱
+  - will how shortest unique options for short hands on errors
+  - allow `--tags` to be elided if it is obvious that the tag is a tag
+  - implies we error on any non-ambiguous switches
+  - allow `--jobs` and `phases` to be the same
+  - allow shorthand, i.e. parts of a string to be used
+    - `--any-sub-string-match subs` : runs any job with label, tag, or phase matchin `subs`, if unamibuous
+    - `--single-sub-string-match subs`: tries to run a single job matching `subs`, if one job found and unamibuous
+- warning reports
+  - return warnings from jobs
+- in-built option pinning
+  - bool jobs
+    - if an option is set true, the job runs
+    - if an option is set false, the job does NOT run
+- tag+option association
+  - a mode where if the tag is set the option is also set.
+  - but _not_ the other way around as the if the option also sets the tag, then
+    only the jobs for that tag will run, which would be a reduced set of jobs
+    vs if the option was set.
+- in-line QA checks
+  - add a mechanism to verify that certain jobs are run for certain presets and condition
+  - e.g. `expect jobs (job1, job2, job3) for cli "runem --tags tagX --phase myPhass"`
+- Logic-graph rendering
+  1. show node-graph (ala Obsidian) of jobs connected by tags/phases
+  2. show ven-diagrams of jobs (may not be logically possible)
+  3. show jobs by tags
+  4. show jobs by phase
+- Recipies & Presets
+  - group a bunch of switches into one command for easier running
+- Plugins
+  - Files
+    - move git-file handling to plugin
+    - create a find-based file plugin
+  - hooks
+    - add new hook plugins
+    - add new read-only or "announce" hooks (that could be used for notifications)
+    - add telementry orientated hooks
+  - notify plugins (or hooks?)
+- Run from path
+  - like `find` have `runem .` or `runem <path>`
+    - runs `runem` jobs from a path, applying an extra filter to the jobs
+  - Show docs for local-path first, followed by global, or vise-versa, so it's clear
+- Telemetry overtime
+  - track time spent in successful runs
+  - record errors
+  - count errors
+  - count job runs
+  - count job errors
