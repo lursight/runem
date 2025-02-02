@@ -164,6 +164,7 @@ def _update_progress(
             else:
                 if last_running_jobs_set != running_jobs_set:
                     RICH_CONSOLE.log(report)
+                    last_running_jobs_set = running_jobs_set
 
             # Sleep for reduced CPU usage
             time.sleep(0.1)
