@@ -44,11 +44,11 @@ class MockPopen:
     [
         ("Line1\nLine2", "Prefix: Line1\nPrefix: Line2"),
         ("SingleLine", "Prefix: SingleLine"),
-        ("Line1\nLine2\n", "Prefix: Line1\nPrefix: Line2\n"),
-        ("\n", "Prefix: \n"),
+        ("Line1\nLine2\n", "Prefix: Line1\nPrefix: Line2\nPrefix: "),
+        ("Prefix:\n", "Prefix: Prefix:\nPrefix: "),
         ("", "Prefix: "),
         ("Line1\n\nLine3", "Prefix: Line1\nPrefix: \nPrefix: Line3"),
-        ("Line1\nLine2\n\n", "Prefix: Line1\nPrefix: Line2\nPrefix: \n"),
+        ("Line1\nLine2\n\n", "Prefix: Line1\nPrefix: Line2\nPrefix: \nPrefix: "),
     ],
     ids=[
         "multiple_lines",
@@ -65,7 +65,7 @@ def test_parse_stdout(stdout: str, expected: str) -> None:
 
     NOTE: we assume non-bytes strings here.
     """
-    assert runem.run_command.parse_stdout(stdout, "Prefix: ") == expected
+    assert expected == runem.run_command.parse_stdout(stdout, "Prefix: ")
 
 
 @patch("runem.run_command.Popen", autospec=True, return_value=MockPopen())
@@ -115,7 +115,7 @@ def test_run_command_basic_call_verbose(mock_popen: Mock) -> None:
     # check the log output hasn't changed. Update as needed.
     assert run_command_stdout == (
         "runem: running: start: test command: ls\n"
-        "runem: test command: test output\n"
+        "| test command: test output\n"
         "runem: running: done: test command: ls\n"
     )
     mock_popen.assert_called_once()
@@ -301,7 +301,7 @@ def test_run_command_basic_call_non_standard_exit_ok_code_verbose(
     assert run_command_stdout == (
         "runem: running: start: test command: ls\n"
         "runem:  allowed return ids are: 3\n"
-        "runem: test command: test output\n"
+        "| test command: test output\n"
         "runem: running: done: test command: ls\n"
     )
     mock_popen.assert_called_once()
@@ -347,7 +347,7 @@ def test_run_command_with_env_verbose(mock_popen: Mock) -> None:
     assert run_command_stdout == (
         "runem: running: start: test command: ls\n"
         "runem: ENV OVERRIDES: TEST_ENV_1='1' TEST_ENV_2='2' ls\n"
-        "runem: test command: test output\n"
+        "| test command: test output\n"
         "runem: running: done: test command: ls\n"
     )
     assert len(mock_popen.call_args) == 2
@@ -380,7 +380,7 @@ def test_run_command_with_env_on_error(mock_popen: Mock) -> None:
             )
         run_command_stdout = buf.getvalue()
 
-    assert "TEST_ENV_1='1' TEST_ENV_2='2'" in str(err_info.value)
+    assert "TEST_ENV_1='1' TEST_ENV_2='2'" in str(err_info.value.stdout)
 
     assert "" == run_command_stdout, "expected empty output when verbosity is off"
     assert len(mock_popen.call_args) == 2
@@ -412,7 +412,7 @@ def test_run_command_basic_call_verbose_with_cwd(mock_popen: Mock) -> None:
     assert run_command_stdout.split("\n") == [
         "runem: running: start: test command: ls",
         "runem: cwd: some/test/path",
-        "runem: test command: test output",
+        "| test command: test output",
         "runem: running: done: test command: ls",
         "",
     ]

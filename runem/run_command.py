@@ -7,17 +7,33 @@ from subprocess import STDOUT as SUBPROCESS_STDOUT
 from subprocess import Popen
 from timeit import default_timer as timer
 
+from rich.markup import escape
+
 from runem.log import log
 
 TERMINAL_WIDTH = 86
 
 
-class RunCommandBadExitCode(RuntimeError):
-    pass
+class RunemJobError(RuntimeError):
+    """An exception type that stores the stdout/stderr.
+
+    Designed so that we do not print the full stdout via the exception stack, instead,
+    allows an opportunity to parse the markup in it.
+    """
+
+    def __init__(self, friendly_message: str, stdout: str):
+        self.stdout = stdout
+        super().__init__(friendly_message)
 
 
-class RunCommandUnhandledError(RuntimeError):
-    pass
+class RunCommandBadExitCode(RunemJobError):
+    def __init__(self, stdout: str):
+        super().__init__(friendly_message="Bad exit-code", stdout=stdout)
+
+
+class RunCommandUnhandledError(RunemJobError):
+    def __init__(self, stdout: str):
+        super().__init__(friendly_message="Unhandled job error", stdout=stdout)
 
 
 # A function type for recording timing information.
@@ -27,25 +43,25 @@ RecordSubJobTimeType = typing.Callable[[str, timedelta], None]
 def parse_stdout(stdout: str, prefix: str) -> str:
     """Prefixes each line of the output with a given label, except trailing new
     lines."""
+
     # Edge case: Return the prefix immediately for an empty string
     if not stdout:
         return prefix
 
-    # Split stdout into lines, noting if it ends with a newline
-    ends_with_newline = stdout.endswith("\n")
+    # Stop errors in `rich` by parsing out anything that might look like
+    # rich-markup.
+    stdout = escape(stdout)
+
+    # Split stdout into lines
     lines = stdout.split("\n")
 
     # Apply prefix to all lines except the last if it's empty (due to a trailing newline)
-    modified_lines = [f"{prefix}{line}" for line in lines[:-1]] + (
-        [lines[-1]]
-        if lines[-1] == "" and ends_with_newline
-        else [f"{prefix}{lines[-1]}"]
+    modified_lines = [f"{prefix}{escape(line)}" for line in lines[:-1]] + (
+        [f"{prefix}{escape(lines[-1])}"]
     )
 
     # Join the lines back together, appropriately handling the final newline
-    modified_stdout = "\n".join(modified_lines)
-    # if ends_with_newline:
-    #     modified_stdout += "\n"
+    modified_stdout: str = "\n".join(modified_lines)
 
     return modified_stdout
 
@@ -69,24 +85,34 @@ def _log_command_execution(
     label: str,
     env_overrides: typing.Optional[typing.Dict[str, str]],
     valid_exit_ids: typing.Optional[typing.Tuple[int, ...]],
+    decorate_logs: bool,
     verbose: bool,
     cwd: typing.Optional[pathlib.Path] = None,
 ) -> None:
     """Logs out useful debug information on '--verbose'."""
     if verbose:
-        log(f"running: start: {label}: {cmd_string}")
+        log(
+            f"running: start: [blue]{label}[/blue]: [yellow]{cmd_string}[yellow]",
+            decorate=decorate_logs,
+        )
         if valid_exit_ids is not None:
             valid_exit_strs = ",".join(str(exit_code) for exit_code in valid_exit_ids)
-            log(f"\tallowed return ids are: {valid_exit_strs}")
+            log(
+                f"\tallowed return ids are: [green]{valid_exit_strs}[/green]",
+                decorate=decorate_logs,
+            )
 
         if env_overrides:
             env_overrides_as_string = " ".join(
                 [f"{key}='{value}'" for key, value in env_overrides.items()]
             )
-            log(f"ENV OVERRIDES: {env_overrides_as_string} {cmd_string}")
+            log(
+                f"ENV OVERRIDES: [yellow]{env_overrides_as_string} {cmd_string}[/yellow]",
+                decorate=decorate_logs,
+            )
 
         if cwd:
-            log(f"cwd: {str(cwd)}")
+            log(f"cwd: {str(cwd)}", decorate=decorate_logs)
 
 
 def run_command(  # noqa: C901
@@ -98,6 +124,7 @@ def run_command(  # noqa: C901
     valid_exit_ids: typing.Optional[typing.Tuple[int, ...]] = None,
     cwd: typing.Optional[pathlib.Path] = None,
     record_sub_job_time: typing.Optional[RecordSubJobTimeType] = None,
+    decorate_logs: bool = True,
     **kwargs: typing.Any,
 ) -> str:
     """Runs the given command, returning stdout or throwing on any error."""
@@ -115,6 +142,7 @@ def run_command(  # noqa: C901
         label,
         env_overrides,
         valid_exit_ids,
+        decorate_logs,
         verbose,
         cwd,
     )
@@ -143,7 +171,12 @@ def run_command(  # noqa: C901
                 stdout += line
                 if verbose:
                     # print each line of output, assuming that each has a newline
-                    log(parse_stdout(line, prefix=f"{label}: "))
+                    log(
+                        parse_stdout(
+                            line, prefix=f"[green]| [/green][blue]{label}[/blue]: "
+                        ),
+                        decorate=False,
+                    )
 
             # Wait for the subprocess to finish and get the exit code
             process.wait()
@@ -154,15 +187,15 @@ def run_command(  # noqa: C901
                 )
                 raise RunCommandBadExitCode(
                     (
-                        f"non-zero exit {process.returncode} (allowed are "
-                        f"{valid_exit_strs}) from {cmd_string}"
+                        f"non-zero exit [red]{process.returncode}[/red] (allowed are "
+                        f"[green]{valid_exit_strs}[/green]) from {cmd_string}"
                     )
                 )
     except BaseException as err:
         if ignore_fails:
             return ""
         parsed_stdout: str = (
-            parse_stdout(stdout, prefix=f"{label}: ERROR: ") if process else ""
+            parse_stdout(stdout, prefix="[red]| [/red]") if process else ""
         )
         env_overrides_as_string = ""
         if env_overrides:
@@ -171,11 +204,11 @@ def run_command(  # noqa: C901
             )
             env_overrides_as_string = f"{env_overrides_as_string} "
         error_string = (
-            f"runem: test: FATAL: command failed: {label}"
-            f"\n\t{env_overrides_as_string}{cmd_string}"
-            f"\nERROR"
+            f"runem: [red bold]FATAL[/red bold]: command failed: [blue]{label}[/blue]"
+            f"\n\t[yellow]{env_overrides_as_string}{cmd_string}[/yellow]"
+            f"\n[red underline]| ERROR[/red underline]"
             f"\n{str(parsed_stdout)}"
-            f"\nERROR END"
+            f"\n[red underline]| ERROR END[/red underline]"
         )
 
         if isinstance(err, RunCommandBadExitCode):
@@ -184,7 +217,10 @@ def run_command(  # noqa: C901
         raise RunCommandUnhandledError(error_string) from err
 
     if verbose:
-        log(f"running: done: {label}: {cmd_string}")
+        log(
+            f"running: done: [blue]{label}[/blue]: [yellow]{cmd_string}[/yellow]",
+            decorate=decorate_logs,
+        )
 
     if record_sub_job_time is not None:
         # Capture how long this run took

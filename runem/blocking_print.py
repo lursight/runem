@@ -13,7 +13,13 @@ def _reset_console() -> Console:
 
     RICH_CONSOLE = Console(
         log_path=False,  # Do NOT print the source path.
-        markup=False,  # Do NOT print markup e.g. `[blink]Don't Panic![/blink]`.
+        # We allow markup here, BUT stdout/stderr from other procs should have
+        # `escape()` called on them so they don't error here.
+        # This means 'rich' effects/colors can be judiciously applied:
+        # e.g. `[blink]Don't Panic![/blink]`.
+        markup=True,
+        # `highlight` is what colourises string and number in prin() calls.
+        highlight=False,
     )
     return RICH_CONSOLE
 
@@ -31,7 +37,8 @@ def _reset_console_for_tests() -> None:
     RICH_CONSOLE = Console(
         log_path=False,  # Do NOT print the source path.
         log_time=False,  # Do not prefix with log time e.g. `[time] log message`.
-        markup=False,  # Do NOT print markup e.g. `[blink]Don't Panic![/blink]`.
+        markup=True,  # Allow some markup e.g. `[blink]Don't Panic![/blink]`.
+        highlight=False,
         width=999,  # A very wide width.
     )
 

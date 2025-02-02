@@ -46,6 +46,7 @@ from runem.job_execute import job_execute
 from runem.job_filter import filter_jobs
 from runem.log import error, log, warn
 from runem.report import report_on_run
+from runem.run_command import RunemJobError
 from runem.types.common import OrderedPhases, PhaseName
 from runem.types.filters import FilePathListLookup
 from runem.types.hooks import HookName
@@ -114,8 +115,8 @@ class DummySpinner(ConsoleRenderable):  # pragma: no cover
 
     def __exit__(
         self,
-        exc_type: typing.Optional[typing.Type[BaseException]],
-        exc_value: typing.Optional[BaseException],
+        exc_type: typing.Optional[typing.Type[RunemJobError]],
+        exc_value: typing.Optional[RunemJobError],
         traceback: typing.Optional[TracebackType],
     ) -> None:
         """Support for context manager."""
@@ -177,7 +178,7 @@ def _process_jobs(
     phase: PhaseName,
     jobs: Jobs,
     show_spinner: bool,
-) -> typing.Optional[BaseException]:
+) -> typing.Optional[RunemJobError]:
     """Execute each given job asynchronously.
 
     This is where the major real-world time savings happen, and it could be
@@ -202,7 +203,7 @@ def _process_jobs(
         )
     )
 
-    subprocess_error: typing.Optional[BaseException] = None
+    subprocess_error: typing.Optional[RunemJobError] = None
 
     with multiprocessing.Manager() as manager:
         running_jobs: DictProxy[typing.Any, typing.Any] = manager.dict()
@@ -236,7 +237,7 @@ def _process_jobs(
                         repeat(file_lists),
                     ),
                 )
-        except BaseException as err:  # pylint: disable=broad-exception-caught
+        except RunemJobError as err:  # pylint: disable=broad-exception-caught
             subprocess_error = err
         finally:
             # Signal the terminal_writer process to exit
@@ -252,7 +253,7 @@ def _process_jobs_by_phase(
     filtered_jobs_by_phase: PhaseGroupedJobs,
     in_out_job_run_metadatas: JobRunMetadatasByPhase,
     show_spinner: bool,
-) -> typing.Optional[BaseException]:
+) -> typing.Optional[RunemJobError]:
     """Execute each job asynchronously, grouped by phase.
 
     Whilst it is conceptually useful to group jobs by 'phase', Phases are
@@ -276,7 +277,7 @@ def _process_jobs_by_phase(
         if config_metadata.args.verbose:
             log(f"Running Phase {phase}")
 
-        failure_exception: typing.Optional[BaseException] = _process_jobs(
+        failure_exception: typing.Optional[RunemJobError] = _process_jobs(
             config_metadata,
             file_lists,
             in_out_job_run_metadatas,
@@ -294,7 +295,7 @@ def _process_jobs_by_phase(
 
 
 MainReturnType = typing.Tuple[
-    ConfigMetadata, JobRunMetadatasByPhase, typing.Optional[BaseException]
+    ConfigMetadata, JobRunMetadatasByPhase, typing.Optional[RunemJobError]
 ]
 
 
@@ -334,7 +335,7 @@ def _main(
 
     start = timer()
 
-    failure_exception: typing.Optional[BaseException] = _process_jobs_by_phase(
+    failure_exception: typing.Optional[RunemJobError] = _process_jobs_by_phase(
         config_metadata,
         file_lists,
         filtered_jobs_by_phase,
@@ -363,7 +364,7 @@ def timed_main(argv: typing.List[str]) -> None:
     start = timer()
     config_metadata: ConfigMetadata
     job_run_metadatas: JobRunMetadatasByPhase
-    failure_exception: typing.Optional[BaseException]
+    failure_exception: typing.Optional[RunemJobError]
     config_metadata, job_run_metadatas, failure_exception = _main(argv)
     phase_run_oder: OrderedPhases = config_metadata.phases
     end = timer()
@@ -375,7 +376,7 @@ def timed_main(argv: typing.List[str]) -> None:
     )
     message: str = "DONE: runem took"
     if failure_exception:
-        message = "FAILED: your jobs failed after"
+        message = "[red bold]FAILED[/red bold]: your jobs failed after"
     log(
         (
             f"{message}: {time_taken.total_seconds()}s, "
@@ -393,6 +394,7 @@ def timed_main(argv: typing.List[str]) -> None:
     if failure_exception is not None:
         # we got a failure somewhere, now that we've reported the timings we
         # re-raise.
+        error(failure_exception.stdout)
         raise failure_exception
 
 
