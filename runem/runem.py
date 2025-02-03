@@ -19,6 +19,7 @@ We do:
 - time tests and tell you what used the most time, and how much time run-tests saved
   you
 """
+import contextlib
 import multiprocessing
 import os
 import pathlib
@@ -30,10 +31,9 @@ from datetime import timedelta
 from itertools import repeat
 from multiprocessing.managers import DictProxy, ValueProxy
 from timeit import default_timer as timer
-from types import TracebackType
 
-from rich.console import Console, ConsoleOptions, ConsoleRenderable, RenderResult
 from rich.spinner import Spinner
+from rich.status import Status
 from rich.text import Text
 
 from runem.blocking_print import RICH_CONSOLE
@@ -93,36 +93,6 @@ def _determine_run_parameters(argv: typing.List[str]) -> ConfigMetadata:
     return config_metadata
 
 
-class DummySpinner(ConsoleRenderable):  # pragma: no cover
-    """A dummy spinner for when spinners are disabled."""
-
-    def __init__(self) -> None:
-        self.text = ""
-
-    def __rich__(self) -> Text:
-        """Return a rich Text object for rendering."""
-        return Text(self.text)
-
-    def __rich_console__(
-        self, console: Console, options: ConsoleOptions
-    ) -> RenderResult:
-        """Yield an empty string or placeholder text."""
-        yield Text(self.text)
-
-    def __enter__(self) -> None:
-        """Support for context manager."""
-        pass
-
-    def __exit__(
-        self,
-        exc_type: typing.Optional[typing.Type[RunemJobError]],
-        exc_value: typing.Optional[RunemJobError],
-        traceback: typing.Optional[TracebackType],
-    ) -> None:
-        """Support for context manager."""
-        pass
-
-
 def _update_progress(
     phase: str,
     running_jobs: typing.Dict[str, str],
@@ -141,16 +111,17 @@ def _update_progress(
         is_running (ValueProxy[bool]): Flag indicating if jobs are still running.
         num_workers (int): Indicates the number of workers performing the jobs.
     """
-    # Using the `rich` module to show a loading spinner on console
-    spinner: typing.Union[Spinner, DummySpinner]
-    if show_spinner:
-        spinner = Spinner("dots", text="Starting tasks...")
-    else:
-        spinner = DummySpinner()
 
     last_running_jobs_set: typing.Set[str] = set()
 
-    with RICH_CONSOLE.status(spinner):
+    # Using the `rich` module to show a loading spinner on console
+    spinner_ctx: typing.Union[Status, typing.ContextManager[None]] = (
+        RICH_CONSOLE.status(Spinner("dots", text="Starting tasks..."))
+        if show_spinner
+        else contextlib.nullcontext()
+    )
+
+    with spinner_ctx:
         while is_running.value:
             running_jobs_set: typing.Set[str] = set(running_jobs.values())
 
@@ -164,7 +135,8 @@ def _update_progress(
                 f"[green]{phase}[/green]: {progress}({num_workers}): {running_jobs_list}"
             )
             if show_spinner:
-                spinner.text = Text.from_markup(report)
+                assert isinstance(spinner_ctx, Status)
+                spinner_ctx.update(Text.from_markup(report))
             else:
                 if last_running_jobs_set != running_jobs_set:
                     RICH_CONSOLE.log(report)
