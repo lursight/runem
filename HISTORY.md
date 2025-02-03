@@ -4,6 +4,76 @@ Changelog
 
 (unreleased)
 ------------
+- Merge pull request #78 from lursight/feat/better_error_display. [Frank
+  Harrison]
+
+  Feat/better error display
+- Fix(spinner): fixes the Spinner show it only shows for --show-spinner.
+  [Frank Harrison]
+
+  Also, fixes it so that it shows only a single spinner
+- Feat(colours): adds better colours to the terminal output. [Frank
+  Harrison]
+
+  This helps to reinfoce time-saved and other aspects of the tool.
+- Feat(better-errors): makes finding the stderr in the list of errors
+  easier. [Frank Harrison]
+
+  We do this by colouring the text for the commands and wrapping the
+  errors with a red-box.
+
+  We colour:
+  - command-lines -> yellow
+  - job-labels -> blue
+  - errors -> red
+  - in-progress -> green box
+- Merge pull request #77 from lursight/fix/log-verbosity. [Frank
+  Harrison]
+
+  fix(log-verbosity): fixes verbosity bug when not showing the spinner
+- Fix(log-verbosity): fixes verbosity bug when not showing the spinner.
+  [Frank Harrison]
+
+  We were showing the running procs on every tick, instead of just the
+  changes to the running procs, if any.
+- Merge pull request #76 from lursight/chore/types/job-return-type.
+  [Frank Harrison]
+
+  chore(types) fixes exports for JobReturn type
+- Chore(types): exports the JobReturn type from the types submodule.
+  [Frank Harrison]
+- Merge pull request #75 from lursight/chore/todos. [Frank Harrison]
+
+  chore(todos): adds TODOD.txt to track ideas for runem
+- Chore(todos): adds TODOD.txt to track ideas for runem. [Frank
+  Harrison]
+- Merge pull request #74 from lursight/chore/help_docs. [Frank Harrison]
+
+  chore(docs): removes help output from a details block
+- Chore(docs): removes help output from a details block. [Frank
+  Harrison]
+
+  The details block broke the pre-formatted styling of the code-block.
+- Merge pull request #73 from lursight/chore/update_contrib. [Frank
+  Harrison]
+
+  chore(docs): trying to add line-breaks to non-bulletpointed list
+- Chore(docs): trying to add line-breaks to non-bulletpointed list.
+  [Frank Harrison]
+- Merge pull request #72 from lursight/chore/update_contrib. [Frank
+  Harrison]
+
+  Chore/update CONTRIBUTING.md and README.md
+- Chore(spell): adds 'pyenv' to dictionary. [Frank Harrison]
+- Chore(docs): improves the README. [Frank Harrison]
+- Docs(contrib): updates the contributing docs. [Frank Harrison]
+
+  We add some of the basics as well as some more recent changes
+
+
+0.5.0 (2024-12-12)
+------------------
+- Release: version 0.5.0 🚀 [Frank Harrison]
 - Merge pull request #71 from lursight/feat/pyproject. [Frank Harrison]
 
   Feat/pyproject
