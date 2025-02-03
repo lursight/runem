@@ -28,7 +28,7 @@ def log(
 
     if decorate:
         # Make it clear that the message comes from `runem` internals.
-        msg = f"runem: {msg}"
+        msg = f"[light_slate_grey]runem[/light_slate_grey]: {msg}"
 
     # print in a blocking manner, waiting for system resources to free up if a
     # runem job is contending on stdout or similar.
@@ -36,8 +36,8 @@ def log(
 
 
 def warn(msg: str) -> None:
-    log(f"WARNING: {msg}")
+    log(f"[yellow]WARNING[/yellow]: {msg}")
 
 
 def error(msg: str) -> None:
-    log(f"ERROR: {msg}")
+    log(f"[red]ERROR[/red]: {msg}")

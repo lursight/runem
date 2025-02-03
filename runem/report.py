@@ -211,7 +211,10 @@ def _print_reports_by_phase(
         for job_report_url_info in report_urls:
             if not job_report_url_info:
                 continue
-            log(f"report: {str(job_report_url_info[0])}: {str(job_report_url_info[1])}")
+            log(
+                f"report: [blue]{str(job_report_url_info[0])}[/blue]: "
+                f"{str(job_report_url_info[1])}"
+            )
 
 
 def report_on_run(

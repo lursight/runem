@@ -18,7 +18,8 @@ def _reset_console() -> Console:
         # This means 'rich' effects/colors can be judiciously applied:
         # e.g. `[blink]Don't Panic![/blink]`.
         markup=True,
-        # `highlight` is what colourises string and number in prin() calls.
+        # `highlight` is what colourises string and number in print() calls.
+        # We do not want this to be auto-magic.
         highlight=False,
     )
     return RICH_CONSOLE

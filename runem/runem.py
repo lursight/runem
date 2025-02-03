@@ -57,7 +57,7 @@ from runem.types.types_jobs import (
     JobRunMetadatasByPhase,
     JobTiming,
 )
-from runem.utils import printable_set
+from runem.utils import printable_set_coloured
 
 
 def _determine_run_parameters(argv: typing.List[str]) -> ConfigMetadata:
@@ -124,7 +124,7 @@ class DummySpinner(ConsoleRenderable):  # pragma: no cover
 
 
 def _update_progress(
-    label: str,
+    phase: str,
     running_jobs: typing.Dict[str, str],
     completed_jobs: typing.Dict[str, str],
     all_jobs: Jobs,
@@ -156,12 +156,15 @@ def _update_progress(
 
             # Progress report
             progress: str = f"{len(completed_jobs)}/{len(all_jobs)}"
-            running_jobs_list = printable_set(
-                running_jobs_set
+            running_jobs_list = printable_set_coloured(
+                running_jobs_set,
+                "blue",
             )  # Reflect current running jobs accurately
-            report: str = f"{label}: {progress}({num_workers}): {running_jobs_list}"
+            report: str = (
+                f"[green]{phase}[/green]: {progress}({num_workers}): {running_jobs_list}"
+            )
             if show_spinner:
-                spinner.text = report
+                spinner.text = Text.from_markup(report)
             else:
                 if last_running_jobs_set != running_jobs_set:
                     RICH_CONSOLE.log(report)
@@ -198,7 +201,7 @@ def _process_jobs(
     num_concurrent_procs: int = min(max_num_concurrent_procs, len(jobs))
     log(
         (
-            f"Running '{phase}' with {num_concurrent_procs} workers (of "
+            f"Running '[green]{phase}[/green]' with {num_concurrent_procs} workers (of "
             f"{max_num_concurrent_procs} max) processing {len(jobs)} jobs"
         )
     )
@@ -374,14 +377,15 @@ def timed_main(argv: typing.List[str]) -> None:
     system_time_spent, wall_clock_time_saved = report_on_run(
         phase_run_oder, job_run_metadatas, time_taken
     )
-    message: str = "DONE: runem took"
+    message: str = "[green bold]DONE[/green bold]: runem took"
     if failure_exception:
         message = "[red bold]FAILED[/red bold]: your jobs failed after"
     log(
         (
             f"{message}: {time_taken.total_seconds()}s, "
-            f"saving you {wall_clock_time_saved.total_seconds()}s, "
-            f"without runem you would have waited {system_time_spent.total_seconds()}s"
+            f"saving you [green]{wall_clock_time_saved.total_seconds()}s[/green], "
+            "without runem you would have waited "
+            f"[red]{system_time_spent.total_seconds()}s[/red]"
         )
     )
 
