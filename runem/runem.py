@@ -19,6 +19,7 @@ We do:
 - time tests and tell you what used the most time, and how much time run-tests saved
   you
 """
+import contextlib
 import multiprocessing
 import os
 import pathlib
@@ -30,10 +31,9 @@ from datetime import timedelta
 from itertools import repeat
 from multiprocessing.managers import DictProxy, ValueProxy
 from timeit import default_timer as timer
-from types import TracebackType
 
-from rich.console import Console, ConsoleOptions, ConsoleRenderable, RenderResult
 from rich.spinner import Spinner
+from rich.status import Status
 from rich.text import Text
 
 from runem.blocking_print import RICH_CONSOLE
@@ -46,6 +46,7 @@ from runem.job_execute import job_execute
 from runem.job_filter import filter_jobs
 from runem.log import error, log, warn
 from runem.report import report_on_run
+from runem.run_command import RunemJobError
 from runem.types.common import OrderedPhases, PhaseName
 from runem.types.filters import FilePathListLookup
 from runem.types.hooks import HookName
@@ -56,7 +57,7 @@ from runem.types.types_jobs import (
     JobRunMetadatasByPhase,
     JobTiming,
 )
-from runem.utils import printable_set
+from runem.utils import printable_set_coloured
 
 
 def _determine_run_parameters(argv: typing.List[str]) -> ConfigMetadata:
@@ -92,38 +93,8 @@ def _determine_run_parameters(argv: typing.List[str]) -> ConfigMetadata:
     return config_metadata
 
 
-class DummySpinner(ConsoleRenderable):  # pragma: no cover
-    """A dummy spinner for when spinners are disabled."""
-
-    def __init__(self) -> None:
-        self.text = ""
-
-    def __rich__(self) -> Text:
-        """Return a rich Text object for rendering."""
-        return Text(self.text)
-
-    def __rich_console__(
-        self, console: Console, options: ConsoleOptions
-    ) -> RenderResult:
-        """Yield an empty string or placeholder text."""
-        yield Text(self.text)
-
-    def __enter__(self) -> None:
-        """Support for context manager."""
-        pass
-
-    def __exit__(
-        self,
-        exc_type: typing.Optional[typing.Type[BaseException]],
-        exc_value: typing.Optional[BaseException],
-        traceback: typing.Optional[TracebackType],
-    ) -> None:
-        """Support for context manager."""
-        pass
-
-
 def _update_progress(
-    label: str,
+    phase: str,
     running_jobs: typing.Dict[str, str],
     completed_jobs: typing.Dict[str, str],
     all_jobs: Jobs,
@@ -140,27 +111,32 @@ def _update_progress(
         is_running (ValueProxy[bool]): Flag indicating if jobs are still running.
         num_workers (int): Indicates the number of workers performing the jobs.
     """
-    # Using the `rich` module to show a loading spinner on console
-    spinner: typing.Union[Spinner, DummySpinner]
-    if show_spinner:
-        spinner = Spinner("dots", text="Starting tasks...")
-    else:
-        spinner = DummySpinner()
 
     last_running_jobs_set: typing.Set[str] = set()
 
-    with RICH_CONSOLE.status(spinner):
+    # Using the `rich` module to show a loading spinner on console
+    spinner_ctx: typing.Union[Status, typing.ContextManager[None]] = (
+        RICH_CONSOLE.status(Spinner("dots", text="Starting tasks..."))
+        if show_spinner
+        else contextlib.nullcontext()
+    )
+
+    with spinner_ctx:
         while is_running.value:
             running_jobs_set: typing.Set[str] = set(running_jobs.values())
 
             # Progress report
             progress: str = f"{len(completed_jobs)}/{len(all_jobs)}"
-            running_jobs_list = printable_set(
-                running_jobs_set
+            running_jobs_list = printable_set_coloured(
+                running_jobs_set,
+                "blue",
             )  # Reflect current running jobs accurately
-            report: str = f"{label}: {progress}({num_workers}): {running_jobs_list}"
+            report: str = (
+                f"[green]{phase}[/green]: {progress}({num_workers}): {running_jobs_list}"
+            )
             if show_spinner:
-                spinner.text = report
+                assert isinstance(spinner_ctx, Status)
+                spinner_ctx.update(Text.from_markup(report))
             else:
                 if last_running_jobs_set != running_jobs_set:
                     RICH_CONSOLE.log(report)
@@ -177,7 +153,7 @@ def _process_jobs(
     phase: PhaseName,
     jobs: Jobs,
     show_spinner: bool,
-) -> typing.Optional[BaseException]:
+) -> typing.Optional[RunemJobError]:
     """Execute each given job asynchronously.
 
     This is where the major real-world time savings happen, and it could be
@@ -197,12 +173,12 @@ def _process_jobs(
     num_concurrent_procs: int = min(max_num_concurrent_procs, len(jobs))
     log(
         (
-            f"Running '{phase}' with {num_concurrent_procs} workers (of "
+            f"Running '[green]{phase}[/green]' with {num_concurrent_procs} workers (of "
             f"{max_num_concurrent_procs} max) processing {len(jobs)} jobs"
         )
     )
 
-    subprocess_error: typing.Optional[BaseException] = None
+    subprocess_error: typing.Optional[RunemJobError] = None
 
     with multiprocessing.Manager() as manager:
         running_jobs: DictProxy[typing.Any, typing.Any] = manager.dict()
@@ -236,7 +212,7 @@ def _process_jobs(
                         repeat(file_lists),
                     ),
                 )
-        except BaseException as err:  # pylint: disable=broad-exception-caught
+        except RunemJobError as err:  # pylint: disable=broad-exception-caught
             subprocess_error = err
         finally:
             # Signal the terminal_writer process to exit
@@ -252,7 +228,7 @@ def _process_jobs_by_phase(
     filtered_jobs_by_phase: PhaseGroupedJobs,
     in_out_job_run_metadatas: JobRunMetadatasByPhase,
     show_spinner: bool,
-) -> typing.Optional[BaseException]:
+) -> typing.Optional[RunemJobError]:
     """Execute each job asynchronously, grouped by phase.
 
     Whilst it is conceptually useful to group jobs by 'phase', Phases are
@@ -276,7 +252,7 @@ def _process_jobs_by_phase(
         if config_metadata.args.verbose:
             log(f"Running Phase {phase}")
 
-        failure_exception: typing.Optional[BaseException] = _process_jobs(
+        failure_exception: typing.Optional[RunemJobError] = _process_jobs(
             config_metadata,
             file_lists,
             in_out_job_run_metadatas,
@@ -294,7 +270,7 @@ def _process_jobs_by_phase(
 
 
 MainReturnType = typing.Tuple[
-    ConfigMetadata, JobRunMetadatasByPhase, typing.Optional[BaseException]
+    ConfigMetadata, JobRunMetadatasByPhase, typing.Optional[RunemJobError]
 ]
 
 
@@ -334,7 +310,7 @@ def _main(
 
     start = timer()
 
-    failure_exception: typing.Optional[BaseException] = _process_jobs_by_phase(
+    failure_exception: typing.Optional[RunemJobError] = _process_jobs_by_phase(
         config_metadata,
         file_lists,
         filtered_jobs_by_phase,
@@ -363,7 +339,7 @@ def timed_main(argv: typing.List[str]) -> None:
     start = timer()
     config_metadata: ConfigMetadata
     job_run_metadatas: JobRunMetadatasByPhase
-    failure_exception: typing.Optional[BaseException]
+    failure_exception: typing.Optional[RunemJobError]
     config_metadata, job_run_metadatas, failure_exception = _main(argv)
     phase_run_oder: OrderedPhases = config_metadata.phases
     end = timer()
@@ -373,14 +349,15 @@ def timed_main(argv: typing.List[str]) -> None:
     system_time_spent, wall_clock_time_saved = report_on_run(
         phase_run_oder, job_run_metadatas, time_taken
     )
-    message: str = "DONE: runem took"
+    message: str = "[green bold]DONE[/green bold]: runem took"
     if failure_exception:
-        message = "FAILED: your jobs failed after"
+        message = "[red bold]FAILED[/red bold]: your jobs failed after"
     log(
         (
             f"{message}: {time_taken.total_seconds()}s, "
-            f"saving you {wall_clock_time_saved.total_seconds()}s, "
-            f"without runem you would have waited {system_time_spent.total_seconds()}s"
+            f"saving you [green]{wall_clock_time_saved.total_seconds()}s[/green], "
+            "without runem you would have waited "
+            f"[red]{system_time_spent.total_seconds()}s[/red]"
         )
     )
 
@@ -393,6 +370,7 @@ def timed_main(argv: typing.List[str]) -> None:
     if failure_exception is not None:
         # we got a failure somewhere, now that we've reported the timings we
         # re-raise.
+        error(failure_exception.stdout)
         raise failure_exception
 
 
