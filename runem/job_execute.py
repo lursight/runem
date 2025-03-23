@@ -105,7 +105,7 @@ def job_execute_inner(
         reports = function(**all_k_args)
     except BaseException:  # pylint: disable=broad-exception-caught
         # log that we hit an error on this job and re-raise
-        log(decorate=False)
+        log(prefix=False)
         error(f"job: job '{Job.get_job_name(job_config)}' failed to complete!")
         # re-raise
         raise

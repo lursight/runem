@@ -93,13 +93,13 @@ def _log_command_execution(
     if verbose:
         log(
             f"running: start: [blue]{label}[/blue]: [yellow]{cmd_string}[yellow]",
-            decorate=decorate_logs,
+            prefix=decorate_logs,
         )
         if valid_exit_ids is not None:
             valid_exit_strs = ",".join(str(exit_code) for exit_code in valid_exit_ids)
             log(
                 f"\tallowed return ids are: [green]{valid_exit_strs}[/green]",
-                decorate=decorate_logs,
+                prefix=decorate_logs,
             )
 
         if env_overrides:
@@ -108,11 +108,11 @@ def _log_command_execution(
             )
             log(
                 f"ENV OVERRIDES: [yellow]{env_overrides_as_string} {cmd_string}[/yellow]",
-                decorate=decorate_logs,
+                prefix=decorate_logs,
             )
 
         if cwd:
-            log(f"cwd: {str(cwd)}", decorate=decorate_logs)
+            log(f"cwd: {str(cwd)}", prefix=decorate_logs)
 
 
 def run_command(  # noqa: C901
@@ -175,7 +175,7 @@ def run_command(  # noqa: C901
                         parse_stdout(
                             line, prefix=f"[green]| [/green][blue]{label}[/blue]: "
                         ),
-                        decorate=False,
+                        prefix=False,
                     )
 
             # Wait for the subprocess to finish and get the exit code
@@ -219,7 +219,7 @@ def run_command(  # noqa: C901
     if verbose:
         log(
             f"running: done: [blue]{label}[/blue]: [yellow]{cmd_string}[/yellow]",
-            decorate=decorate_logs,
+            prefix=decorate_logs,
         )
 
     if record_sub_job_time is not None:
