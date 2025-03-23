@@ -293,8 +293,8 @@ def _main(
         log(f"found {len(file_lists)} batches, ", end="")
         for tag in sorted(file_lists.keys()):
             file_list = file_lists[tag]
-            log(f"{len(file_list)} '{tag}' files, ", decorate=False, end="")
-        log(decorate=False)  # new line
+            log(f"{len(file_list)} '{tag}' files, ", prefix=False, end="")
+        log(prefix=False)  # new line
 
     filtered_jobs_by_phase: PhaseGroupedJobs = filter_jobs(
         config_metadata=config_metadata,

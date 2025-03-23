@@ -101,21 +101,21 @@ def filter_jobs(  # noqa: C901
         if tags_to_run:
             log(
                 f"filtering for tags {printable_set(tags_to_run)}",
-                decorate=True,
+                prefix=True,
                 end="",
             )
         if tags_to_avoid:
             if tags_to_run:
-                log(", ", decorate=False, end="")
+                log(", ", prefix=False, end="")
             else:
-                log(decorate=True, end="")
+                log(prefix=True, end="")
             log(
                 f"excluding jobs with tags {printable_set(tags_to_avoid)}",
-                decorate=False,
+                prefix=False,
                 end="",
             )
         if tags_to_run or tags_to_avoid:
-            log(decorate=False)
+            log(prefix=False)
     filtered_jobs: PhaseGroupedJobs = defaultdict(list)
     for phase in config_metadata.phases:
         if phase not in phases_to_run:

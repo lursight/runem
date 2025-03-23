@@ -294,12 +294,12 @@ def parse_args(
     error_on_log_logic(args.verbose, args.silent)
 
     if args.show_root_path_and_exit:
-        log(str(config_metadata.cfg_filepath.parent), decorate=False)
+        log(str(config_metadata.cfg_filepath.parent), prefix=False)
         # cleanly exit
         sys.exit(0)
 
     if args.show_version_and_exit:
-        log(str(get_runem_version()), decorate=False)
+        log(str(get_runem_version()), prefix=False)
         # cleanly exit
         sys.exit(0)
 

@@ -5,7 +5,7 @@ from runem.blocking_print import blocking_print
 
 def log(
     msg: str = "",
-    decorate: bool = True,
+    prefix: typing.Optional[bool] = None,
     end: typing.Optional[str] = None,
 ) -> None:
     """Thin wrapper around 'print', change the 'msg' & handles system-errors.
@@ -26,7 +26,10 @@ def log(
     # Remove any markup as it will probably error, if unsanitised.
     # msg = escape(msg)
 
-    if decorate:
+    if prefix is None:
+        prefix = True
+
+    if prefix:
         # Make it clear that the message comes from `runem` internals.
         msg = f"[light_slate_grey]runem[/light_slate_grey]: {msg}"
 
