@@ -1,0 +1,137 @@
+#%RAML 1.0  (← just a comment so VS Code picks up YAML)
+$schema: "https://json-schema.org/draft/2020-12/schema"
+$title: Runem pipeline definition
+$defs:
+  # ----- common pieces -------------------------------------------------------
+  phase:
+    type: string
+
+  addr:
+    type: object
+    required: [file, function]
+    additionalProperties: false
+    properties:
+      file:     { type: string, minLength: 1 }
+      function: { type: string, minLength: 1 }
+
+  ctx:
+    type: object
+    additionalProperties: false
+    properties:
+      cwd:
+        oneOf:
+          - type: string
+          - type: array
+            minItems: 1
+            items: { type: string, minLength: 1 }
+      params:
+        type: object      # free‑form kv‑pairs for hooks
+        additionalProperties: true
+
+  when:
+    type: object
+    required: [phase]
+    additionalProperties: false
+    properties:
+      phase: { $ref: "#/$defs/phase" }
+      tags:
+        type: array
+        items: { type: string, minLength: 1 }
+        uniqueItems: true
+
+  # ----- top‑level entity types ---------------------------------------------
+  config:
+    type: object
+    required: []
+    additionalProperties: false
+    properties:
+      min_version:
+        type: string
+
+      phases:
+        type: array
+        minItems: 1
+        items: { $ref: "#/$defs/phase" }
+        uniqueItems: true
+
+      files:
+        type: [array, 'null']
+        minItems: 0
+        items:
+          type: object
+          required: [filter]
+          additionalProperties: false
+          properties:
+            filter:
+              type: object
+              required: [tag, regex]
+              additionalProperties: false
+              properties:
+                tag:   { type: string, minLength: 1 }
+                regex: { type: string, minLength: 1 } # leave pattern‑checking to the engine
+
+      options:
+        type: [array, 'null']
+        minItems: 0
+        items:
+          type: object
+          required: [option]
+          additionalProperties: false
+          properties:
+            option:
+              type: object
+              required: [name, type, default, desc]
+              additionalProperties: false
+              properties:
+                name:    { type: string, minLength: 1 }
+                alias:   { type: string, minLength: 1 }
+                desc:    { type: string, minLength: 1 }
+                type:
+                  const: bool           # always "bool" per sample
+                default: { type: boolean }
+
+  hook:
+    type: object
+    required: [hook_name]
+    oneOf:
+      - required: [command]
+      - required: [addr]
+    additionalProperties: false
+    properties:
+      hook_name: { type: string, minLength: 1 }
+      addr:      { $ref: "#/$defs/addr" }
+      command: { type: string, minLength: 1 }
+
+  job:
+    type: object
+    oneOf:
+      - required: [command]
+      - required: [addr]
+    additionalProperties: false
+    properties:
+      label:   { type: string, minLength: 1 }
+      addr:    { $ref: "#/$defs/addr" }
+      command: { type: string, minLength: 1 }
+      ctx:    { $ref: "#/$defs/ctx" }
+      when:    { $ref: "#/$defs/when" }
+    oneOf:
+      - required: [addr]    # either addr
+      - required: [command] # or command, but not both
+    not:
+      anyOf:
+        - required: [addr, command]   # forbid both together
+
+# ---------- ROOT -------------------------------------------------------------
+type: array
+minItems: 1
+items:
+  type: object
+  additionalProperties: false
+  oneOf:
+    - required: [config]
+    - required: [hook]
+    - required: [job]
+  properties:
+    config: { $ref: "#/$defs/config" }
+    hook:   { $ref: "#/$defs/hook" }
+    job:    { $ref: "#/$defs/job" }
