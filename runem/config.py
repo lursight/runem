@@ -46,7 +46,7 @@ def _search_up_multiple_dirs_for_file(
 
 
 def _find_config_file(
-    config_filename: typing.Union[str, pathlib.Path]
+    config_filename: typing.Union[str, pathlib.Path],
 ) -> typing.Tuple[typing.Optional[pathlib.Path], typing.Tuple[pathlib.Path, ...]]:
     """Searches up from the cwd for the given config file-name."""
     start_dirs = (pathlib.Path(".").absolute(),)

@@ -43,10 +43,8 @@ def _get_argparse_help_formatter() -> typing.Any:
 
     if use_fixed_width:
         # Use custom formatter with the width specified in the environment variable
-        return (
-            lambda prog: HelpFormatterFixedWidth(  # pylint: disable=unnecessary-lambda
-                prog
-            )
+        return lambda prog: HelpFormatterFixedWidth(  # pylint: disable=unnecessary-lambda
+            prog
         )
 
     # Use default formatter
@@ -383,7 +381,6 @@ def initialise_options(
 
     Returns the options dictionary
     """
-
     options: OptionsWritable = InformativeDict(
         {option["name"]: option["default"] for option in config_metadata.options_config}
     )

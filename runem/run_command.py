@@ -41,9 +41,7 @@ RecordSubJobTimeType = typing.Callable[[str, timedelta], None]
 
 
 def parse_stdout(stdout: str, prefix: str) -> str:
-    """Prefixes each line of the output with a given label, except trailing new
-    lines."""
-
+    """Prefixes each line of output with a given label, except trailing new lines."""
     # Edge case: Return the prefix immediately for an empty string
     if not stdout:
         return prefix

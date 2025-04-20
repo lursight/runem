@@ -16,9 +16,9 @@ def sample_dict_fixture() -> InformativeDict[str, int]:
 
 
 def test_getitem_existing_key(sample_dict: InformativeDict[str, int]) -> None:
-    assert (
-        sample_dict["one"] == 1
-    ), "Should retrieve the correct value for an existing key"
+    assert sample_dict["one"] == 1, (
+        "Should retrieve the correct value for an existing key"
+    )
 
 
 def test_getitem_non_existent_key(sample_dict: InformativeDict[str, int]) -> None:
@@ -40,33 +40,34 @@ def test_iteration(sample_dict: InformativeDict[str, int]) -> None:
 
 def test_initialization_with_items() -> None:
     dict_init = InformativeDict({"a": 1, "b": 2})
-    assert (
-        dict_init["a"] == 1 and dict_init["b"] == 2
-    ), "Should correctly initialize with given items"
+    assert dict_init["a"] == 1 and dict_init["b"] == 2, (
+        "Should correctly initialize with given items"
+    )
 
 
 def test_read_only_get_existing_key() -> None:
-    """Test that accessing an existing key in ReadOnlyInformativeDict returns the
-    correct value."""
+    """Tests accessing valid ReadOnlyInformativeDict key returns correct value."""
     ro_dict = ReadOnlyInformativeDict[str, str]({"existing_key": "value"})
-    assert (
-        ro_dict["existing_key"] == "value"
-    ), "Failed to retrieve the value for an existing key."
+    assert ro_dict["existing_key"] == "value", (
+        "Failed to retrieve the value for an existing key."
+    )
 
 
 def test_read_only_get_non_existent_key() -> None:
-    """Test that attempting to access a non-existent key in ReadOnlyInformativeDict
-    raises a KeyError, and the error message includes the missing key and lists
-    available keys."""
+    """Tests attempted access of non-existent ReadOnlyInformativeDict key raises.
+
+    It should raise a KeyError, and the error message includes the missing key and lists
+    available keys.
+    """
     ro_dict = ReadOnlyInformativeDict[str, str]({"existing_key": "value"})
     with pytest.raises(KeyError) as exc_info:
         _ = ro_dict["non_existent_key"]
-    assert "non_existent_key" in str(
-        exc_info.value
-    ), "The exception message does not mention the missing key."
-    assert "existing_key" in str(
-        exc_info.value
-    ), "The exception message does not list available keys."
+    assert "non_existent_key" in str(exc_info.value), (
+        "The exception message does not mention the missing key."
+    )
+    assert "existing_key" in str(exc_info.value), (
+        "The exception message does not list available keys."
+    )
 
 
 # Define the operation type with concrete types for this test

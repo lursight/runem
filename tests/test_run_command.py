@@ -32,6 +32,7 @@ class MockPopen:
         exc_val: Optional[BaseException],
         exc_tb: Optional[Type[BaseException]],
     ) -> None:
+        """Do nothing in the context on exit."""
         pass
 
     def wait(self) -> int:
@@ -103,7 +104,6 @@ def test_run_command_basic_call(mock_popen: Mock) -> None:
 @patch("runem.run_command.Popen", autospec=True, return_value=MockPopen())
 def test_run_command_basic_call_verbose(mock_popen: Mock) -> None:
     """Test that we get extra output when the verbose flag is set."""
-
     # capture any prints the run_command() does, should be informative in verbose=True mode
     with io.StringIO() as buf, redirect_stdout(buf):
         raw_output = runem.run_command.run_command(
@@ -178,9 +178,9 @@ def test_run_command_ignore_fails_skips_failures_for_non_zero_exit_code(
             verbose=False,
             ignore_fails=True,
         )
-        assert (
-            output == ""
-        ), "expected empty output on failed run with 'ignore_fails=True'"
+        assert output == "", (
+            "expected empty output on failed run with 'ignore_fails=True'"
+        )
 
         run_command_stdout = buf.getvalue()
 
@@ -208,9 +208,9 @@ def test_run_command_ignore_fails_skips_no_side_effects_on_success(
             verbose=False,
             ignore_fails=True,
         )
-        assert (
-            output == "test output"
-        ), "expected empty output on failed run with 'ignore_fails=True'"
+        assert output == "test output", (
+            "expected empty output on failed run with 'ignore_fails=True'"
+        )
 
         run_command_stdout = buf.getvalue()
 
@@ -239,9 +239,9 @@ def test_run_command_ignore_fails_skips_no_side_effects_on_success_with_valid_ex
             valid_exit_ids=(3,),  # matches patch value for 'returncode' above
             ignore_fails=True,
         )
-        assert (
-            output == "test output"
-        ), "expected empty output on failed run with 'ignore_fails=True'"
+        assert output == "test output", (
+            "expected empty output on failed run with 'ignore_fails=True'"
+        )
 
         run_command_stdout = buf.getvalue()
 
@@ -396,7 +396,6 @@ def test_run_command_with_env_on_error(mock_popen: Mock) -> None:
 @patch("runem.run_command.Popen", autospec=True, return_value=MockPopen())
 def test_run_command_basic_call_verbose_with_cwd(mock_popen: Mock) -> None:
     """Test that we get extra output when the verbose flag is set."""
-
     # capture any prints the run_command() does, should be informative in verbose=True mode
     with io.StringIO() as buf, redirect_stdout(buf):
         raw_output = runem.run_command.run_command(

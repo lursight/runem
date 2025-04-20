@@ -24,7 +24,6 @@ from runem.types.runem_config import JobConfig, PhaseGroupedJobs
 )
 def test_runem_job_filters_work_with_no_tags(verbosity: bool) -> None:
     """TODO."""
-
     config_file_path = pathlib.Path(__file__).parent / ".runem.yml"
     expected_job: JobConfig = {
         "addr": {
@@ -95,7 +94,6 @@ def test_should_filter_out_by_tags_with_tags_to_avoid(verbosity: bool) -> None:
        presence of avoided tags.
     2. That the verbosity of the output matches the expected verbosity level.
     """
-
     # Set up a job configuration with specific tags.
     job: JobConfig = {
         "label": "Job1",  # Job identifier.

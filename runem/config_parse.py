@@ -162,7 +162,8 @@ def parse_job_config(
             ("cwd" in job["ctx"]) and (job["ctx"]["cwd"] is not None)
         )
         if (not have_ctw_cwd) or isinstance(
-            job["ctx"]["cwd"], str  # type: ignore # handled above
+            job["ctx"]["cwd"],  # type: ignore # handled above
+            str,
         ):
             # if
             # - we don't have a cwd, ctx

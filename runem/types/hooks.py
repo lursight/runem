@@ -4,7 +4,7 @@ import enum
 class HookName(enum.Enum):
     """List supported hooks.
 
-    TODO:
+    Todo:
     - before all tasks are run, after config is read
     - BEFORE_ALL = "before-all"
     - after all tasks are done, before reporting
