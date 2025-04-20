@@ -457,6 +457,7 @@ disable=consider-using-f-string,
         chained-comparison,
         too-many-instance-attributes,
         too-many-public-methods,
+        too-many-positional-arguments,
         similarities
 
 
