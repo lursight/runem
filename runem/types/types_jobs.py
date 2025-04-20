@@ -1,28 +1,25 @@
-"""
+"""Job‑typing helpers.
 
-Some note on Unpack and kwargs:
-    We *try* to strongly type `**kwargs` for clarity.
-    We have tried several ways to define a Generic type that encapsulates
-        `**kwargs: SingleType`
-    ... but none of the solutions worked with python 3.9 -> 3.12 and mypy 1.9.0,
-    so we have to recommend instead using:
-        `**kwargs: Unpack[KwArgsType]`
+Cross‑version advice
+--------------------
+* Type variadic keyword arguments as **kwargs: Unpack[KwArgsT] for clarity.
+* Always import Unpack from ``typing_extensions``.
+  - Std‑lib Unpack appears only in Py 3.12+.
+  - ``typing_extensions`` works on 3.9‑3.12, so one import path keeps
+    mypy/pyright happy without conditional logic.
 
-    For this to work across versions of python where support for Unpack changes;
-    for example `Unpack` is a python 3.12 feature, but available in the
-    `typing_extensions` module.
+Example:
+~~~~~~~
+from typing_extensions import TypedDict, Unpack
 
-    So, for now, it looks like we get away with importing `Unpack` from the
-    `typing_extensions` module, even in python 3.12, so we will use, and
-    recommend using, the `typing_extensions` of `Unpack`, until it becomes
-    obsolete.
 
-    Alternatively, we can use the following, but it's unnecessarily verbose.
+class SaveKwArgs(TypedDict):
+    path: str
+    overwrite: bool
 
-    if sys.version_info >= (3, 12):  # pragma: no coverage
-        from typing import Unpack
-    else:  # pragma: no coverage
-        from typing_extensions import Unpack
+
+def save_job(**kwargs: Unpack[SaveKwArgs]) -> None:
+    ...
 """
 
 import pathlib

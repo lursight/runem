@@ -9,7 +9,69 @@ from runem.run_command import RunCommandUnhandledError, run_command
 from runem.types import FilePathList, JobKwargs, JobName, JobReturnData, Options
 
 
-def _job_py_code_reformat(
+def _job_py_code_ruff_reformat(
+    **kwargs: typing.Any,
+) -> None:
+    """Runs python formatting code in serial order as one influences the other."""
+    label: JobName = kwargs["label"]
+    options: Options = kwargs["options"]
+    python_files: FilePathList = kwargs["file_list"]
+
+    # put into 'check' mode if requested on the command line
+    extra_args = []
+    if options["check-only"]:
+        extra_args.append("--check")
+
+    if not options["ruff"]:
+        # Do not run `ruff` if opted-out
+        return
+
+    # If ruff is enabled we do NOT run black etc. because ruff does that
+    # for us, faster and better.
+    ruff_format_cmd = [
+        "python3",
+        "-m",
+        "ruff",
+        "format",
+        *extra_args,
+        *python_files,
+    ]
+    kwargs["label"] = f"{label} ruff"
+    run_command(cmd=ruff_format_cmd, **kwargs)
+
+
+def _job_py_ruff_lint(
+    **kwargs: typing.Any,
+) -> None:
+    """Runs python formatting code in serial order as one influences the other."""
+    label: JobName = kwargs["label"]
+    options: Options = kwargs["options"]
+    python_files: FilePathList = kwargs["file_list"]
+
+    # try to auto-fix issues (one benefit of ruff over flake8 etc.)
+    extra_args = []
+    if options["fix"]:
+        extra_args.append("--fix")
+
+    if not options["ruff"]:
+        # Do not run `ruff` if opted-out
+        return
+
+    # If ruff is enabled we do NOT run black etc. because ruff does that
+    # for us, faster and better.
+    ruff_lint_cmd = [
+        "python3",
+        "-m",
+        "ruff",
+        "check",
+        *extra_args,
+        *python_files,
+    ]
+    kwargs["label"] = f"{label} ruff"
+    run_command(cmd=ruff_lint_cmd, **kwargs)
+
+
+def _job_py_code_reformat_deprecated(
     **kwargs: Unpack[JobKwargs],
 ) -> None:
     """Runs python formatting code in serial order as one influences the other."""

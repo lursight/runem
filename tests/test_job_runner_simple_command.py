@@ -110,7 +110,8 @@ def test_job_runner_simple_command_with_file_list(mock_run_command: Mock) -> Non
 def test_job_runner_simple_command_with_option(mock_run_command: Mock) -> None:
     """Tests that option-passing to jobs, pass --option_on but not --option_off."""
     test_cmd_string: str = (
-        'echo "some option before switch" {option_on} {option_off} "some option after switch"'
+        'echo "some option before switch" {option_on} '
+        '{option_off} "some option after switch"'
     )
     job_config: JobConfig = {
         "command": test_cmd_string,

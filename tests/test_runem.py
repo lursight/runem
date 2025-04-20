@@ -49,12 +49,11 @@ DIR_REPLACEMENT_DIR: str = "[TEST_REPLACED_DIR]"
 def replace_max_cores(stdout: str) -> str:
     """Replace instances of '(of X max)' with '(of [NUM CORES] max)' in a given string.
 
-    Args:
-    s (str): The original string containing '(of X max)' patterns.
-    num_cores (int): The number of cores to insert into the replacement string.
+    Params:
+        stdout (str): The stdout to have the non-deterministic 'cores' output replaced.
 
     Returns:
-    str: Modified string with '(of X max)' replaced by '(of [NUM CORES] max)'.
+        str: Modified string with '(of X max)' replaced by '(of [NUM CORES] max)'.
     """
     return re.sub(r"\(of \d+ max\)", "(of [NUM CORES] max)", stdout)
 
@@ -414,7 +413,6 @@ def test_runem_with_full_config(verbosity: bool, silent: bool) -> None:
 
     if not verbosity:
         if silent:
-
             assert runem_stdout == [
                 (
                     "runem: Running 'dummy phase 1' with 2 workers (of [NUM CORES] max) "
@@ -1566,15 +1564,18 @@ def test_runem_tag_out_filters_work_all_tags(verbosity: bool) -> None:
             "runem: No jobs for phase 'dummy phase 2' tags ",
         ]
     else:
-        assert runem_stdout == [
-            # "runem: found 1 batches, 1 'mock phase' files, ",
-            # (
-            #     "runem: excluding jobs with tags 'dummy tag 1', 'dummy tag 2', "
-            #     "'tag only on job 1', 'tag only on job 2'"
-            # ),
-            # "runem: No jobs for phase 'dummy phase 1' tags ",
-            # "runem: No jobs for phase 'dummy phase 2' tags ",
-        ]
+        assert (
+            runem_stdout
+            == [
+                # "runem: found 1 batches, 1 'mock phase' files, ",
+                # (
+                #     "runem: excluding jobs with tags 'dummy tag 1', 'dummy tag 2', "
+                #     "'tag only on job 1', 'tag only on job 2'"
+                # ),
+                # "runem: No jobs for phase 'dummy phase 1' tags ",
+                # "runem: No jobs for phase 'dummy phase 2' tags ",
+            ]
+        )
 
 
 @pytest.mark.parametrize(
@@ -1744,7 +1745,7 @@ def test_progress_updater_with_running_jobs_and_10_jobs(mock_sleep: Mock) -> Non
     all_jobs: Jobs = []
     for idx in range(10):
         job_config = copy.copy(job_config)
-        job_config["label"] = f'{job_config["label"]} {idx}'
+        job_config["label"] = f"{job_config['label']} {idx}"
         all_jobs.append(job_config)
     with pytest.raises(SleepCalledError), multiprocessing.Manager() as manager:
         _update_progress(

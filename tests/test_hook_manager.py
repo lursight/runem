@@ -57,7 +57,6 @@ def test_register_hook(hook_man: HookManager) -> None:
 )
 def test_deregister_hook(verbosity: bool, hook_man: HookManager) -> None:
     """Test deregistering a hook function."""
-
     # run the command and capture output
     with io.StringIO() as buf, redirect_stdout(buf):
         hook_man.register_hook(HookName.ON_EXIT, mock_hook_function, verbose=verbosity)
@@ -182,7 +181,9 @@ def test_register_non_existent_hook(hook_man: HookManager) -> None:
     """Test error handling for registering a non-existent hook."""
     with pytest.raises(ValueError) as e:
         hook_man.register_hook(
-            "non_existent_hook", mock_hook_function, verbose=False  # type: ignore
+            "non_existent_hook",  # type: ignore
+            mock_hook_function,
+            verbose=False,
         )
     assert "Hook non_existent_hook does not exist" in str(e.value)
 

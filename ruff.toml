@@ -1,0 +1,44 @@
+
+# Assume linting/formatting for Python 3.10
+target-version = "py310"
+
+[lint]
+# Enable Pyflakes (`F`) and a subset of the pycodestyle (`E`)  codes by default.
+# Unlike Flake8, Ruff doesn't enable pycodestyle warnings (`W`) or
+# McCabe complexity (`C901`) by default.
+# 'D" is pydocstyle
+select = [
+  "D",
+  "E4",
+  "E7",
+  "E9",
+  "F",
+  "I",  # sorts imports
+]
+ignore = [
+  "D100", # Missing docstring in public module
+  "D101", # Missing docstring in public class
+  "D102", # Missing docstring in public method
+  "D103", # Missing docstring in public function
+  "D104", # Missing docstring in public package
+  "D106", # Missing docstring in public nested class
+  "D107", # Missing docstring in `__init__`
+
+# FIXME
+  "D205", # 1 blank line required between summary line and description
+  "D415", # First line should end with a period, question mark, or exclamation point
+
+# Review D402 at some point. It errored on a function `def track()` with
+# docstring `"""Track an event using ` which is obviously useful and correct
+  "D402", # First line should not be the function's signature
+]
+
+# Allow fix for all enabled rules (when `--fix`) is provided.
+fixable = ["ALL"]
+unfixable = []
+
+[lint.pydocstyle]
+# Use Google-style docstrings.
+convention = "google"
+
+

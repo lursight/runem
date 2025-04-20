@@ -15,7 +15,6 @@ def _load_python_function_from_module(
     function_to_load: str,
 ) -> JobFunction:
     """Given a job-description dynamically loads the test-function so we can call it."""
-
     # first locate the module relative to the config file
     abs_module_file_path: pathlib.Path = (
         cfg_filepath.parent / module_file_path
@@ -109,9 +108,9 @@ def get_job_wrapper_py_func(
         ) from err
 
     anchored_file_path = cfg_filepath.parent / module_file_path
-    assert (
-        anchored_file_path.exists()
-    ), f"{module_file_path} not found at {anchored_file_path}!"
+    assert anchored_file_path.exists(), (
+        f"{module_file_path} not found at {anchored_file_path}!"
+    )
 
     module_name = module_file_path.stem.replace(" ", "_").replace("-", "_")
 

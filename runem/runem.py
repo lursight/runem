@@ -19,6 +19,7 @@ We do:
 - time tests and tell you what used the most time, and how much time run-tests saved
   you
 """
+
 import contextlib
 import multiprocessing
 import os
@@ -68,7 +69,6 @@ def _determine_run_parameters(argv: typing.List[str]) -> ConfigMetadata:
 
     Return a ConfigMetadata object with all the required information.
     """
-
     # Because we want to be able to show logging whilst parsing .runem.yml config, we
     # need to check the state of the logging-verbosity switches here, manually, as well.
     verbose = "--verbose" in argv
@@ -105,13 +105,14 @@ def _update_progress(
     """Updates progress report periodically for running tasks.
 
     Args:
-        label (str): The identifier.
+        phase (str): The currently running phase.
         running_jobs (Dict[str, str]): The currently running jobs.
+        completed_jobs (Dict[str, str]): The jobs that have finished work.
         all_jobs (Jobs): All jobs, encompassing both completed and running jobs.
         is_running (ValueProxy[bool]): Flag indicating if jobs are still running.
         num_workers (int): Indicates the number of workers performing the jobs.
+        show_spinner (bool): Whether to show the animated spinner or not.
     """
-
     last_running_jobs_set: typing.Set[str] = set()
 
     # Using the `rich` module to show a loading spinner on console
@@ -132,7 +133,8 @@ def _update_progress(
                 "blue",
             )  # Reflect current running jobs accurately
             report: str = (
-                f"[green]{phase}[/green]: {progress}({num_workers}): {running_jobs_list}"
+                f"[green]{phase}[/green]: {progress}({num_workers}): "
+                f"{running_jobs_list}"
             )
             if show_spinner:
                 assert isinstance(spinner_ctx, Status)

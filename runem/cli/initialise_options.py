@@ -13,7 +13,6 @@ def initialise_options(
 
     Returns the options dictionary
     """
-
     options: OptionsWritable = InformativeDict(
         {option["name"]: option["default"] for option in config_metadata.options_config}
     )

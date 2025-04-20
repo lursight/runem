@@ -71,7 +71,6 @@ class Job:
 
         TODO: make a non-static member function
         """
-
         # default to all file-tags
         tags_for_files: typing.Iterable[str] = file_lists.keys()
         use_default_tags: bool = job_tags is None
@@ -91,7 +90,6 @@ class Job:
 
         TODO: make a non-static member function
         """
-
         # First try one of the following keys.
         valid_name_keys = ("label", "command")
         for candidate in valid_name_keys:
@@ -101,6 +99,6 @@ class Job:
 
         # The try the python-wrapper address
         try:
-            return f'{job["addr"]["file"]}.{job["addr"]["function"]}'
+            return f"{job['addr']['file']}.{job['addr']['function']}"
         except KeyError:
             raise NoJobName()  # pylint: disable=raise-missing-from

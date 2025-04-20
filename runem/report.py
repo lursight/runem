@@ -46,12 +46,13 @@ def replace_bar_graph_characters(text: str, end_str: str, replace_char: str) -> 
     """Replaces block characters in lines containing `end_str` with give char.
 
     Args:
-        text_lines (List[str]): A list of strings, each representing a line of text.
+        text (str): Text containing lines of bar-graphs (perhaps)
+        end_str (str): If contained by a line, the bar-graph shapes are replaced.
         replace_char (str): The character to replace all bocks with
 
     Returns:
-        List[str]: The modified list of strings with block characters replaced
-                   on specified lines.
+        str: The modified `text` with block characters replaced on specific
+             lines.
     """
     # Define the block character and its light shade replacement
     block_chars = (

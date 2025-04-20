@@ -35,6 +35,11 @@
           type: bool
       - option:
           default: true
+          name: fix
+          desc: try to auto fix whenever possible
+          type: bool
+      - option:
+          default: true
           desc: formats docs and comments in whatever job can do so
           name: docformatter
           type: bool
@@ -53,6 +58,11 @@
           name: profile
           desc: generate profile information in jobs that can
           type: bool
+      - option:
+          default: true
+          name: ruff
+          type: bool
+          desc: prefer running formatting with ruff instead of isort, black and docformatter
       - option:
           default: true
           name: unit-test
@@ -75,14 +85,15 @@
 - job:
     addr:
       file: scripts/test_hooks/py.py
-      function: _job_py_code_reformat
-    label: reformat py
+      function: _job_py_code_ruff_reformat
+    label: reformat py ruff
     when:
       phase: edit
       tags:
         - py
         - format
         - py format
+        - ruff
 - job:
     addr:
       file: scripts/test_hooks/py.py
@@ -103,6 +114,17 @@
       tags:
         - py
         - lint
+- job:
+    addr:
+      file: scripts/test_hooks/py.py
+      function: _job_py_ruff_lint
+    label: ruff py lint
+    when:
+      phase: analysis
+      tags:
+        - py
+        - lint
+        - ruff
 - job:
     addr:
       file: scripts/test_hooks/py.py

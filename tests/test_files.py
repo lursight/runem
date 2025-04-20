@@ -110,9 +110,9 @@ def test_find_files_basic(
     )
     results: FilePathListLookup = find_files(config_metadata)
     if check_modified_files and check_head_files:
-        assert (
-            mock_subprocess_check_output.call_count == 3
-        ), "twice for modified, once for head"
+        assert mock_subprocess_check_output.call_count == 3, (
+            "twice for modified, once for head"
+        )
         assert results == {
             "dummy tag": [file_strings[0]]  # we filter in only the *1* files.
         }
