@@ -204,7 +204,7 @@ def run_command(  # noqa: C901
         error_string = (
             f"runem: [red bold]FATAL[/red bold]: command failed: [blue]{label}[/blue]"
             f"\n\t[yellow]{env_overrides_as_string}{cmd_string}[/yellow]"
-            f"\n[red underline]| ERROR[/red underline]"
+            f"\n[red underline]| ERROR[/red underline]: [blue]{label}[/blue]"
             f"\n{str(parsed_stdout)}"
             f"\n[red underline]| ERROR END[/red underline]"
         )
