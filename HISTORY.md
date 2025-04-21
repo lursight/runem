@@ -4,6 +4,55 @@ Changelog
 
 (unreleased)
 ------------
+- Merge pull request #83 from
+  lursight/feat/no_runem_traceback_on_job_fail. [Frank Harrison]
+
+  Feat/no runem traceback on job fail
+- Feat(error-only): only shows the error not the runem error tracback.
+  [Frank Harrison]
+
+  The runem error traceback is irelevant if the sub-task fails. So we just
+  show that task's output instead of the traceback for where we handle the
+  error.
+- Feat(error-ctx): shows the failed job label as we show the causing
+  error. [Frank Harrison]
+- Feat(remove-failed): always remove the failed job from the list of
+  running jobs. [Frank Harrison]
+- Merge pull request #82 from lursight/feat/schema_validation. [Frank
+  Harrison]
+
+  feat(validation): validates the .runem.yml file against the schema
+- Feat(validation): validates the .runem.yml file against the schema.
+  [Frank Harrison]
+- Merge pull request #81 from lursight/chore/ruff. [Frank Harrison]
+
+  Chore/ruff
+- Chore(ruff): some formatting change made whilst configuring ruff.
+  [Frank Harrison]
+- Chore(ruff): use ruff as its faster/better. [Frank Harrison]
+- Merge pull request #80 from lursight/chore/update_deps. [Frank
+  Harrison]
+
+  Chore/update deps
+- Chore(deps): updates pylint 3.1.0 -> 3.3.6. [Frank Harrison]
+- Chore(deps): updates pytest 8.3.3 -> 8.3.5 and pytest-cov to latest.
+  [Frank Harrison]
+- Merge pull request #79 from
+  lursight/feat/removes_dectorate_param_from_log. [Frank Harrison]
+
+  feat(log): changes the semantics of log's 'decorate' to allow overriding
+- Feat(log): changes the semantics of log's 'decorate' to allow
+  overriding. [Frank Harrison]
+
+  Also renames the log API's param decorate -> prefix.
+
+  This better represents the intent of the param as decorate was adding a
+  default prefix.
+
+
+0.6.0 (2025-02-03)
+------------------
+- Release: version 0.6.0 🚀 [Frank Harrison]
 - Merge pull request #78 from lursight/feat/better_error_display. [Frank
   Harrison]
 
