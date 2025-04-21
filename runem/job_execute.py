@@ -132,12 +132,15 @@ def job_execute(
     """
     this_id: str = str(uuid.uuid4())
     running_jobs[this_id] = Job.get_job_name(job_config)
-    results = job_execute_inner(
-        job_config,
-        config_metadata,
-        file_lists,
-        **kwargs,
-    )
-    completed_jobs[this_id] = running_jobs[this_id]
-    del running_jobs[this_id]
+    try:
+        results = job_execute_inner(
+            job_config,
+            config_metadata,
+            file_lists,
+            **kwargs,
+        )
+    finally:
+        # Always tidy-up job statuses
+        completed_jobs[this_id] = running_jobs[this_id]
+        del running_jobs[this_id]
     return results
