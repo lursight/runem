@@ -49,6 +49,7 @@ from runem.log import error, log, warn
 from runem.report import report_on_run
 from runem.run_command import RunemJobError
 from runem.types.common import OrderedPhases, PhaseName
+from runem.types.errors import SystemExitBad
 from runem.types.filters import FilePathListLookup
 from runem.types.hooks import HookName
 from runem.types.runem_config import Config, Jobs, PhaseGroupedJobs
@@ -373,7 +374,7 @@ def timed_main(argv: typing.List[str]) -> None:
         # we got a failure somewhere, now that we've reported the timings we
         # re-raise.
         error(failure_exception.stdout)
-        raise failure_exception
+        raise SystemExitBad(1) from failure_exception
 
 
 if __name__ == "__main__":

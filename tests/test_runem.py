@@ -27,6 +27,7 @@ from runem.runem import (
     _update_progress,
     timed_main,
 )
+from runem.types.errors import SystemExitBad
 from runem.types.filters import FilePathListLookup
 from runem.types.hooks import HookName
 from runem.types.runem_config import (
@@ -1857,7 +1858,7 @@ DUMMY_MAIN_RETURN: MainReturnType = (
 def test_runem_re_raises_after_reporting(
     main_mock: Mock,
 ) -> None:
-    with pytest.raises(IntentionalTestError):
+    with pytest.raises(SystemExitBad):
         timed_main([])
 
 
