@@ -2,9 +2,9 @@ import pathlib
 import sys
 import typing
 
-import yaml
 from packaging.version import Version
 
+from runem.config_validate import validate_runem_file
 from runem.log import error, log
 from runem.runem_version import get_runem_version
 from runem.types.runem_config import (
@@ -13,6 +13,7 @@ from runem.types.runem_config import (
     GlobalSerialisedConfig,
     UserConfigMetadata,
 )
+from runem.yaml_utils import load_yaml_object
 
 CFG_FILE_YAML = pathlib.Path(".runem.yml")
 
@@ -117,8 +118,11 @@ def _conform_global_config_types(
 
 def load_and_parse_config(cfg_filepath: pathlib.Path) -> Config:
     """For the given config file pass, project or user, load it & parse/conform it."""
-    with cfg_filepath.open("r+", encoding="utf-8") as config_file_handle:
-        all_config = yaml.full_load(config_file_handle)
+    all_config = load_yaml_object(cfg_filepath)
+    validate_runem_file(
+        cfg_filepath,
+        all_config,
+    )
 
     conformed_config: Config
     global_config: typing.Optional[GlobalConfig]
