@@ -11,7 +11,7 @@ from runem.job import Job
 from runem.job_wrapper import get_job_wrapper
 from runem.log import error, log, warn
 from runem.types.common import JobNames, JobPhases, JobTags, OrderedPhases, PhaseName
-from runem.types.errors import FunctionNotFound
+from runem.types.errors import FunctionNotFound, SystemExitBad
 from runem.types.filters import TagFileFilter, TagFileFilters
 from runem.types.hooks import HookName
 from runem.types.runem_config import (
@@ -81,9 +81,8 @@ def parse_hook_config(
             f"hook config entry is missing '{err.args[0]}' key. Have {tuple(hook.keys())}"
         ) from err
     except FunctionNotFound as err:
-        raise FunctionNotFound(
-            f"Whilst loading job '{str(hook['hook_name'])}'. {str(err)}"
-        ) from err
+        error(f"Whilst loading hook '{str(hook['hook_name'])}'. {str(err)}")
+        raise SystemExitBad(2) from err
 
 
 def _parse_job(  # noqa: C901
@@ -110,9 +109,8 @@ def _parse_job(  # noqa: C901
         # try and load the function _before_ we schedule it's execution
         get_job_wrapper(job, cfg_filepath)
     except FunctionNotFound as err:
-        raise FunctionNotFound(
-            f"Whilst loading job '{job['label']}'. {str(err)}"
-        ) from err
+        error(f"Whilst loading job '{job['label']}'. {str(err)}")
+        raise SystemExitBad(2) from err
 
     try:
         phase_id: PhaseName = job["when"]["phase"]
