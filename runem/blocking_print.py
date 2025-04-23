@@ -21,6 +21,9 @@ def _reset_console() -> Console:
         # `highlight` is what colourises string and number in print() calls.
         # We do not want this to be auto-magic.
         highlight=False,
+        # `soft_wrap=True` disables word-wrap & cropping by default:
+        #  - `soft_wrap` reads like a misnomer to me
+        soft_wrap=True,
     )
     return RICH_CONSOLE
 
