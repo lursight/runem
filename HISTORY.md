@@ -4,6 +4,30 @@ Changelog
 
 (unreleased)
 ------------
+- Merge pull request #85 from lursight/feat/better_function-not-
+  found_error. [Frank Harrison]
+
+  Feat/better function not found error
+- Feat(function-lookup-error): exits instead of reraising errors looking
+  for functions. [Frank Harrison]
+- Feat(coloured-function-lookups): colours the function errors. [Frank
+  Harrison]
+- Merge pull request #84 from lursight/fix/log-wrapping. [Frank
+  Harrison]
+
+  fix(log-wrapping): fixes log wrapping so it does not truncate
+- Fix(log-wrapping): fixes log wrapping so it does not truncate. [Frank
+  Harrison]
+
+  I used printing of multiple variants to find this switch. This happened
+  because `soft_wrap=True` implies that it is turning on a line-break or
+  similar system *instead of* turning off hard-wrapping, so it should be
+  `hard_wrap=False` or similar.
+
+
+0.7.0 (2025-04-21)
+------------------
+- Release: version 0.7.0 🚀 [Frank Harrison]
 - Merge pull request #83 from
   lursight/feat/no_runem_traceback_on_job_fail. [Frank Harrison]
 
