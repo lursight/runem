@@ -17,7 +17,7 @@ from runem.config_parse import (
     parse_job_config,
 )
 from runem.types.common import JobNames, JobPhases, JobTags, OrderedPhases
-from runem.types.errors import FunctionNotFound
+from runem.types.errors import FunctionNotFound, SystemExitBad
 from runem.types.hooks import HookName
 from runem.types.runem_config import (
     Config,
@@ -726,7 +726,7 @@ def test_parse_job_without_tags(mock_get_job_wrapper: Mock) -> None:
 
 @patch(
     "runem.config_parse.get_job_wrapper",
-    side_effect=FunctionNotFound,
+    side_effect=FunctionNotFound("a test message"),
 )
 def test_parse_job_with_bad_function(mock_get_job_wrapper: Mock) -> None:
     """Test case where job_tags is empty or None."""
@@ -744,7 +744,7 @@ def test_parse_job_with_bad_function(mock_get_job_wrapper: Mock) -> None:
     phase_order: OrderedPhases = ("phase1", "phase2")
 
     with io.StringIO() as buf, redirect_stdout(buf):
-        with pytest.raises(FunctionNotFound):
+        with pytest.raises(SystemExitBad):
             _parse_job(
                 cfg_filepath,
                 job_config,
@@ -758,7 +758,10 @@ def test_parse_job_with_bad_function(mock_get_job_wrapper: Mock) -> None:
 
     mock_get_job_wrapper.assert_called_once()
 
-    assert run_command_stdout == [""]
+    assert run_command_stdout == [
+        "runem: ERROR: Whilst loading job 'Job2'. a test message",
+        "",
+    ]
     assert not in_out_tags
 
 
@@ -859,7 +862,7 @@ def test_parse_hook_config_with_bad_function_address() -> None:
         },
         "hook_name": HookName("on-exit"),
     }
-    with pytest.raises(FunctionNotFound):
+    with pytest.raises(SystemExitBad):
         parse_hook_config(hook, cfg_filepath)
 
 

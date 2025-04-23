@@ -55,9 +55,9 @@ def _load_python_function_from_module(
     except AttributeError as err:
         raise FunctionNotFound(
             (
-                f"ERROR! Check that function '{function_to_load}' "
-                f"exists in '{str(module_file_path)}' as expected in "
-                f"your config at '{str(cfg_filepath)}"
+                f"Check that function '[blue]{function_to_load}[/blue]' "
+                f"exists in '[blue]{str(module_file_path)}[/blue]' as expected in "
+                f"your config at '[blue]{str(cfg_filepath)}[/blue]'"
             )
         ) from err
     return function
