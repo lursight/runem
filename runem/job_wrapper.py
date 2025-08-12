@@ -1,5 +1,6 @@
 import pathlib
 
+from runem.job_runner_module_func_path import get_job_wrapper_py_module_dot_path
 from runem.job_runner_simple_command import (
     job_runner_simple_command,
     validate_simple_command,
@@ -20,6 +21,12 @@ def get_job_wrapper(job_wrapper: JobWrapper, cfg_filepath: pathlib.Path) -> JobF
         command_string: str = job_wrapper["command"]
         validate_simple_command(command_string)
         return job_runner_simple_command
+
+    if "module" in job_wrapper:
+        # validate that the command is "understandable" and usable.
+        module_path: str = job_wrapper["module"]
+        validate_simple_command(module_path)
+        return get_job_wrapper_py_module_dot_path(job_wrapper, cfg_filepath)
 
     # if we do not have a simple command address assume we have just an addressed
     # function
