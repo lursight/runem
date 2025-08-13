@@ -101,11 +101,24 @@ command: clang-tidy -checks='*' -fix -header-filter='.*' your_file.cpp
 ```
 
 ### job.addr:
-*Description:* Specifies where a python function can be found. The python function will be loaded at runtime by `runem` and called with the `context`. The function receives all information needed to run the job, including `label`, `JobConfig`, `verbose`, `options` and other run-time context.
+Specifies where a stand-alone python function can be found by `runem`.
 
-*Subkeys:*
-- **file:** Indicates the file path of the job.
-- **function:** Indicates the function within the file that represents the job.
+The address is a combination of `file` (path) and `function` (name), pointing at a callable-like object/function - see below for an example of a Job Function.
+
+The python function will be loaded at runtime by `runem` and called with the `context`.
+
+The function receives all information needed to run the job, including `label`, `JobConfig`, `verbose`, `options` and other run-time context.
+
+
+*Sub keys:*
+
+- **file:**
+    - The file-path of the python fie containing `function`
+    - When relative, is relative to the `.runem.yml` config file.
+- **function:**:
+    - The function-name within `file`.
+    - See below for details on the context the function should accept and why.
+
 
 *Example:*
 ```yaml
@@ -114,6 +127,8 @@ addr:
     function: _job_rust_code_reformat
 ```
 
+#### Gotchas with `job.addr`
+Imports to other python files may not work as the function is not "imported" in the normal sense, rather it is "loaded" as an independent callable entity, albeit inside of the `runem` environment. If you're expecting to be able to do import other project python modules from your runem job, and you are getting import-errors, consider using `job.module` instead.
 
 ### job.ctx:
 *Description:* Provides the *execution* context for the job, including the working directory and parameters. Not to be confused with the kwargs context that the job is actually passed. The `job.ctx` describe to `runem` how the job should be run, on what `cwd` path and with which files, etc.
@@ -154,3 +169,24 @@ when:
     - format
 ```
 
+## Job Functions
+All python `runem_function` callables must accept `kwargs`. This is so that they can call sub-procs with an inherited context.
+### Untyped job functions
+```py
+def _runem_function(**kwargs) -> None:
+    """Simple un-typed, runem func to orchestrate a task."""
+    pass
+```
+
+### Typed job functions
+```py
+from typing_extensions import Unpack  # for python 3.9 back-compat
+from runem.types import JobKwargs
+
+
+def _runem_function(
+    **kwargs: Unpack[JobKwargs],
+) -> None:
+    """Typed runem func with inspectable context kwargs."""
+    pass
+```

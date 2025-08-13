@@ -9,6 +9,7 @@
   "words": [
     "autouse", // pytest fixture switch
     "buildah", // Open Container Initiative (OCI) container builder
+    "callables", // things that are callable
     "chdir", // python func for chnaging pwd
     "cicd", // simplification of ci/cd
     "cobertura", // coverage auto format for ci/cd
@@ -22,8 +23,11 @@
     "exitfirst", // pylint switch
     "fixup", // used alot to denot fixing an issue
     "funcs", // convenience for functions
+    "gotchas", // things that might get ya 👻
     "getfixturevalue", // pytest
+    "importlib", // python module
     "inplace", // switch for doc-formatter
+    "inspectable", // "you can inspect X"
     "isort", // python module
     "kwargs", // key-word args shorthand
     "linters", // collection of linting tools
@@ -40,6 +44,7 @@
     "pylint", // python module
     "pypi", // the python package index
     "pytest", // the python module for testing
+    "PYTHONPATH", // Extends the paths usable for importing modules.
     "rcfile", // name of a type of config file
     "refs", // git references
     "renderable", // used by `rich` module, but also is a valid word when rendering things
@@ -47,6 +52,7 @@
     "runem", // this product
     "setuptools", // python module
     "stefanzweifel", // the author of the temnplate used for runem's github
+    "subdirs", // portmanteau or sub-directories
     "termplotlib", // python module for graphing on the terminal
     "venv", // abreviation of virtual-env
     "virtualenv", // python module for managing virtual-environments
