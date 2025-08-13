@@ -1,8 +1,6 @@
-# How to develop on this project
+# Contributing to `runem`
 
 runem welcomes contributions from the community.
-
-**You need PYTHON3!**
 
 We strongly recommend `pyenv` (see https://github.com/pyenv/pyenv#readme)
 
@@ -12,16 +10,21 @@ This instructions are for linux base systems. (Linux, MacOS, BSD, etc.)
 - On github interface click on `Fork` button.
 - Clone your fork of this repo. `git clone git@github.com:YOUR_GIT_USERNAME/runem.git`
 - Enter the directory `cd runem`
-- Add upstream repo `git remote add upstream https://github.com/lursight/runem`
+
+Or add a new upstream repo `git remote add upstream https://github.com/lursight/runem`
 
 ## Setting up your own virtual environment
 
-Run `make virtualenv` to create a virtual environment.
-then activate it with `source .venv/bin/activate`.
+```sh
+make virtualenv  # creates a virtual environment.
+source .venv/bin/activate  # activate the venv
+```
 
 ## Install the project in develop mode
 
-Run `make install` to bootstrap install the project in develop mode.
+```sh
+make install  # bootstrap install the project in develop mode.
+```
 
 ## Run the tests to ensure everything is working
 
@@ -120,3 +123,12 @@ To trigger a new release all you need to do is.
 the `make release` will ask you the version number to create the tag, ex: type `0.1.1` when you are asked.
 
 > **CAUTION**:  The make release will change local changelog files and commit all the unstaged changes you have.
+
+## Docs
+We use `github-pages` and `mkdocs` run via a `github-action` to deploy the docs.
+
+To test docs locally, from the command you can run `make docs` and open `site/index.html`.
+
+You can also push to `chore/docs` via `git push origin <branch>:chore/docs` to force a deploy.
+
+
