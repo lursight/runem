@@ -4,6 +4,62 @@ Changelog
 
 (unreleased)
 ------------
+- Merge pull request #90 from lursight/feat/dot-notation_module_lookup.
+  [Frank Harrison]
+
+  Feat/dot notation module lookup
+- Feat(module-job): more test coverage. [Frank Harrison]
+- Feat(module-job): initial support for module-path. [Frank Harrison]
+- Feat(module-job): adds docs. [Frank Harrison]
+- Chore(test-utils): moves shared utils out of test-file. [Frank
+  Harrison]
+
+  This should enable better sharing but also limit the tests run (if the
+  import of test_runem also caused test_runem's test to be run once for
+  each import, which IIRC used to happen).
+- Merge branch 'chore/better_docs' [Frank Harrison]
+- Chore(docs): further docs improvements and typo fixing. [Frank
+  Harrison]
+- Merge pull request #88 from lursight/chore/mkdocs_deploy. [Frank
+  Harrison]
+
+  Chore/mkdocs deploy
+- Chore(docs): updates misc docs, paths and urls. [Frank Harrison]
+
+  ... making them easier to read, navigate, and discover.
+
+  Overall this is just a bit more sensible than previous.
+- Chore(docs): deploy mkdocs instead of jekyll docs. [Frank Harrison]
+- Merge pull request #86 from
+  lursight/dependabot/github_actions/actions/checkout-5. [Frank
+  Harrison]
+
+  chore(deps): bump actions/checkout from 4 to 5
+- Chore(deps): bump actions/checkout from 4 to 5. [dependabot[bot]]
+
+  Bumps [actions/checkout](https://github.com/actions/checkout) from 4 to 5.
+  - [Release notes](https://github.com/actions/checkout/releases)
+  - [Changelog](https://github.com/actions/checkout/blob/main/CHANGELOG.md)
+  - [Commits](https://github.com/actions/checkout/compare/v4...v5)
+
+  ---
+  updated-dependencies:
+  - dependency-name: actions/checkout
+    dependency-version: '5'
+    dependency-type: direct:production
+    update-type: version-update:semver-major
+  ...
+- Merge pull request #87 from lursight/chore/update_ruff_target_python.
+  [Frank Harrison]
+
+  chore(ruff-target): updates the ruff python target 310->312
+- Chore(ruff-target): updates the ruff python target 310->312. [Frank
+  Harrison]
+
+
+0.7.1 (2025-04-23)
+------------------
+- Release: version 0.7.1 🚀 [Frank Harrison]
 - Merge pull request #85 from lursight/feat/better_function-not-
   found_error. [Frank Harrison]
 
