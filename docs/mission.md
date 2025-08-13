@@ -28,7 +28,7 @@ Finally, because of how it's built, job definitions are auto-documented via
 `runem --help`. This help onboarding new developers by making tool-discovery
 easier. Therefore it also helps maintenance of developer tools.
 
-### Why is it called `runem`?
+## Why is it called `runem`?
 
 Primarily `runem`, as a command line tool, is quick to type and tries to just
 get out of the way when running your developer-local tools.

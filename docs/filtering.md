@@ -1,5 +1,10 @@
-# Basic usage
+# Filtering jobs
+`runem` is a command-line tool designed to run devops tasks as fast as possible.
 
+The cli is designed with two goals in mind:
+
+- easy job filtering, allowing focus on problems and fast-teration.
+- better job-discovery and onboardng - helping teams to stay on top of the sometimes complicated devops infrstructure and tooling of a project. (see the help section)
 ```bash
 # run all configured default jobs
 runem
@@ -19,7 +24,7 @@ python3 -m runem [--tags tag1,tag2,tag3] [--not-tags tag1,tag2,tag3] \
                  [--MY-OPTION] [--not-MY-OPTION]
 ```
 
-## Tag filters
+## Filtering by Tag
 Jobs are tagged in the .runem.yml config file. Each unique tags is made available on the command-line. To see which tags are available use `--help`. To add a new tag extend the `tags` field in the `job` config.
 
 You can control which types of jobs to run via tags. Just tag the job in the config and then from the command-line you can add `--tags` or `--not-tags` to refine exactly which jobs will be run.
@@ -61,7 +66,7 @@ echo "runem --tags pre-commit" > scripts/git-hooks/pre-commit
 #	  hooksPath = ./scripts/git-hooks/husky/
 ```
 
-## Phase filters
+## Filtering by Phase
 
 Sometimes just want to run a specific phase, so you can focus on it and iterate quickly, within that context.
 

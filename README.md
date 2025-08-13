@@ -4,24 +4,18 @@
 
 # Run’em
 
-**Your Blueprint of Commands. Your Engine of Parallel Execution.**
-Run’em is your definitive blueprint of tasks and commands—instantly discoverable, effortlessly parallel, and elegantly extensible.
+**Describe you devop-tools, run them fast**
 
-## Core Strengths
-
-**Blueprint** - discover tasks and onboard smoothly\
-**Parallel**  - get results quicker\
-**Simple**  - define task easily\
-**Extensible** - add tasks quickly\
-**Filters** - powerful task selection\
-**Reports** - see metrics on tasks
+Run’em runs a project's dev-ops tasks, in parallel, and gives you a blueprint of what those tasks are. Commands are instantly discoverable, run in parallel, and easily extensible.
 
 ## Why Run’em?
-- **Command Blueprint:** Instantly see and run all your tasks. No guesswork, no rummaging.
-- **Effortless Parallelism:** Execute tasks side-by-side to obliterate downtime.
-- **Simple YAML Declarations:** Define everything in one `.runem.yml`.
-- **Extensible & Smart:** Adapt to monorepos, complex workflows, and evolving needs.
-- **Discoverable by Design:** `runem --help` guides your team, new hires, or contributors to every defined command.
+
+- **Jobs Manifest** - discover tasks and onboard smoothly
+- **Parallel**  - get results quicker
+- **Simple**  - define task easily
+- **Extensible** - add tasks quickly
+- **Filters** - powerful task selection
+- **Beautiful** - see metrics and graphs on tasks run times.
 
 ## Contents
 - [Run’em](#runem)
@@ -38,13 +32,21 @@ Run’em is your definitive blueprint of tasks and commands—instantly discover
 - [About Run’em](#about-runem)
 
 # Highlights
-## Blueprint of Commands:
-The blueprint (available via `--help`) gives you a manifest of all jobs and tasks in a
-project. A single source of truth for all tasks.
+## Jobs Manifest
+The Jobs manifest (available via `--help`) gives you an overview and insights into all job and tasks for a project. A single source of truth for all tasks.
+
+This allows faster onboarding, and better communication between teams. It makes access and visibility of tasks easier and better.
+
 ## Parallel Execution:
-Maximise speed with automatic concurrency. Runem tries to run all tasks as quickly as
-possible, looking at resources, with dependencies. It is not yet a full
-dependency-execution graph, but by version 1.0.0 it will be.
+Save time by running dev-ops tasks in parallel, and by getting metrics on those
+runtimes.
+
+Runem tries to run all tasks as quickly as possible, looking at resources, with
+dependencies. 
+
+NOTE: It is not yet a full dependency-execution graph, but by version
+1.0.0 it will be.
+
 ## Filtering:
 Use powerful and flexible filtering. Select or excluded tasks by `tags`, `name` and
 `phase`. Chose the task to be run based on your needs, right now.
@@ -52,7 +54,10 @@ Use powerful and flexible filtering. Select or excluded tasks by `tags`, `name` 
 You can also customise filtering by adding your own command `options`.
 
 See `--tags`, `--not-tags`, `--jobs`, `--not-jobs`, `--phases` and `--not-phases`.
-## Powerful Insights:** Understand what ran, how fast, and what failed.
+
+## Powerful Insights
+Understand what ran, how fast, and what failed.
+
 **Quiet by Default:** Focus on what matters, and reveal detail only when needed.
 
 # Quick Start
@@ -85,18 +90,15 @@ runem --verbose
 # Basic Use
 
 Get comfortable with typical workflows:
-[Basic Use Docs](https://lursight.github.io/runem/docs/basic_use.html)
+[Filter](https://lursight.github.io/runem/docs/basic_use.html)
+`runem --help` is your radar—instantly mapping out every available task:
+[Help & Job Discovery](https://lursight.github.io/runem/docs/help_and_job_discovery.html)
 
 # Advanced Use
 
 Scale up with multi-phase configs, filtered execution, and custom reporting:
 [Advanced Configuration](https://lursight.github.io/runem/docs/configuration.html)
 [Custom Reporting](https://lursight.github.io/runem/docs/reports.html)
-
-# Help & Discovery
-
-`runem --help` is your radar—instantly mapping out every available task:
-[Help & Job Discovery](https://lursight.github.io/runem/docs/help_and_job_discovery.html)
 
 # Troubleshooting
 

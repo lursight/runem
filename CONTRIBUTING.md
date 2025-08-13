@@ -12,16 +12,21 @@ This instructions are for linux base systems. (Linux, MacOS, BSD, etc.)
 - On github interface click on `Fork` button.
 - Clone your fork of this repo. `git clone git@github.com:YOUR_GIT_USERNAME/runem.git`
 - Enter the directory `cd runem`
-- Add upstream repo `git remote add upstream https://github.com/lursight/runem`
+
+Or add a new upstream repo `git remote add upstream https://github.com/lursight/runem`
 
 ## Setting up your own virtual environment
 
-Run `make virtualenv` to create a virtual environment.
-then activate it with `source .venv/bin/activate`.
+```sh
+make virtualenv  # creates a virtual environment.
+source .venv/bin/activate  # activate the venv
+```
 
 ## Install the project in develop mode
 
-Run `make install` to bootstrap install the project in develop mode.
+```sh
+make install  # bootstrap install the project in develop mode.
+```
 
 ## Run the tests to ensure everything is working
 

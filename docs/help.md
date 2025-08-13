@@ -1,4 +1,5 @@
-# Using `--help`` to get an overview of your Jobs
+# Help
+Using `--help`` to get an overview of your Jobs
 
 The `--help` switch will show you a full list of all the configured job-tasks, the tags, and the override options. `--help` describes how to configure a specific run for *your* `.runem.yml` setup, and does NOT just document `runem` itself; it documents *your* workflow.
 
