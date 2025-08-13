@@ -79,6 +79,14 @@ Here's a simple setup for a python project.
         - py
         - format
         - py format
+- job:
+    module: runem_hooks.py._some_runem_function
+    label: some other task
+    when:
+      phase: analysis
+      tags:
+        - py
+        - other
 ```
 
 Notice that this specifies:

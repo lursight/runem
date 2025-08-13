@@ -99,9 +99,42 @@ command: bash scripts/build_wrapper.sh
 ```yaml
 command: clang-tidy -checks='*' -fix -header-filter='.*' your_file.cpp
 ```
+### job.module
+```yml
+module: python.import.dot.notation.file_name.runem_function
+```
+A fully qualified python-import-path to a runem function - see below for an example of a Job Function.
+
+Similar to `addr`, "module" imports the function at the given location. Whilst `addr` uses a filepath and a function name, `module` uses a python dot-notation path to import a function. That function is then, at execution time, called with the context's `kwargs` - see below for an example of a Job Function.
+
+`.runem.yml` file-path and that is used for the `cwd`, **not** the cwd parameter in the config (PRs welcome). context for the import, and the PYTHONPATH will be used. The function receives all information needed to run the job, including `label`, `JobConfig`, `verbose`, `options` and other run-time context.
+
+**Example:**
+
+```yaml
+module: scripts.test_hooks.fastlane.run_fastlane_build
+```
+
+#### Gotchas and Troubleshooting `job.module`
+##### Gotchas
+`module` jobs uses python's inbuilt `importlib` to grab and validate the import-path.
+
+This mean that standard python import rules apply. Consider that: 
+
+- any `PYTHONPATH`, `PATH`, `sys.path` dirs will be respected by the python runtime that is running `runem`.
+- for module-path `path.to.job.func`, you would expect the `.runem.yml` to be next to the `path/` directory.
+- for module-path `dir1.dir2.job_file.func` there should be `__init__.py` files in each of the directories in that path i.e. `dir1/__init__.py` and `dir2/__init__.py`.
+- executing `runem` from the common root path, that is, the path that `.runem.yml` is in.
+
+It is easiest to think of the import root as being relative to the PWD when running runem, so jobs that use `module` may break when running `runem` from other subdirs in the directory tree.
+
+##### Verifying `module` address is correct
+If `python3 -c "import my.module.runem_func"` works then `module: my.module.runem_func` _should_ also work.
 
 ### job.addr:
 Specifies where a stand-alone python function can be found by `runem`.
+
+This can be a more stable version of `job.module`, depending on use-case.
 
 The address is a combination of `file` (path) and `function` (name), pointing at a callable-like object/function - see below for an example of a Job Function.
 
