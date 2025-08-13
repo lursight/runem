@@ -217,10 +217,10 @@ MOCK_USER_CONFIGS_METADATA: UserConfigMetadata = [
     return_value=MOCK_JOB_EXECUTE_INNER_RET,
 )
 def _run_full_config_runem(
-    job_runner_mock: Mock,
+    job_execute_inner_mock: Mock,
     find_files_mock: Mock,
-    load_config_mock: Mock,
-    load_config_metadata_mock: Mock,
+    load_project_config_mock: Mock,
+    load_user_configs_metadata_mock: Mock,
     runem_cli_switches: typing.List[str],
     add_verbose_switch: bool = True,
     add_silent_switch: bool = False,
@@ -335,7 +335,7 @@ def _run_full_config_runem(
     minimal_file_lists = defaultdict(list)
     minimal_file_lists["mock phase"].append(pathlib.Path("/test") / "dummy" / "path")
     mocked_config_path = pathlib.Path(__file__).parent / ".runem.yml"
-    load_config_mock.return_value = (full_config, mocked_config_path)
+    load_project_config_mock.return_value = (full_config, mocked_config_path)
     find_files_mock.return_value = minimal_file_lists
     error_raised: typing.Optional[BaseException] = None
     argv: typing.List[str] = [
@@ -359,7 +359,7 @@ def _run_full_config_runem(
         # replace the config path as it's different on different systems
         runem_stdout.replace(str(mocked_config_path), "[CONFIG PATH]")
     ).split("\n")
-    # job_runner_mock.assert_called()
+    # job_execute_inner_mock.assert_called()
     got_to_reports: typing.Optional[int] = None
     try:
         got_to_reports = runem_stdout_lines.index("runem: reports:")
