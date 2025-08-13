@@ -64,8 +64,11 @@ docs:             ## Build the documentation.
 	@echo "building documentation ..."
 	@mkdir -p docs_build
 	@cp README.md docs_build/index.md
+	@cp CONTRIBUTING.md docs_build/CONTRIBUTING.md
+	@cp docs/* docs_build/
 	@$(ENV_PREFIX)mkdocs build
-	URL="site/index.html"; xdg-open $$URL || sensible-browser $$URL || x-www-browser $$URL || gnome-open $$URL || open $$URL
+	@echo site/index.html
+##	URL="site/index.html"; xdg-open $$URL || sensible-browser $$URL || x-www-browser $$URL || gnome-open $$URL || open $$URL
 
 .PHONY: switch-to-poetry
 switch-to-poetry: ## Switch to poetry package manager.

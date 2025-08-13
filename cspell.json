@@ -33,6 +33,7 @@
     "mkdocs", // python module for building docs from .md files
     "mypy", // python module
     "negatise", //made up word for args utils
+    "osascript", // applescript, used in docs
     "prettifier", // npm module for auto-formatting code
     "procs", // runem switch for managing the number of proccesses we want to run
     "pyenv", // a utility for managing python enviroments

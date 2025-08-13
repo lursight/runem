@@ -1,0 +1,102 @@
+name: Deploy MkDocs site to GitHub Pages
+
+on:
+  push:
+    # Only build when these branches update
+    branches: [ main, chore/docs ]
+
+    # Only run when docs-related files change (saves CI minutes)
+    # - docs/**: our Markdown sources
+    # - mkdocs.yml: MkDocs config
+    # - overrides/** or theme/**: theme overrides (common patterns)
+    # - site/**: if we commit built output locally (not required)
+    # - Makefile: since `make docs` is our entrypoint
+    # - workflow itself: allow self-updates to re-run
+    paths:
+      - "docs/**"
+      - "mkdocs.yml"
+      - "overrides/**"
+      - "theme/**"
+      - "site/**"
+      - "Makefile"
+      - ".github/workflows/deploy-docs.yml"
+
+  # Manual trigger when we want to force a deploy
+  workflow_dispatch:
+
+# Minimum permissions for Pages OIDC publish
+permissions:
+  contents: read     # checkout source
+  pages: write       # allow deploy to GitHub Pages
+  id-token: write    # required for actions/deploy-pages OIDC
+
+# Ensure only one Pages deployment at a time
+concurrency:
+  # group: a stable key that groups all runs of this workflow into a single queue
+  group: "pages"
+  # cancel-in-progress: we only care about the latest docs; cancel older in-flight runs
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ---- Toolchain setup ---------------------------------------------------
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies from pyproject optional 'tests'
+        run: |
+          set -euxo pipefail
+          pip install ".[tests]"
+          mkdocs --version
+
+      # ---- Build -------------------------------------------------------------
+      # `make -n` runs the Makefile target in dry-run mode, showing the commands
+      # without executing them. This lets us detect if the 'docs' target exists
+      # without causing side effects or wasting CI time.
+      - name: Build docs (Makefile preferred)
+        run: |
+          set -euxo pipefail
+          if make -n docs >/dev/null 2>&1; then
+            make docs
+          else
+            mkdocs build --site-dir site
+          fi
+          test -f site/index.html
+          cp docs/*.svg site
+
+      # Pages serves the uploaded artifact verbatim; we do not want Jekyll to mangle assets.
+      - name: Add .nojekyll
+        run: touch site/.nojekyll
+
+      # Optional: custom domain support (uncomment and set)
+      # - name: Configure CNAME
+      #   run: echo "docs.example.com" > site/CNAME
+
+      # ---- Package for Pages -------------------------------------------------
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
