@@ -63,6 +63,7 @@ class JobWrapper(typing.TypedDict, total=False):
 
     addr: JobAddressConfig  # which callable to call
     command: str  # a one-liner command to be run
+    module: str  # a module-path for a job-function, like `addr` but simpler
 
 
 class JobConfig(JobWrapper, total=False):

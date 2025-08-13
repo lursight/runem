@@ -114,7 +114,7 @@ def get_job_wrapper_py_func(
 
     module_name = module_file_path.stem.replace(" ", "_").replace("-", "_")
 
-    function = _load_python_function_from_module(
+    function: JobFunction = _load_python_function_from_module(
         cfg_filepath, module_name, module_file_path, function_to_load
     )
 

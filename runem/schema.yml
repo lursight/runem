@@ -100,23 +100,23 @@ $defs:
     properties:
       hook_name: { type: string, minLength: 1 }
       addr:      { $ref: "#/$defs/addr" }
-      command: { type: string, minLength: 1 }
+      command:   { type: string, minLength: 1 }
+      module :   { type: string, minLength: 1 }
 
   job:
     type: object
-    oneOf:
-      - required: [command]
-      - required: [addr]
     additionalProperties: false
     properties:
       label:   { type: string, minLength: 1 }
       addr:    { $ref: "#/$defs/addr" }
       command: { type: string, minLength: 1 }
-      ctx:    { $ref: "#/$defs/ctx" }
+      module : { type: string, minLength: 1 }
+      ctx:     { $ref: "#/$defs/ctx" }
       when:    { $ref: "#/$defs/when" }
     oneOf:
-      - required: [addr]    # either addr
-      - required: [command] # or command, but not both
+      - required: [addr]    # one of addr
+      - required: [command] # or command
+      - required: [module]  # or module, but not more than one
     not:
       anyOf:
         - required: [addr, command]   # forbid both together

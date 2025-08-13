@@ -8,7 +8,7 @@ from runem.config_metadata import ConfigMetadata
 from runem.job import Job
 from runem.job_runner_simple_command import job_runner_simple_command
 from runem.types.runem_config import JobConfig
-from tests.test_runem import gen_dummy_config_metadata
+from tests.utils.gen_dummy_config_metadata import gen_dummy_config_metadata
 
 
 @patch(

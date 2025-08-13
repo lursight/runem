@@ -20,7 +20,6 @@ import pytest
 from runem.config_metadata import ConfigMetadata
 from runem.informative_dict import InformativeDict
 from runem.runem import (
-    MainReturnType,
     _main,
     _process_jobs,
     _process_jobs_by_phase,
@@ -43,6 +42,7 @@ from runem.types.runem_config import (
 from runem.types.types_jobs import JobReturn, JobTiming
 from tests.intentional_test_error import IntentionalTestError
 from tests.sanitise_reports_footer import sanitise_reports_footer
+from tests.utils.dummy_data import DUMMY_MAIN_RETURN
 
 DIR_REPLACEMENT_DIR: str = "[TEST_REPLACED_DIR]"
 
@@ -1814,41 +1814,6 @@ def test_progress_updater_with_false(show_spinner: bool) -> None:
             1,
             show_spinner=show_spinner,
         )
-
-
-def gen_dummy_config_metadata() -> ConfigMetadata:
-    config_metadata: ConfigMetadata = ConfigMetadata(
-        cfg_filepath=pathlib.Path(__file__),
-        phases=("dummy phase 1",),
-        options_config=tuple(),
-        file_filters={
-            "dummy tag": {
-                "tag": "dummy tag",
-                "regex": ".*1.txt",  # should match just one file
-            }
-        },
-        hook_manager=MagicMock(),
-        jobs=defaultdict(list),
-        all_job_names=set(),
-        all_job_phases=set(),
-        all_job_tags=set(),
-    )
-    config_metadata.set_cli_data(
-        args=Namespace(verbose=False, procs=1),
-        jobs_to_run=set(),  # JobNames,
-        phases_to_run=set(),  # JobPhases,
-        tags_to_run=set(),  # ignored JobTags,
-        tags_to_avoid=set(),  # ignored  JobTags,
-        options=InformativeDict({"option_on": True, "option_off": False}),  # Options,
-    )
-    return config_metadata
-
-
-DUMMY_MAIN_RETURN: MainReturnType = (
-    gen_dummy_config_metadata(),  # ConfigMetadata,
-    {},  # job_run_metadatas,
-    IntentionalTestError(),
-)
 
 
 @patch(
