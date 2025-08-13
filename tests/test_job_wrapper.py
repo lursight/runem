@@ -1,7 +1,6 @@
 import pathlib
-from unittest.mock import Mock, patch
+from unittest.mock import ANY, Mock, patch
 
-from runem import job_runner_simple_command
 from runem.job_wrapper import get_job_wrapper
 from runem.types.runem_config import JobConfig
 from runem.types.types_jobs import JobFunction
@@ -33,7 +32,8 @@ def test_get_job_wrapper_python_wrapper_job(mock_get_job_wrapper_py_func: Mock) 
         },
     }
     func_obj: JobFunction = get_job_wrapper(
-        job_config, cfg_filepath=pathlib.Path(__file__)
+        job_config,
+        cfg_filepath=pathlib.Path(__file__),
     )
     assert func_obj == DUMMY_FUNCTION
 
@@ -45,16 +45,27 @@ def test_get_job_wrapper_python_wrapper_job(mock_get_job_wrapper_py_func: Mock) 
     "runem.job_wrapper.get_job_wrapper_py_func",
     return_value=None,
 )
-def test_get_job_wrapper_simple_command_job(mock_get_job_wrapper_py_func: Mock) -> None:
-    """Checks that the job_runner_simple_command is returned for 'command' jobs."""
+@patch(
+    "runem.job_wrapper.get_job_wrapper_py_module_dot_path",
+    return_value="dummy func",
+)
+def test_get_job_wrapper_module_path(
+    mock_get_job_wrapper_py_module_dot_path: Mock,
+    mock_get_job_wrapper_py_func: Mock,
+) -> None:
+    """Checks that the correct  is returned for 'command' jobs."""
     job_config: JobConfig = {
-        "command": "echo 'testing exec'",
+        "module": "does.not.matter.the.path.to.fn",
     }
     func_obj: JobFunction = get_job_wrapper(
-        job_config, cfg_filepath=pathlib.Path(__file__)
+        job_config,
+        cfg_filepath=pathlib.Path(__file__),
     )
 
-    assert func_obj.__name__ == job_runner_simple_command.__name__.split(".")[1]
-
+    assert func_obj == "dummy func"  # type: ignore[comparison-overlap]
     # with simple jobs the python wrapper lookup should NOT be called.
     mock_get_job_wrapper_py_func.assert_not_called()
+    mock_get_job_wrapper_py_module_dot_path.assert_called_once_with(
+        {"module": "does.not.matter.the.path.to.fn"},
+        ANY,
+    )
