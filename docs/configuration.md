@@ -1,15 +1,24 @@
 # Configuration file
 
-`runem` searches for a `.runem.yml`. The path to the `.runem.yml` is used to determine the base/root cwd path for running job-tasks.
+Valid configuration filepaths:
+- `.runem.yml` in the root of the project
+
+`runem` searches up the directory tree for a `.runem.yml` file, stopping at the first one it finds.
+
+The path to the `.runem.yml` is used to determine the base/root cwd path for running job-tasks. You can override this on a per-job basis.
 
 The `.runem.yml` configuration file is Yaml and consists of two main configuration sections, a single `config` entry and one or more `job` entries:
 
-- `config` describes _how_ `runem` should run the jobs.
+- `config`: describes _how_ `runem` should run the jobs.
     - There is a single global config entry, describing how `runem` should run the jobs.
-- One or more `job` entries, each describing a "job-task", such as running:
-    - unit-tests
-    - linting 
-    - any other type of command.
+- `job`: one or more `job` entries.
+    - each describing a "job-task", for example:
+        - deps install
+        - workspace config
+        - unit-tests
+        - linting
+        - code coverage
+        - any other type of command.
 
 ## `config` - runem's global project settings
 

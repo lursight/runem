@@ -1,6 +1,6 @@
 <!-- [![codecov](https://codecov.io/gh/lursight/runem/branch/main/graph/badge.svg?token=run-test_token_here)](https://codecov.io/gh/lursight/runem) -->
 [![CI](https://github.com/lursight/runem/actions/workflows/main.yml/badge.svg)](https://github.com/lursight/runem/actions/workflows/main.yml)
-[![DOCS](https://lursight.github.io/runem/docs/VIEW-DOCS-31c553.svg)](https://lursight.github.io/runem/)
+[![DOCS](https://lursight.github.io/runem/VIEW-DOCS-31c553.svg)](https://lursight.github.io/runem/)
 
 # Run’em
 
@@ -85,25 +85,29 @@ Run multiple commands in parallel, see timing, and keep output minimal. Need det
 runem --verbose
 ```
 
-[Quick Start Docs](https://lursight.github.io/runem/docs/quick_start.html)
+[Quick Start Docs](https://lursight.github.io/runem/quick_start/)
 
 # Basic Use
 
-Get comfortable with typical workflows:
-[Filter](https://lursight.github.io/runem/docs/basic_use.html)
+Typical workflows are running all default jobs, filtering and viewing the job manifest & help:
+[Filter](https://lursight.github.io/runem/filtering/)
 `runem --help` is your radar—instantly mapping out every available task:
-[Help & Job Discovery](https://lursight.github.io/runem/docs/help_and_job_discovery.html)
+[Help & Job Discovery](https://lursight.github.io/runem/help/)
 
-# Advanced Use
+# Configuration File
 
-Scale up with multi-phase configs, filtered execution, and custom reporting:
-[Advanced Configuration](https://lursight.github.io/runem/docs/configuration.html)
-[Custom Reporting](https://lursight.github.io/runem/docs/reports.html)
+How and why to configure your projects `.runem.yml` file. How to scale up with multi-phase configs, how to apply filters and how to configure runtime options:
+[Configuration](https://lursight.github.io/runem/configuration/)
+
+# Default and Custom Reports
+
+`runem` gives you basic performance metrics by default, and allows custom reporting like code-coverage, or profiling reports:
+[Reports](https://lursight.github.io/runem/reports/)
 
 # Troubleshooting
 
 Swift solutions to common issues:
-[Troubleshooting & Known Issues](https://lursight.github.io/runem/docs/troubleshooting_known_issues.html)
+[Troubleshooting & Known Issues](https://lursight.github.io/runem/troubleshooting/)
 
 ---
 
@@ -115,5 +119,5 @@ Brought to you by [Lursight Ltd.](https://lursight.com) and an open community.
 
 # About Run’em
 
-Run’em exists to accelerate your team’s delivery and reduce complexity. Learn about our [Mission](https://lursight.github.io/runem/docs/mission.html).
+Run’em exists to accelerate your team’s delivery and reduce complexity. Learn about our [Mission](https://lursight.github.io/runem/mission/).
 

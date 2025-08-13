@@ -1,8 +1,6 @@
-# How to develop on this project
+# Contributing to `runem`
 
 runem welcomes contributions from the community.
-
-**You need PYTHON3!**
 
 We strongly recommend `pyenv` (see https://github.com/pyenv/pyenv#readme)
 
@@ -125,3 +123,12 @@ To trigger a new release all you need to do is.
 the `make release` will ask you the version number to create the tag, ex: type `0.1.1` when you are asked.
 
 > **CAUTION**:  The make release will change local changelog files and commit all the unstaged changes you have.
+
+## Docs
+We use `github-pages` and `mkdocs` run via a `github-action` to deploy the docs.
+
+To test docs locally, from the command you can run `make docs` and open `site/index.html`.
+
+You can also push to `chore/docs` via `git push origin <branch>:chore/docs` to force a deploy.
+
+
