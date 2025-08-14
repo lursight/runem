@@ -35,14 +35,17 @@ from runem.types.runem_config import (
     HookSerialisedConfig,
     JobConfig,
     Jobs,
-    JobSerialisedConfig,
     PhaseGroupedJobs,
     UserConfigMetadata,
 )
 from runem.types.types_jobs import JobReturn, JobTiming
 from tests.intentional_test_error import IntentionalTestError
 from tests.sanitise_reports_footer import sanitise_reports_footer
-from tests.utils.dummy_data import DUMMY_MAIN_RETURN
+from tests.utils.dummy_data import (
+    DUMMY_FULL_CONFIG_TYPICAL,
+    DUMMY_JOB_S_CONFIG_MINIMAL_COMMAND,
+    DUMMY_MAIN_RETURN,
+)
 
 DIR_REPLACEMENT_DIR: str = "[TEST_REPLACED_DIR]"
 
@@ -224,7 +227,7 @@ def _run_full_config_runem(
     runem_cli_switches: typing.List[str],
     add_verbose_switch: bool = True,
     add_silent_switch: bool = False,
-    add_command_one_liner: bool = True,
+    inject_job_minimal_command: bool = True,
 ) -> typing.Tuple[typing.List[str], typing.Optional[BaseException]]:
     """A wrapper around running runem e2e tests.
 
@@ -233,104 +236,13 @@ def _run_full_config_runem(
 
     Returns a list of lines of terminal output
     """
-    global_config: GlobalSerialisedConfig = {
-        "config": {
-            "phases": ("dummy phase 1", "dummy phase 2"),
-            "files": [],
-            "min_version": None,
-            "options": [
-                {
-                    "option": {
-                        "default": True,
-                        "desc": "a dummy option description",
-                        "aliases": [
-                            "dummy option 1 multi alias 1",
-                            "dummy option 1 multi alias 2",
-                            "x",
-                        ],
-                        "alias": "dummy option alias 1",
-                        "name": "dummy option 1 - complete option",
-                        "type": "bool",
-                    }
-                },
-                {
-                    "option": {
-                        "default": True,
-                        "name": "dummy option 2 - minimal",
-                        "type": "bool",
-                    }
-                },
-            ],
-        }
-    }
-    job_config_1: JobSerialisedConfig = {
-        "job": {
-            "addr": {
-                "file": __file__,
-                "function": "test_runem_with_full_config",
-            },
-            "label": "dummy job label 1",
-            "when": {
-                "phase": "dummy phase 1",
-                "tags": set(
-                    (
-                        "dummy tag 1",
-                        "dummy tag 2",
-                        "tag only on job 1",
-                    )
-                ),
-            },
-        }
-    }
-    job_config_2: JobSerialisedConfig = {
-        "job": {
-            "addr": {
-                "file": __file__,
-                "function": "test_runem_with_full_config",
-            },
-            "label": "dummy job label 2",
-            "when": {
-                "phase": "dummy phase 2",
-                "tags": set(
-                    (
-                        "dummy tag 1",
-                        "dummy tag 2",
-                        "tag only on job 2",
-                    )
-                ),
-            },
-        }
-    }
-    minimal_command_config: JobSerialisedConfig = {
-        "job": {
-            "command": 'echo "hello world!"',
-        }
-    }
-    command_config: JobSerialisedConfig = {
-        "job": {
-            "command": 'echo "hello world!"',
-            "label": "hello world",
-            "when": {
-                "phase": "dummy phase 2",
-                "tags": set(
-                    (
-                        "dummy tag 1",
-                        "dummy tag 2",
-                    )
-                ),
-            },
-        }
-    }
-    full_config: Config = [
-        global_config,
-        job_config_1,
-        job_config_2,
-        command_config,
-    ]
+    # By default use a complete config with all typical, non-warning or
+    # erroring permutations of data/config.
+    full_config: Config = copy.deepcopy(DUMMY_FULL_CONFIG_TYPICAL)
 
-    if add_command_one_liner:
+    if inject_job_minimal_command:
         full_config.append(
-            minimal_command_config,
+            copy.deepcopy(DUMMY_JOB_S_CONFIG_MINIMAL_COMMAND),
         )
     minimal_file_lists = defaultdict(list)
     minimal_file_lists["mock phase"].append(pathlib.Path("/test") / "dummy" / "path")
@@ -776,7 +688,7 @@ def test_runem_version(switch_to_test: str, verbosity: bool) -> None:
         error_raised,
     ) = _run_full_config_runem(  # pylint: disable=no-value-for-parameter
         runem_cli_switches=runem_cli_switches,
-        add_command_one_liner=False,
+        inject_job_minimal_command=False,
         add_verbose_switch=verbosity,
     )
     assert runem_stdout
@@ -818,7 +730,7 @@ def test_runem_root_show() -> None:
         error_raised,
     ) = _run_full_config_runem(  # pylint: disable=no-value-for-parameter
         runem_cli_switches=runem_cli_switches,
-        add_command_one_liner=False,
+        inject_job_minimal_command=False,
         add_verbose_switch=False,
     )
     assert runem_stdout
@@ -1313,7 +1225,8 @@ def test_runem_tag_out_filters_work(verbosity: bool, one_liner: bool) -> None:
         runem_stdout,
         error_raised,
     ) = _run_full_config_runem(  # pylint: disable=no-value-for-parameter
-        runem_cli_switches=runem_cli_switches, add_command_one_liner=one_liner
+        runem_cli_switches=runem_cli_switches,
+        inject_job_minimal_command=one_liner,
     )
 
     if error_raised is not None:  # pragma: no cover
@@ -1522,7 +1435,7 @@ def test_runem_tag_out_filters_work_all_tags(verbosity: bool) -> None:
     ) = _run_full_config_runem(  # pylint: disable=no-value-for-parameter
         runem_cli_switches=runem_cli_switches,
         add_verbose_switch=False,
-        add_command_one_liner=False,
+        inject_job_minimal_command=False,
     )
     if error_raised is not None:  # pragma: no cover
         raise error_raised  # re-raise the error that shouldn't have been raised
