@@ -43,6 +43,7 @@ from tests.intentional_test_error import IntentionalTestError
 from tests.sanitise_reports_footer import sanitise_reports_footer
 from tests.utils.dummy_data import (
     DUMMY_FULL_CONFIG_TYPICAL,
+    DUMMY_JOB_S_CONFIG_4_MODULE,
     DUMMY_JOB_S_CONFIG_MINIMAL_COMMAND,
     DUMMY_MAIN_RETURN,
 )
@@ -228,6 +229,7 @@ def _run_full_config_runem(
     add_verbose_switch: bool = True,
     add_silent_switch: bool = False,
     inject_job_minimal_command: bool = True,
+    inject_job_module_config: bool = False,
 ) -> typing.Tuple[typing.List[str], typing.Optional[BaseException]]:
     """A wrapper around running runem e2e tests.
 
@@ -244,6 +246,11 @@ def _run_full_config_runem(
         full_config.append(
             copy.deepcopy(DUMMY_JOB_S_CONFIG_MINIMAL_COMMAND),
         )
+    if inject_job_module_config:
+        full_config.append(
+            copy.deepcopy(DUMMY_JOB_S_CONFIG_4_MODULE),
+        )
+
     minimal_file_lists = defaultdict(list)
     minimal_file_lists["mock phase"].append(pathlib.Path("/test") / "dummy" / "path")
     mocked_config_path = pathlib.Path(__file__).parent / ".runem.yml"
@@ -403,7 +410,8 @@ def test_runem_with_full_config_verbose() -> None:
         runem_stdout,
         error_raised,
     ) = _run_full_config_runem(  # pylint: disable=no-value-for-parameter
-        runem_cli_switches=runem_cli_switches
+        runem_cli_switches=runem_cli_switches,
+        inject_job_module_config=True,
     )
     if error_raised is not None:  # pragma: no cover
         raise error_raised  # re-raise the error that shouldn't have been raised
@@ -431,16 +439,25 @@ def test_runem_with_full_config_verbose() -> None:
         "runem: found 1 batches, 1 'mock phase' files, ",
         (
             "runem: filtering for tags 'dummy tag 1', 'dummy tag 2', "
-            "'tag only on job 1', 'tag only on job 2'"
+            "'tag only on job 1', 'tag only on job 2', 'tag only on job 4'"
         ),
         "runem: will run 2 jobs for phase 'dummy phase 1'",
         "runem:  'dummy job label 1', 'echo \"hello world!\"'",
-        "runem: will run 2 jobs for phase 'dummy phase 2'",
-        "runem:  'dummy job label 2', 'hello world'",
+        "runem: will run 3 jobs for phase 'dummy phase 2'",
+        (
+            "runem:  'dummy job label 2', 'dummy job label 4 (module fn "
+            "lookup)', 'hello world'"
+        ),
         "runem: Running Phase dummy phase 1",
-        "runem: Running 'dummy phase 1' with 2 workers (of [NUM CORES] max) processing 2 jobs",
+        (
+            "runem: Running 'dummy phase 1' with 2 workers (of [NUM CORES] max) "
+            "processing 2 jobs"
+        ),
         "runem: Running Phase dummy phase 2",
-        "runem: Running 'dummy phase 2' with 2 workers (of [NUM CORES] max) processing 2 jobs",
+        (
+            "runem: Running 'dummy phase 2' with 3 workers (of [NUM CORES] max) "
+            "processing 3 jobs"
+        ),
     ]
 
 

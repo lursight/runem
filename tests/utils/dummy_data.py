@@ -57,7 +57,10 @@ DUMMY_JOB_CONFIG_ADDR: JobConfig = {
 # Serialised job-config
 DUMMY_GLOBAL_S_CONFIG: GlobalSerialisedConfig = {
     "config": {
-        "phases": ("dummy phase 1", "dummy phase 2"),
+        "phases": (
+            "dummy phase 1",
+            "dummy phase 2",
+        ),
         "files": [],
         "min_version": None,
         "options": [
@@ -87,7 +90,7 @@ DUMMY_GLOBAL_S_CONFIG: GlobalSerialisedConfig = {
 }
 
 # Numbered job configs
-DUMMY_JOB_S_CONFIG_1: JobSerialisedConfig = {
+DUMMY_JOB_S_CONFIG_1_ADDR: JobSerialisedConfig = {
     "job": {
         "addr": {
             "file": __file__,
@@ -106,7 +109,7 @@ DUMMY_JOB_S_CONFIG_1: JobSerialisedConfig = {
         },
     }
 }
-DUMMY_JOB_S_CONFIG_2: JobSerialisedConfig = {
+DUMMY_JOB_S_CONFIG_2_ADDR: JobSerialisedConfig = {
     "job": {
         "addr": {
             "file": __file__,
@@ -125,16 +128,8 @@ DUMMY_JOB_S_CONFIG_2: JobSerialisedConfig = {
         },
     }
 }
-
-# Same as a above but with minimal data, bare bones, as the docs describe
-DUMMY_JOB_S_CONFIG_MINIMAL_COMMAND: JobSerialisedConfig = {
-    "job": {
-        "command": 'echo "hello world!"',
-    }
-}
-
 # A simple command serialised config
-DUMMY_JOB_S_CONFIG_COMMAND: JobSerialisedConfig = {
+DUMMY_JOB_S_CONFIG_3_COMMAND: JobSerialisedConfig = {
     "job": {
         "command": 'echo "hello world!"',
         "label": "hello world",
@@ -149,13 +144,39 @@ DUMMY_JOB_S_CONFIG_COMMAND: JobSerialisedConfig = {
         },
     }
 }
+# A simple module serialised config
+DUMMY_JOB_S_CONFIG_4_MODULE: JobSerialisedConfig = {
+    "job": {
+        "module": "tests.utils.dummy_data.dummy_job_print_dummy_job",
+        "label": "dummy job label 4 (module fn lookup)",
+        "when": {
+            "phase": "dummy phase 2",
+            "tags": set(
+                (
+                    "dummy tag 1",
+                    "dummy tag 2",
+                    "tag only on job 4",
+                )
+            ),
+        },
+    }
+}
+
+# Same as DUMMY_JOB_S_CONFIG_3_COMMAND but with minimal data, bare bones, as the docs describe
+DUMMY_JOB_S_CONFIG_MINIMAL_COMMAND: JobSerialisedConfig = {
+    "job": {
+        "command": 'echo "hello world!"',
+    }
+}
+
+# A full runem config
 DUMMY_FULL_CONFIG_TYPICAL: Config = [
     # Global Config first
     DUMMY_GLOBAL_S_CONFIG,
     # N-jobs
-    DUMMY_JOB_S_CONFIG_1,
-    DUMMY_JOB_S_CONFIG_2,
-    DUMMY_JOB_S_CONFIG_COMMAND,
+    DUMMY_JOB_S_CONFIG_1_ADDR,
+    DUMMY_JOB_S_CONFIG_2_ADDR,
+    DUMMY_JOB_S_CONFIG_3_COMMAND,
 ]
 
 DUMMY_MAIN_RETURN: MainReturnType = (
