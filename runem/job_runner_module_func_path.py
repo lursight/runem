@@ -1,4 +1,5 @@
 import importlib
+import os
 import pathlib
 
 from runem.types.errors import FunctionNotFound
@@ -22,10 +23,10 @@ def _load_python_function_from_dotted_path(
     Raises:
             FunctionNotFound: If the module cannot be imported or the attribute is
                               missing/not callable.
-    z
-        Example:
-            >>> fn = _load_python_function_from_dotted_path(Path('cfg.yml'), 'my_mod.tasks.run')
-            >>> fn()  # call it
+
+    Example:
+        >>> fn = _load_python_function_from_dotted_path(Path('cfg.yml'), 'my_mod.tasks.run')
+        >>> fn()  # call it
     """
     mod_path, sep, func_name = module_func_path.rpartition(".")
     if not sep or not mod_path or not func_name:
@@ -36,18 +37,35 @@ def _load_python_function_from_dotted_path(
 
     try:
         module = importlib.import_module(mod_path)
-    except Exception as err:  # pylint: disable=broad-except
+    except (  # noqa: B014
+        ModuleNotFoundError,  # known/seen error
+        Exception,  # We do not yet know the full range of exceptions, for now
+    ) as err:  # pylint: disable=broad-except
+        indented_orig_err: str = str(err).replace("\n", "\n\t")
         raise FunctionNotFound(
-            f"Unable to import module '{mod_path}' from dotted path '{module_func_path}'. "
-            f"Check PYTHONPATH and installed packages; config at '{cfg_filepath}'."
+            f"Unable to import module '{mod_path}' from dotted path "
+            f"'{module_func_path}'. \n"
+            f"Check the PYTHONPATH and installed packages; "
+            f"\n\tconfig at '{cfg_filepath}'"
+            f"\n\tcwd is {pathlib.Path.cwd()}"
+            f"\n\tPYTHONPATH is '{os.environ.get('PYTHONPATH', '')}'"
+            "\nOriginal error is:"
+            f"\n\t{indented_orig_err}"
+            "\nIn your cwd try:"
+            f'\n\tpython3 -c "import {mod_path}"'
         ) from err
 
     try:
         func: JobFunction = getattr(module, func_name)
     except AttributeError as err:
         raise FunctionNotFound(
-            f"Function '{func_name}' not found in module '{mod_path}'. "
-            f"Confirm it exists and is exported; config '{cfg_filepath}'."
+            f"Function '{func_name}' not found in module '{mod_path}'."
+            f"Confirm it exists and is exported, checking the job's `cwd`; "
+            f"\n\tconfig at '{cfg_filepath}'\n\tcwd is {pathlib.Path.cwd()}\n"
+            f"\n\tcwd is {pathlib.Path.cwd()}"
+            f"\n\tPYTHONPATH is '{os.environ.get('PYTHONPATH', '')}'"
+            "\nIn your cwd try:"
+            f'\n\tpython3 -c "from {mod_path} import {func_name}"'
         ) from err
 
     if not callable(func):
@@ -72,11 +90,12 @@ def get_job_wrapper_py_module_dot_path(
             cfg_filepath, function_path_to_load
         )
     except FunctionNotFound as err:
-        raise FunctionNotFound(
-            (
-                "runem failed to find "
-                f"job.module '{job_wrapper['module']}' from '{cfg_filepath}'"
-            )
-        ) from err
+        err_message: str = (
+            "runem failed to find "
+            f"job.module '{job_wrapper['module']}' from '{cfg_filepath}'\n"
+            "Original error is:\n"
+            f"{str(err)}"
+        )
+        raise FunctionNotFound(err_message) from err
 
     return function

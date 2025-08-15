@@ -35,14 +35,18 @@ from runem.types.runem_config import (
     HookSerialisedConfig,
     JobConfig,
     Jobs,
-    JobSerialisedConfig,
     PhaseGroupedJobs,
     UserConfigMetadata,
 )
 from runem.types.types_jobs import JobReturn, JobTiming
 from tests.intentional_test_error import IntentionalTestError
 from tests.sanitise_reports_footer import sanitise_reports_footer
-from tests.utils.dummy_data import DUMMY_MAIN_RETURN
+from tests.utils.dummy_data import (
+    DUMMY_FULL_CONFIG_TYPICAL,
+    DUMMY_JOB_S_CONFIG_4_MODULE,
+    DUMMY_JOB_S_CONFIG_MINIMAL_COMMAND,
+    DUMMY_MAIN_RETURN,
+)
 
 DIR_REPLACEMENT_DIR: str = "[TEST_REPLACED_DIR]"
 
@@ -217,14 +221,15 @@ MOCK_USER_CONFIGS_METADATA: UserConfigMetadata = [
     return_value=MOCK_JOB_EXECUTE_INNER_RET,
 )
 def _run_full_config_runem(
-    job_runner_mock: Mock,
+    job_execute_inner_mock: Mock,
     find_files_mock: Mock,
-    load_config_mock: Mock,
-    load_config_metadata_mock: Mock,
+    load_project_config_mock: Mock,
+    load_user_configs_metadata_mock: Mock,
     runem_cli_switches: typing.List[str],
     add_verbose_switch: bool = True,
     add_silent_switch: bool = False,
-    add_command_one_liner: bool = True,
+    inject_job_minimal_command: bool = True,
+    inject_job_module_config: bool = False,
 ) -> typing.Tuple[typing.List[str], typing.Optional[BaseException]]:
     """A wrapper around running runem e2e tests.
 
@@ -233,109 +238,23 @@ def _run_full_config_runem(
 
     Returns a list of lines of terminal output
     """
-    global_config: GlobalSerialisedConfig = {
-        "config": {
-            "phases": ("dummy phase 1", "dummy phase 2"),
-            "files": [],
-            "min_version": None,
-            "options": [
-                {
-                    "option": {
-                        "default": True,
-                        "desc": "a dummy option description",
-                        "aliases": [
-                            "dummy option 1 multi alias 1",
-                            "dummy option 1 multi alias 2",
-                            "x",
-                        ],
-                        "alias": "dummy option alias 1",
-                        "name": "dummy option 1 - complete option",
-                        "type": "bool",
-                    }
-                },
-                {
-                    "option": {
-                        "default": True,
-                        "name": "dummy option 2 - minimal",
-                        "type": "bool",
-                    }
-                },
-            ],
-        }
-    }
-    job_config_1: JobSerialisedConfig = {
-        "job": {
-            "addr": {
-                "file": __file__,
-                "function": "test_runem_with_full_config",
-            },
-            "label": "dummy job label 1",
-            "when": {
-                "phase": "dummy phase 1",
-                "tags": set(
-                    (
-                        "dummy tag 1",
-                        "dummy tag 2",
-                        "tag only on job 1",
-                    )
-                ),
-            },
-        }
-    }
-    job_config_2: JobSerialisedConfig = {
-        "job": {
-            "addr": {
-                "file": __file__,
-                "function": "test_runem_with_full_config",
-            },
-            "label": "dummy job label 2",
-            "when": {
-                "phase": "dummy phase 2",
-                "tags": set(
-                    (
-                        "dummy tag 1",
-                        "dummy tag 2",
-                        "tag only on job 2",
-                    )
-                ),
-            },
-        }
-    }
-    minimal_command_config: JobSerialisedConfig = {
-        "job": {
-            "command": 'echo "hello world!"',
-        }
-    }
-    command_config: JobSerialisedConfig = {
-        "job": {
-            "command": 'echo "hello world!"',
-            "label": "hello world",
-            "when": {
-                "phase": "dummy phase 2",
-                "tags": set(
-                    (
-                        "dummy tag 1",
-                        "dummy tag 2",
-                    )
-                ),
-            },
-        }
-    }
-    full_config: Config = [
-        global_config,
-        job_config_1,
-        job_config_2,
-        command_config,
-    ]
+    # By default use a complete config with all typical, non-warning or
+    # erroring permutations of data/config.
+    full_config: Config = copy.deepcopy(DUMMY_FULL_CONFIG_TYPICAL)
 
-    if add_command_one_liner:
+    if inject_job_minimal_command:
         full_config.append(
-            minimal_command_config,
+            copy.deepcopy(DUMMY_JOB_S_CONFIG_MINIMAL_COMMAND),
         )
+    if inject_job_module_config:
+        full_config.append(
+            copy.deepcopy(DUMMY_JOB_S_CONFIG_4_MODULE),
+        )
+
     minimal_file_lists = defaultdict(list)
     minimal_file_lists["mock phase"].append(pathlib.Path("/test") / "dummy" / "path")
     mocked_config_path = pathlib.Path(__file__).parent / ".runem.yml"
-    load_config_mock.return_value = (full_config, mocked_config_path)
+    load_project_config_mock.return_value = (full_config, mocked_config_path)
     find_files_mock.return_value = minimal_file_lists
     error_raised: typing.Optional[BaseException] = None
     argv: typing.List[str] = [
@@ -359,7 +278,7 @@ def _run_full_config_runem(
         # replace the config path as it's different on different systems
         runem_stdout.replace(str(mocked_config_path), "[CONFIG PATH]")
     ).split("\n")
-    # job_runner_mock.assert_called()
+    # job_execute_inner_mock.assert_called()
     got_to_reports: typing.Optional[int] = None
     try:
         got_to_reports = runem_stdout_lines.index("runem: reports:")
@@ -491,7 +410,8 @@ def test_runem_with_full_config_verbose() -> None:
         runem_stdout,
         error_raised,
     ) = _run_full_config_runem(  # pylint: disable=no-value-for-parameter
-        runem_cli_switches=runem_cli_switches
+        runem_cli_switches=runem_cli_switches,
+        inject_job_module_config=True,
     )
     if error_raised is not None:  # pragma: no cover
         raise error_raised  # re-raise the error that shouldn't have been raised
@@ -519,16 +439,25 @@ def test_runem_with_full_config_verbose() -> None:
         "runem: found 1 batches, 1 'mock phase' files, ",
         (
             "runem: filtering for tags 'dummy tag 1', 'dummy tag 2', "
-            "'tag only on job 1', 'tag only on job 2'"
+            "'tag only on job 1', 'tag only on job 2', 'tag only on job 4'"
         ),
         "runem: will run 2 jobs for phase 'dummy phase 1'",
         "runem:  'dummy job label 1', 'echo \"hello world!\"'",
-        "runem: will run 2 jobs for phase 'dummy phase 2'",
-        "runem:  'dummy job label 2', 'hello world'",
+        "runem: will run 3 jobs for phase 'dummy phase 2'",
+        (
+            "runem:  'dummy job label 2', 'dummy job label 4 (module fn "
+            "lookup)', 'hello world'"
+        ),
         "runem: Running Phase dummy phase 1",
-        "runem: Running 'dummy phase 1' with 2 workers (of [NUM CORES] max) processing 2 jobs",
+        (
+            "runem: Running 'dummy phase 1' with 2 workers (of [NUM CORES] max) "
+            "processing 2 jobs"
+        ),
         "runem: Running Phase dummy phase 2",
-        "runem: Running 'dummy phase 2' with 2 workers (of [NUM CORES] max) processing 2 jobs",
+        (
+            "runem: Running 'dummy phase 2' with 3 workers (of [NUM CORES] max) "
+            "processing 3 jobs"
+        ),
     ]
 
 
@@ -776,7 +705,7 @@ def test_runem_version(switch_to_test: str, verbosity: bool) -> None:
         error_raised,
     ) = _run_full_config_runem(  # pylint: disable=no-value-for-parameter
         runem_cli_switches=runem_cli_switches,
-        add_command_one_liner=False,
+        inject_job_minimal_command=False,
         add_verbose_switch=verbosity,
     )
     assert runem_stdout
@@ -818,7 +747,7 @@ def test_runem_root_show() -> None:
         error_raised,
     ) = _run_full_config_runem(  # pylint: disable=no-value-for-parameter
         runem_cli_switches=runem_cli_switches,
-        add_command_one_liner=False,
+        inject_job_minimal_command=False,
         add_verbose_switch=False,
     )
     assert runem_stdout
@@ -1313,7 +1242,8 @@ def test_runem_tag_out_filters_work(verbosity: bool, one_liner: bool) -> None:
         runem_stdout,
         error_raised,
     ) = _run_full_config_runem(  # pylint: disable=no-value-for-parameter
-        runem_cli_switches=runem_cli_switches, add_command_one_liner=one_liner
+        runem_cli_switches=runem_cli_switches,
+        inject_job_minimal_command=one_liner,
     )
 
     if error_raised is not None:  # pragma: no cover
@@ -1522,7 +1452,7 @@ def test_runem_tag_out_filters_work_all_tags(verbosity: bool) -> None:
     ) = _run_full_config_runem(  # pylint: disable=no-value-for-parameter
         runem_cli_switches=runem_cli_switches,
         add_verbose_switch=False,
-        add_command_one_liner=False,
+        inject_job_minimal_command=False,
     )
     if error_raised is not None:  # pragma: no cover
         raise error_raised  # re-raise the error that shouldn't have been raised
