@@ -4,6 +4,50 @@ Changelog
 
 (unreleased)
 ------------
+- Merge pull request #91 from lursight/fix/module_job_paths. [Frank
+  Harrison]
+
+  Fix/module job paths
+- Fix(module-job): adds .runem.yml dir to sys.path allowing dynamically
+  import when *installed* [Frank Harrison]
+
+  The dynamic imports were working locally, where the runem module was
+  "local" to the `module` dot-path BUT when `runem` was installed as a
+  thridparty the dynamic import of the `module` path would fail. This
+  works around that issue by adding the `.runem.yml` dir-path to the
+  `sys.path`, which means the `module` config type will always work when
+  the import path is relative to `.runem.yml`, which matches some of the
+  rest of the code.
+
+  We should, at some point, consider allowing configuring a path that can
+  define an extra sys.path to add, or something neater.
+- Fix(module-job): much better error messages. [Frank Harrison]
+
+  This gives better direction and information when `module` path import
+  fails.
+- Fix(module-job): fixes typo in comment. [Frank Harrison]
+- Chore(module-job-e2e): adds the module job-type into the e2e as an
+  opt-in. [Frank Harrison]
+- Chore(module-job-e2e): refactors out all dummy data from e2e. [Frank
+  Harrison]
+
+  Just to make the function's *intent* easier to grok at a glance, it
+  might make it harder to read and reason about whilst debbugging but I
+  think that's an ok trade-off to get:
+
+  1. faster understanding when seeing the code from a cold-start (e.g.
+  after some time has passed)
+  2. sharable code.
+- Chore(module-job-e2e): renames an e2e parameter to match the
+  underlying intent. [Frank Harrison]
+
+  It was just a bit confusing to follow which mock was pointing at which
+  function; this clarifies that.
+
+
+0.8.0 (2025-08-13)
+------------------
+- Release: version 0.8.0 🚀 [Frank Harrison]
 - Merge pull request #90 from lursight/feat/dot-notation_module_lookup.
   [Frank Harrison]
 
