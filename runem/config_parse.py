@@ -31,6 +31,23 @@ from runem.types.runem_config import (
 )
 
 
+def _support_job_module(cfg_filepath: pathlib.Path) -> None:
+    """Support `module` job-configs, by adding the .runem.yml dir to the sys.path.
+
+    This allows dynamic import of the job-config.
+    """
+    # Capture the ctx-path for `module` type jobs. Ensure we are using the
+    # fully-qualified and resolved version of the path.
+    new_import_ctx_path: str = str(
+        cfg_filepath.parent.resolve(
+            strict=True  # raise if any part of the parent dir is not found
+        )
+    )
+    if new_import_ctx_path not in sys.path:  # ctx is not already configured.
+        # prepend the config's path to the PYTHONPATH
+        sys.path.insert(0, new_import_ctx_path)
+
+
 def _parse_global_config(
     global_config: GlobalConfig,
 ) -> typing.Tuple[OrderedPhases, OptionConfigs, TagFileFilters]:
@@ -242,6 +259,9 @@ def parse_config(  # noqa: C901
     options: OptionConfigs = ()
     file_filters: TagFileFilters = {}
     hooks: Hooks = defaultdict(list)
+
+    # Support `module` dynamic imports
+    _support_job_module(cfg_filepath)
 
     # first search for the global config
     for entry in config:
