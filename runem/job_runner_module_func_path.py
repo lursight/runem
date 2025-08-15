@@ -22,10 +22,10 @@ def _load_python_function_from_dotted_path(
     Raises:
             FunctionNotFound: If the module cannot be imported or the attribute is
                               missing/not callable.
-    z
-        Example:
-            >>> fn = _load_python_function_from_dotted_path(Path('cfg.yml'), 'my_mod.tasks.run')
-            >>> fn()  # call it
+
+    Example:
+        >>> fn = _load_python_function_from_dotted_path(Path('cfg.yml'), 'my_mod.tasks.run')
+        >>> fn()  # call it
     """
     mod_path, sep, func_name = module_func_path.rpartition(".")
     if not sep or not mod_path or not func_name:
