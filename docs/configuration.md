@@ -116,7 +116,10 @@ module: scripts.test_hooks.fastlane.run_fastlane_build
 ```
 
 #### Gotchas and Troubleshooting `job.module`
-##### Gotchas
+##### Virtual env
+`module` jobs (at time of writing) inherit the `runem` env (virtual or otherwise). This means that the `runem` env needs to have the dependencies required by the job whenever runem is run, which can lead to problems in ci/cd envs with minimal installs.
+
+##### Import path context
 `module` jobs uses python's inbuilt `importlib` to grab and validate the import-path.
 
 This mean that standard python import rules apply. Consider that: 
