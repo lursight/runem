@@ -2,8 +2,108 @@ Changelog
 =========
 
 
-(unreleased)
-------------
+0.8.2 (2025-11-23)
+------------------
+- Merge pull request #96 from lursight/fix/read-write-config. [Frank
+  Harrison]
+
+  Fix/read write config
+- Fix(read-write-config): fixes the runem config read needing write
+  permissions. [Frank Harrison]
+
+  We do this by removing the '+' in 'r+', becaue the plus sign allows
+  write. I probably added it via habit.
+- Docs(module): adds another gotcha related to virtual-env and module-
+  jobs. [Frank Harrison]
+- Feat(error-job): adds the job-name to the *end* of the error block.
+  [Frank Harrison]
+
+  This saves scrolling up to see which job failed.
+- Merge pull request #97 from lursight/chore/all_dependabot_prs. [Frank
+  Harrison]
+
+  Chore/all dependabot prs
+- Chore(fix-github): disables yarn caching for now hashFiles() is
+  broken. [Frank Harrison]
+- Chore(deps): bump actions/checkout from 4 to 5. [dependabot[bot]]
+
+  Bumps [actions/checkout](https://github.com/actions/checkout) from 4 to 5.
+  - [Release notes](https://github.com/actions/checkout/releases)
+  - [Changelog](https://github.com/actions/checkout/blob/main/CHANGELOG.md)
+  - [Commits](https://github.com/actions/checkout/compare/v4...v5)
+
+  ---
+  updated-dependencies:
+  - dependency-name: actions/checkout
+    dependency-version: '5'
+    dependency-type: direct:production
+    update-type: version-update:semver-major
+  ...
+- Chore(deps): bump actions/setup-python from 5 to 6. [dependabot[bot]]
+
+  Bumps [actions/setup-python](https://github.com/actions/setup-python) from 5 to 6.
+  - [Release notes](https://github.com/actions/setup-python/releases)
+  - [Commits](https://github.com/actions/setup-python/compare/v5...v6)
+
+  ---
+  updated-dependencies:
+  - dependency-name: actions/setup-python
+    dependency-version: '6'
+    dependency-type: direct:production
+    update-type: version-update:semver-major
+  ...
+- Chore(deps): bump actions/upload-artifact from 4 to 5.
+  [dependabot[bot]]
+
+  Bumps [actions/upload-artifact](https://github.com/actions/upload-artifact) from 4 to 5.
+  - [Release notes](https://github.com/actions/upload-artifact/releases)
+  - [Commits](https://github.com/actions/upload-artifact/compare/v4...v5)
+
+  ---
+  updated-dependencies:
+  - dependency-name: actions/upload-artifact
+    dependency-version: '5'
+    dependency-type: direct:production
+    update-type: version-update:semver-major
+  ...
+- Chore(deps): bump actions/upload-pages-artifact from 3 to 4.
+  [dependabot[bot]]
+
+  Bumps [actions/upload-pages-artifact](https://github.com/actions/upload-pages-artifact) from 3 to 4.
+  - [Release notes](https://github.com/actions/upload-pages-artifact/releases)
+  - [Commits](https://github.com/actions/upload-pages-artifact/compare/v3...v4)
+
+  ---
+  updated-dependencies:
+  - dependency-name: actions/upload-pages-artifact
+    dependency-version: '4'
+    dependency-type: direct:production
+    update-type: version-update:semver-major
+  ...
+- Merge pull request #95 from
+  lursight/dependabot/github_actions/actions/upload-artifact-5. [Frank
+  Harrison]
+
+  chore(deps): bump actions/upload-artifact from 4 to 5
+- Chore(deps): bump actions/upload-artifact from 4 to 5.
+  [dependabot[bot]]
+
+  Bumps [actions/upload-artifact](https://github.com/actions/upload-artifact) from 4 to 5.
+  - [Release notes](https://github.com/actions/upload-artifact/releases)
+  - [Commits](https://github.com/actions/upload-artifact/compare/v4...v5)
+
+  ---
+  updated-dependencies:
+  - dependency-name: actions/upload-artifact
+    dependency-version: '5'
+    dependency-type: direct:production
+    update-type: version-update:semver-major
+  ...
+
+
+0.8.1 (2025-08-15)
+------------------
+- Release: version 0.8.1 🚀 [Frank Harrison]
 - Merge pull request #91 from lursight/fix/module_job_paths. [Frank
   Harrison]
 
