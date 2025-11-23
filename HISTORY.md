@@ -2,8 +2,9 @@ Changelog
 =========
 
 
-0.8.2 (2025-11-23)
-------------------
+(unreleased)
+------------
+- Release: version 0.8.2 🚀 [Frank Harrison]
 - Merge pull request #96 from lursight/fix/read-write-config. [Frank
   Harrison]
 
