@@ -47,14 +47,14 @@ jobs:
           pip uninstall -y setuptools
           pip install setuptools
 
-      - name: Cache Yarn
-        if: ${{ matrix.os != 'windows-latest' }}
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/yarn
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
+      # - name: Cache Yarn
+      #   if: ${{ matrix.os != 'windows-latest' }}
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: ~/.cache/yarn
+      #     key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-yarn-
 
       - name: Install Yarn Deps
         run: |
