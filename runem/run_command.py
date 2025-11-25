@@ -21,18 +21,18 @@ class RunemJobError(RuntimeError):
     allows an opportunity to parse the markup in it.
     """
 
-    def __init__(self, friendly_message: str, stdout: str):
+    def __init__(self, friendly_message: str, stdout: str) -> None:
         self.stdout = stdout
         super().__init__(friendly_message)
 
 
 class RunCommandBadExitCode(RunemJobError):
-    def __init__(self, stdout: str):
+    def __init__(self, stdout: str) -> None:
         super().__init__(friendly_message="Bad exit-code", stdout=stdout)
 
 
 class RunCommandUnhandledError(RunemJobError):
-    def __init__(self, stdout: str):
+    def __init__(self, stdout: str) -> None:
         super().__init__(friendly_message="Unhandled job error", stdout=stdout)
 
 
