@@ -1,8 +1,9 @@
 import io
 import pathlib
+from collections import deque
 from contextlib import redirect_stdout
 from datetime import timedelta
-from typing import Optional, Tuple, Type
+from typing import Tuple
 from unittest.mock import Mock, patch
 
 import pytest
@@ -13,31 +14,27 @@ import runem.run_command
 class MockPopen:
     """Mock Popen object."""
 
-    def __init__(self, returncode: int = 0, stdout: str = "test output") -> None:
+    def __init__(
+        self,
+        returncode: int = 0,
+        stdout: str = "test output",
+        stderr: str = "test stderr",
+    ) -> None:
         self.returncode: int = returncode
         self.stdout: io.StringIO = io.StringIO(stdout)
+        self.stderr: io.StringIO = io.StringIO(stderr)
+        self._poll_returns = deque(
+            [
+                None,  # Not-finished
+                None,  # Not-finished number 2
+                0,  # an exit code (aok in this case)
+            ]
+        )
 
-    def communicate(self) -> Tuple[str, bytes]:  # pragma: no cover
+    def communicate(self) -> Tuple[str, str]:
         """Mock the communicate method if you use it."""
         # Assuming the stdout StringIO object's content should be returned as str
-        return self.stdout.getvalue(), b""
-
-    def __enter__(self) -> "MockPopen":
-        """Mimic the behaviour of the context manager."""
-        return self
-
-    def __exit__(
-        self,
-        exc_type: Optional[Type[BaseException]],
-        exc_val: Optional[BaseException],
-        exc_tb: Optional[Type[BaseException]],
-    ) -> None:
-        """Do nothing in the context on exit."""
-        pass
-
-    def wait(self) -> int:
-        """Mimic wait() if used in your implementation."""
-        return self.returncode
+        return self.stdout.getvalue(), self.stderr.getvalue()
 
 
 @pytest.mark.parametrize(
@@ -90,7 +87,7 @@ def test_run_command_basic_call(mock_popen: Mock) -> None:
             record_sub_job_time=dummy_record_sub_job_time,
         )
         run_command_stdout = buf.getvalue()
-    assert output == "test output"
+    assert output == "test output\ntest stderr"
     assert "" == run_command_stdout, "expected empty output when verbosity is off"
     mock_popen.assert_called_once()
     assert len(mock_popen.call_args) == 2
@@ -110,12 +107,13 @@ def test_run_command_basic_call_verbose(mock_popen: Mock) -> None:
             cmd=["ls"], label="test command", verbose=True
         )
         run_command_stdout = buf.getvalue()
-    assert raw_output == "test output"
+    assert raw_output == "test output\ntest stderr"
 
     # check the log output hasn't changed. Update as needed.
     assert run_command_stdout == (
         "runem: running: start: test command: ls\n"
         "| test command: test output\n"
+        "! test command stderr: test stderr\n"
         "runem: running: done: test command: ls\n"
     )
     mock_popen.assert_called_once()
@@ -208,7 +206,7 @@ def test_run_command_ignore_fails_skips_no_side_effects_on_success(
             verbose=False,
             ignore_fails=True,
         )
-        assert output == "test output", (
+        assert output == "test output\ntest stderr", (
             "expected empty output on failed run with 'ignore_fails=True'"
         )
 
@@ -239,7 +237,7 @@ def test_run_command_ignore_fails_skips_no_side_effects_on_success_with_valid_ex
             valid_exit_ids=(3,),  # matches patch value for 'returncode' above
             ignore_fails=True,
         )
-        assert output == "test output", (
+        assert output == "test output\ntest stderr", (
             "expected empty output on failed run with 'ignore_fails=True'"
         )
 
@@ -268,7 +266,7 @@ def test_run_command_basic_call_non_standard_exit_ok_code(mock_popen: Mock) -> N
             valid_exit_ids=(3,),  # matches the monkey-patch config about
         )
         run_command_stdout = buf.getvalue()
-    assert output == "test output"
+    assert output == "test output\ntest stderr"
 
     # check the log output hasn't changed. Update as needed.
     assert run_command_stdout == ""
@@ -295,13 +293,14 @@ def test_run_command_basic_call_non_standard_exit_ok_code_verbose(
             valid_exit_ids=(3,),  # matches the monkey-patch config about
         )
         run_command_stdout = buf.getvalue()
-    assert output == "test output"
+    assert output == "test output\ntest stderr"
 
     # check the log output hasn't changed. Update as needed.
     assert run_command_stdout == (
         "runem: running: start: test command: ls\n"
         "runem:  allowed return ids are: 3\n"
         "| test command: test output\n"
+        "! test command stderr: test stderr\n"
         "runem: running: done: test command: ls\n"
     )
     mock_popen.assert_called_once()
@@ -319,7 +318,7 @@ def test_run_command_with_env(mock_popen: Mock) -> None:
             env_overrides={"TEST_ENV_1": "1", "TEST_ENV_2": "2"},
         )
         run_command_stdout = buf.getvalue()
-    assert output == "test output"
+    assert output == "test output\ntest stderr"
     assert "" == run_command_stdout, "expected empty output when verbosity is off"
     assert len(mock_popen.call_args) == 2
     assert mock_popen.call_args[0] == (["ls"],)
@@ -343,11 +342,12 @@ def test_run_command_with_env_verbose(mock_popen: Mock) -> None:
             env_overrides={"TEST_ENV_1": "1", "TEST_ENV_2": "2"},
         )
         run_command_stdout = buf.getvalue()
-    assert output == "test output"
+    assert output == "test output\ntest stderr"
     assert run_command_stdout == (
         "runem: running: start: test command: ls\n"
         "runem: ENV OVERRIDES: TEST_ENV_1='1' TEST_ENV_2='2' ls\n"
         "| test command: test output\n"
+        "! test command stderr: test stderr\n"
         "runem: running: done: test command: ls\n"
     )
     assert len(mock_popen.call_args) == 2
@@ -405,13 +405,14 @@ def test_run_command_basic_call_verbose_with_cwd(mock_popen: Mock) -> None:
             cwd=pathlib.Path("./some/test/path"),
         )
         run_command_stdout = buf.getvalue()
-    assert raw_output == "test output"
+    assert raw_output == "test output\ntest stderr"
 
     # check the log output hasn't changed. Update as needed.
     assert run_command_stdout.split("\n") == [
         "runem: running: start: test command: ls",
         "runem: cwd: some/test/path",
         "| test command: test output",
+        "! test command stderr: test stderr",
         "runem: running: done: test command: ls",
         "",
     ]
