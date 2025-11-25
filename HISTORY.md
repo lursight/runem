@@ -4,6 +4,45 @@ Changelog
 
 (unreleased)
 ------------
+- Merge pull request #98 from
+  lursight/dependabot/github_actions/actions/checkout-6. [Frank
+  Harrison]
+
+  chore(deps): bump actions/checkout from 5 to 6
+- Chore(deps): bump actions/checkout from 5 to 6. [dependabot[bot]]
+
+  Bumps [actions/checkout](https://github.com/actions/checkout) from 5 to 6.
+  - [Release notes](https://github.com/actions/checkout/releases)
+  - [Changelog](https://github.com/actions/checkout/blob/main/CHANGELOG.md)
+  - [Commits](https://github.com/actions/checkout/compare/v5...v6)
+
+  ---
+  updated-dependencies:
+  - dependency-name: actions/checkout
+    dependency-version: '6'
+    dependency-type: direct:production
+    update-type: version-update:semver-major
+  ...
+- Merge pull request #99 from lursight/fix/hanging_sub_procs. [Frank
+  Harrison]
+
+  Fix/hanging sub procs
+- Fix(hanging-jobs): fixes hanging jobs by removing `communicate` code.
+  [Frank Harrison]
+
+  `Popen.communicate` calls `wait` which can block, instead we prefer to
+  use `poll` which gives more stable and deterministic results, especially
+  when running http servers in `nodjs/iron` in CRA apps. It appears that
+  such procs can hang partly because of how they deal with file-handles.
+
+  Nonetheless this fix makes the code simpler and easier to reason about.
+- Chore(type): adds extra return types to dunder functions. [Frank
+  Harrison]
+
+
+0.8.2 (2025-11-23)
+------------------
+- Release: version 0.8.2 🚀 [Frank Harrison]
 - Release: version 0.8.2 🚀 [Frank Harrison]
 - Merge pull request #96 from lursight/fix/read-write-config. [Frank
   Harrison]
