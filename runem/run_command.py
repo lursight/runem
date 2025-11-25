@@ -21,19 +21,36 @@ class RunemJobError(RuntimeError):
     allows an opportunity to parse the markup in it.
     """
 
-    def __init__(self, friendly_message: str, stdout: str):
+    def __init__(self, friendly_message: str, stdout: str) -> None:
         self.stdout = stdout
         super().__init__(friendly_message)
 
 
 class RunCommandBadExitCode(RunemJobError):
-    def __init__(self, stdout: str):
+    def __init__(self, stdout: str) -> None:
         super().__init__(friendly_message="Bad exit-code", stdout=stdout)
 
 
 class RunCommandUnhandledError(RunemJobError):
-    def __init__(self, stdout: str):
+    def __init__(self, stdout: str) -> None:
         super().__init__(friendly_message="Unhandled job error", stdout=stdout)
+
+
+class RunemJobInternalError(RuntimeError):  # pragma: no cover
+    """An exception type that is not ignorable and has right information."""
+
+    def __init__(self, friendly_message: str) -> None:
+        super().__init__(friendly_message)
+
+
+class RunemJobThreadError(RunemJobInternalError):  # pragma: no cover
+    def __init__(self, *args: typing.Any) -> None:
+        """Raised when we detect a problem in internal threading code.
+
+        NOTE: `*args` is only set to handle un-pickling of the exception when
+              using multiprocessing.
+        """
+        super().__init__(friendly_message="A stdio-drain-thread errored. Check logs.")
 
 
 # A function type for recording timing information.
@@ -113,6 +130,56 @@ def _log_command_execution(
             log(f"cwd: {str(cwd)}", prefix=decorate_logs)
 
 
+def _watch_process(
+    label: str,
+    process: Popen[str],
+    verbose: bool,
+) -> str:
+    """Watches a job-process capturing all stdout and stderr.
+
+    The main intent of this function is to marshall stdio so that the various
+    buffers do not get full and cause a hang.
+    """
+    if process.stdout is None:  # pragma: no cover
+        raise RunemJobInternalError("Process must be started with stdout=PIPE.")
+
+    # This consumes BOTH stdout and stderr atomically and safely.
+    # No partial reads → no deadlocks.
+    stdout, stderr = process.communicate()
+
+    # Stream stdout after we have it.
+    # This removes the risk of blocking on partial reads.
+    if verbose:
+        for line in stdout.splitlines(keepends=True):
+            log(
+                parse_stdout(
+                    line,
+                    prefix=f"[green]| [/green][blue]{label}[/blue]: ",
+                ),
+                prefix=False,
+            )
+
+        if stderr:
+            for line in stderr.splitlines(keepends=True):
+                log(
+                    parse_stdout(
+                        line,
+                        prefix=f"[red]! [/red][blue]{label} stderr[/blue]: ",
+                    ),
+                    prefix=False,
+                )
+
+    stdio: str = ""
+    # assert process.text_mode, "proc should be configured for text over bytes"
+    if stdout is not None:  # pragma: no cover
+        stdio += str(stdout)
+    if stderr is not None:  # pragma: no cover
+        if stdio and (not stdio.endswith("\n")):
+            stdio += "\n"
+        stdio += str(stderr)
+    return stdio
+
+
 def run_command(  # noqa: C901
     cmd: typing.List[str],  # 'cmd' is the only thing that can't be optionally kwargs
     label: str,
@@ -152,8 +219,9 @@ def run_command(  # noqa: C901
     # convert the command to a list of strings.
     process: typing.Optional[Popen[str]] = None
     stdout: str = ""
+
     try:
-        with Popen(
+        process = Popen(  # pylint: disable=consider-using-with
             cmd,
             env=run_env,
             stdout=SUBPROCESS_PIPE,
@@ -162,34 +230,30 @@ def run_command(  # noqa: C901
             text=True,
             bufsize=1,  # buffer it for every character return
             universal_newlines=True,
-        ) as process:
-            # Read output line by line as it becomes available
-            assert process.stdout is not None
-            for line in process.stdout:
-                stdout += line
-                if verbose:
-                    # print each line of output, assuming that each has a newline
-                    log(
-                        parse_stdout(
-                            line, prefix=f"[green]| [/green][blue]{label}[/blue]: "
-                        ),
-                        prefix=False,
-                    )
+        )
+        assert process.stdout is not None  # for type checkers
 
-            # Wait for the subprocess to finish and get the exit code
-            process.wait()
+        stdout += _watch_process(
+            label,
+            process,
+            verbose,
+        )
 
-            if process.returncode not in valid_exit_ids:
-                valid_exit_strs = ",".join(
-                    [str(exit_code) for exit_code in valid_exit_ids]
+        if process.returncode not in valid_exit_ids:
+            valid_exit_strs = ",".join([str(exit_code) for exit_code in valid_exit_ids])
+            raise RunCommandBadExitCode(
+                (
+                    f"non-zero exit [red]{process.returncode}[/red] (allowed are "
+                    f"[green]{valid_exit_strs}[/green]) from {cmd_string}"
                 )
-                raise RunCommandBadExitCode(
-                    (
-                        f"non-zero exit [red]{process.returncode}[/red] (allowed are "
-                        f"[green]{valid_exit_strs}[/green]) from {cmd_string}"
-                    )
-                )
+            )
+    except RunemJobInternalError:  # pragma: no cover
+        # Treat *internal runem* errors as systemic errors.
+        # ... so we do not allow silent-erroring.
+        # FIXME: unused at time or writing but may be useful in the future
+        raise  # re-raise internal errors and do NOT fall through
     except BaseException as err:
+        # A non-internal error occurred, make it user friendly.
         if ignore_fails:
             return ""
         parsed_stdout: str = (
