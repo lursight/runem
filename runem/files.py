@@ -91,6 +91,9 @@ def find_files(config_metadata: ConfigMetadata) -> FilePathListLookup:
             .splitlines()
         )
 
+    # Make files unique
+    file_paths = sorted(set(file_paths))
+
     if config_metadata.args.always_files is not None:
         # a poor-man's version of adding path-regex's
         existent_files = [
