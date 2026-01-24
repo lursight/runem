@@ -4,6 +4,57 @@ Changelog
 
 (unreleased)
 ------------
+- Merge pull request #101 from
+  lursight/dependabot/github_actions/actions/upload-artifact-6. [Frank
+  Harrison]
+
+  chore(deps): bump actions/upload-artifact from 5 to 6
+- Chore(deps): bump actions/upload-artifact from 5 to 6.
+  [dependabot[bot]]
+
+  Bumps [actions/upload-artifact](https://github.com/actions/upload-artifact) from 5 to 6.
+  - [Release notes](https://github.com/actions/upload-artifact/releases)
+  - [Commits](https://github.com/actions/upload-artifact/compare/v5...v6)
+
+  ---
+  updated-dependencies:
+  - dependency-name: actions/upload-artifact
+    dependency-version: '6'
+    dependency-type: direct:production
+    update-type: version-update:semver-major
+  ...
+- Merge pull request #100 from
+  lursight/dependabot/github_actions/actions/cache-5. [Frank Harrison]
+
+  chore(deps): bump actions/cache from 4 to 5
+- Chore(deps): bump actions/cache from 4 to 5. [dependabot[bot]]
+
+  Bumps [actions/cache](https://github.com/actions/cache) from 4 to 5.
+  - [Release notes](https://github.com/actions/cache/releases)
+  - [Changelog](https://github.com/actions/cache/blob/main/RELEASES.md)
+  - [Commits](https://github.com/actions/cache/compare/v4...v5)
+
+  ---
+  updated-dependencies:
+  - dependency-name: actions/cache
+    dependency-version: '5'
+    dependency-type: direct:production
+    update-type: version-update:semver-major
+  ...
+- Merge pull request #102 from lursight/fix/unique-files-only. [Frank
+  Harrison]
+
+  makes the file-list unique and sorted
+- Makes the file-list unique and sorted. [Frank Harrison]
+
+  This help fix false-negatives in tools that report duplicate
+  symbols/objects if a file is passed to them twice e.g. when in a merge
+  or rebase conflict in git.
+
+
+0.9.0 (2025-11-25)
+------------------
+- Release: version 0.9.0 🚀 [Frank Harrison]
 - Merge pull request #98 from
   lursight/dependabot/github_actions/actions/checkout-6. [Frank
   Harrison]
