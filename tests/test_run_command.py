@@ -42,11 +42,11 @@ class MockPopen:
     [
         ("Line1\nLine2", "Prefix: Line1\nPrefix: Line2"),
         ("SingleLine", "Prefix: SingleLine"),
-        ("Line1\nLine2\n", "Prefix: Line1\nPrefix: Line2\nPrefix: "),
-        ("Prefix:\n", "Prefix: Prefix:\nPrefix: "),
+        ("Line1\nLine2\n", "Prefix: Line1\nPrefix: Line2"),
+        ("Prefix:\n", "Prefix: Prefix:"),
         ("", "Prefix: "),
         ("Line1\n\nLine3", "Prefix: Line1\nPrefix: \nPrefix: Line3"),
-        ("Line1\nLine2\n\n", "Prefix: Line1\nPrefix: Line2\nPrefix: \nPrefix: "),
+        ("Line1\nLine2\n\n", "Prefix: Line1\nPrefix: Line2\nPrefix: "),
     ],
     ids=[
         "multiple_lines",
