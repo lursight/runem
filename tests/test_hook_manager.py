@@ -167,7 +167,6 @@ def test_invoke_hooks(do_hooks: bool, hook_man: HookManager) -> None:
             'runem: running: start: HookName.ON_EXIT: echo "mock_hook_function_bash '
             'called aok"',
             '| HookName.ON_EXIT: "mock_hook_function_bash called aok"',
-            "| HookName.ON_EXIT: ",
             'runem: running: done: HookName.ON_EXIT: echo "mock_hook_function_bash called '
             'aok"',
             "runem: job: DONE: 'HookName.ON_EXIT': 0:00:00",

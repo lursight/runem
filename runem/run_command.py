@@ -58,26 +58,28 @@ RecordSubJobTimeType = typing.Callable[[str, timedelta], None]
 
 
 def parse_stdout(stdout: str, prefix: str) -> str:
-    """Prefixes each line of output with a given label, except trailing new lines."""
+    """Prefix each logical line with `prefix` and return a joined string.
+
+    Keep behaviour simple and avoid producing an extra prefix-only entry when the
+    input ends with a single trailing newline. This function intentionally uses
+    ``str.splitlines()`` which does not produce a trailing empty string for a
+    single trailing newline; empty lines in the middle are preserved.
+    """
     # Edge case: Return the prefix immediately for an empty string
     if not stdout:
         return prefix
 
-    # Stop errors in `rich` by parsing out anything that might look like
-    # rich-markup.
+    # Stop errors in `rich` by escaping anything that might look like rich-markup.
     stdout = escape(stdout)
 
-    # Split stdout into lines
-    lines = stdout.split("\n")
+    # Split into logical lines (does not create a trailing empty element for a
+    # single trailing newline). This preserves empty lines in-between.
+    lines = stdout.splitlines()
 
-    # Apply prefix to all lines except the last if it's empty (due to a trailing newline)
-    modified_lines = [f"{prefix}{escape(line)}" for line in lines[:-1]] + (
-        [f"{prefix}{escape(lines[-1])}"]
-    )
-
-    # Join the lines back together, appropriately handling the final newline
+    # Prefix each line and join with a single newline. Do NOT append an extra
+    # trailing newline here; callers (printing functions) will handle line ends.
+    modified_lines = [f"{prefix}{escape(line)}" for line in lines]
     modified_stdout: str = "\n".join(modified_lines)
-
     return modified_stdout
 
 
