@@ -1,0 +1,12 @@
+# Git-status checks for pre-push
+
+- job:
+    addr:
+      file: scripts/test_hooks/git_checks.py
+      function: _job_check_branch_commit_messages
+    label: commit messages since branch
+    when:
+      phase: analysis
+      tags:
+        - git
+
