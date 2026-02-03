@@ -78,6 +78,8 @@ Run `git push my_fork my_contribution`
 
 NOTE: `runem` will be run via `tox` on pre-push
 
+Alternatively, from the repo root run `./scripts/push_and_pr.sh` to push the current branch and create a PR (requires [GitHub CLI](https://cli.github.com/) `gh`). Use `--auto-merge` to enable auto-merge when required checks pass; that requires maintainer (or admin) role and the repo to have auto-merge enabled.
+
 ## Submit a pull request
 
 On github interface, click on `Pull Request` button.
