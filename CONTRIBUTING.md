@@ -82,7 +82,7 @@ NOTE: `runem` will be run via `tox` on pre-push
 
 On github interface, click on `Pull Request` button.
 
-Wait for CI to run and one of the developers will review your PR.
+Wait for CI to run and one of the developers will review your PR. Branch protection requires the single check **CI / ci_tests_gate** (all matrix variants are covered); see [CI and branch protection](https://lursight.github.io/runem/ci/) for details.
 
 ## Makefile utilities
 
