@@ -47,7 +47,7 @@ printf "%s: ensuring in virtual environment\\n" "$LOG_PREFIX"
 python3 -c "import sys; sys.exit(99) if (sys.prefix == sys.base_prefix) else 0" || exit 99
 
 printf "%s: installing/ensuring deps\\n" "$LOG_PREFIX"
-python3 -m pip install ".[tests]"
+uv pip install ".[tests]"
 
 printf "%s: running with python: %s: %s\\n" "$LOG_PREFIX" "$(python --version)" "$(which python3)"
 
