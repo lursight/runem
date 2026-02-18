@@ -1,3 +1,4 @@
+import json
 import shlex
 import typing
 
@@ -9,6 +10,8 @@ from runem.types.common import FilePathList
 from runem.types.options import OptionsWritable
 from runem.types.runem_config import JobConfig
 from runem.types.types_jobs import AllKwargs
+
+RUNEM_CTX_PLACEHOLDER = "{runem_ctx}"
 
 
 def validate_simple_command(command_string: str) -> typing.List[str]:
@@ -27,6 +30,23 @@ def job_runner_simple_command(
     # assume we have the job.command entry, allowing KeyError to propagate up
     job_config: JobConfig = kwargs["job"]
     command_string: str = job_config["command"]
+
+    # Replace {runem_ctx} with a shell-safe JSON blob of run context (root_dir, etc.).
+    if RUNEM_CTX_PLACEHOLDER in command_string:
+        root_path = kwargs["root_path"]
+        root_dir = kwargs.get("root_dir")
+        context: typing.Dict[str, typing.Union[str, bool, float]] = {
+            "root_dir": str(root_dir if root_dir is not None else root_path),
+        }
+        if "run_success" in kwargs:
+            context["run_success"] = bool(kwargs["run_success"])
+        if "wall_clock_time_saved" in kwargs:
+            delta = kwargs["wall_clock_time_saved"]
+            context["wall_clock_time_saved"] = delta.total_seconds()
+        command_string = command_string.replace(
+            RUNEM_CTX_PLACEHOLDER,
+            shlex.quote(json.dumps(context, separators=(",", ":"))),
+        )
 
     command_string_files: str = command_string
     if "{file_list}" in command_string:
