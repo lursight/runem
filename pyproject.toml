@@ -50,6 +50,11 @@ runem = "runem.__main__:main"
 runem = ["VERSION"]
 
 [project.optional-dependencies]
+completion = [
+  # Shell tab-completion support via argparse integration.
+  "argcomplete>=2.0.0",
+]
+
 tests = [
   # This requirements are for development and testing only, not for production.
   "coverage==7.5",
@@ -61,7 +66,6 @@ tests = [
   "pip", # for ci/cd and pre-push scripts
   "pydocstyle==6.3.0",
   "pylint==3.3.6",
-  "pylama==8.4.1",
   "pytest-cov==6.1.1",
   "pytest-profiling==1.7.0",
   "pytest-xdist==3.6.1",
