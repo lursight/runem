@@ -52,6 +52,12 @@ Understand what ran, how fast, and what failed.
 ```bash
 pip install runem
 ```
+
+**Optional shell completion (bash/zsh/fish):**
+```bash
+pip install "runem[completion]"
+```
+
 **Define a task:**
 
 ```yaml
@@ -107,4 +113,3 @@ Brought to you by [Lursight Ltd.](https://lursight.com) and an open community.
 ## About Run’em
 
 Run’em exists to accelerate your team’s delivery and reduce complexity. Learn about our [Mission](https://lursight.github.io/runem/mission/).
-

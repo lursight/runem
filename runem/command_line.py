@@ -1,4 +1,5 @@
 import argparse
+import importlib
 import os
 import pathlib
 import sys
@@ -12,6 +13,35 @@ from runem.types.common import JobNames
 from runem.types.options import OptionsWritable
 from runem.types.runem_config import OptionConfig
 from runem.utils import printable_set
+
+
+def _static_values_completer(
+    values: typing.Iterable[str],
+) -> typing.Callable[..., typing.List[str]]:
+    """Return an argcomplete-compatible completer for fixed values.
+
+    We use this for config-derived sets (jobs/tags/phases) so completions stay
+    in sync with the active `.runem.yml`.
+    """
+    options_sorted = sorted(set(values))
+
+    def _completer(prefix: str, **_: typing.Any) -> typing.List[str]:
+        return [option for option in options_sorted if option.startswith(prefix)]
+
+    return _completer
+
+
+def _set_argcomplete_completer(
+    action: argparse.Action,
+    values: typing.Iterable[str],
+) -> None:
+    """Attach a dynamic completer to an argparse action.
+
+    `argparse.Action` does not declare a `completer` attribute, but argcomplete
+    supports it. We intentionally attach the attribute at runtime.
+    """
+    action_any: typing.Any = action
+    action_any.completer = _static_values_completer(values)
 
 
 class HelpFormatterFixedWidth(argparse.HelpFormatter):
@@ -67,7 +97,12 @@ def parse_args(
     Generates args based upon the config, parsing the cli args and return the filters to
     be used when selecting jobs.
 
-    Returns the parsed args, the jobs_names_to_run, job_phases_to_run, job_tags_to_run
+    Returns the parsed args, the jobs_names_to_run, job_phases_to_run, job_tags_to_run.
+
+    Completion note:
+    This parser is also used by argcomplete. During tab-completion, argcomplete
+    asks this parser for candidates and exits early; normal command execution
+    does not continue.
     """
     parser = argparse.ArgumentParser(
         add_help=False,
@@ -80,7 +115,7 @@ def parse_args(
 
     job_group = parser.add_argument_group("jobs")
     all_job_names: JobNames = set(name for name in config_metadata.all_job_names)
-    job_group.add_argument(
+    jobs_arg = job_group.add_argument(
         "--jobs",
         dest="jobs",
         nargs="+",
@@ -91,20 +126,25 @@ def parse_args(
         ),
         required=False,
     )
-    job_group.add_argument(
-        "--not-jobs",
-        dest="jobs_excluded",
-        nargs="+",
-        default=[],
-        help=(
-            "List of job-names to NOT run. Defaults to empty. "
-            f"Available options are: {printable_set((all_job_names))}"
+    _set_argcomplete_completer(jobs_arg, all_job_names)
+
+    _set_argcomplete_completer(
+        job_group.add_argument(
+            "--not-jobs",
+            dest="jobs_excluded",
+            nargs="+",
+            default=[],
+            help=(
+                "List of job-names to NOT run. Defaults to empty. "
+                f"Available options are: {printable_set((all_job_names))}"
+            ),
+            required=False,
         ),
-        required=False,
+        all_job_names,
     )
 
     phase_group = parser.add_argument_group("phases")
-    phase_group.add_argument(
+    phases_arg = phase_group.add_argument(
         "--phases",
         dest="phases",
         nargs="+",
@@ -116,7 +156,9 @@ def parse_args(
         ),
         required=False,
     )
-    phase_group.add_argument(
+    _set_argcomplete_completer(phases_arg, config_metadata.all_job_phases)
+
+    phases_excluded_arg = phase_group.add_argument(
         "--not-phases",
         dest="phases_excluded",
         nargs="+",
@@ -128,9 +170,10 @@ def parse_args(
         ),
         required=False,
     )
+    _set_argcomplete_completer(phases_excluded_arg, config_metadata.all_job_phases)
 
     tag_group = parser.add_argument_group("tags")
-    tag_group.add_argument(
+    tags_arg = tag_group.add_argument(
         "--tags",
         dest="tags",
         nargs="+",
@@ -143,7 +186,9 @@ def parse_args(
         ),
         required=False,
     )
-    tag_group.add_argument(
+    _set_argcomplete_completer(tags_arg, config_metadata.all_job_tags)
+
+    tags_excluded_arg = tag_group.add_argument(
         "--not-tags",
         dest="tags_excluded",
         nargs="+",
@@ -154,6 +199,7 @@ def parse_args(
         ),
         required=False,
     )
+    _set_argcomplete_completer(tags_excluded_arg, config_metadata.all_job_tags)
 
     job_param_overrides_group = parser.add_argument_group(
         "job-param overrides",  # help="overrides default test params on all matching jobs"
@@ -287,6 +333,8 @@ def parse_args(
         required=False,
     )
 
+    _enable_shell_completion(parser)
+
     args = parser.parse_args(argv[1:])
 
     error_on_log_logic(args.verbose, args.silent)
@@ -317,6 +365,20 @@ def parse_args(
         args, jobs_to_run, phases_to_run, tags_to_run, tags_to_avoid, options
     )
     return config_metadata
+
+
+def _enable_shell_completion(parser: argparse.ArgumentParser) -> None:
+    """Enable shell completion if optional dependency is installed.
+
+    After `register-python-argcomplete` is configured in the shell, pressing
+    tab re-invokes `runem` in completion mode. `argcomplete.autocomplete`
+    detects that mode, prints completion candidates, and exits.
+    """
+    try:
+        argcomplete_module = importlib.import_module("argcomplete")
+    except ImportError:
+        return
+    argcomplete_module.autocomplete(parser)
 
 
 def _get_config_dir(config_metadata: ConfigMetadata) -> pathlib.Path:

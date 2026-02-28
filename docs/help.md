@@ -71,3 +71,35 @@ job-param overrides:
   --unit-test           run unit tests
   --no-unit-test        turn off run unit tests
 ```
+
+## Shell tab completion (bash, zsh, fish)
+
+`runem` supports shell completion through the optional (`argcomplete`)[https://pypi.org/project/argcomplete/] dependency.
+
+The parser provides completion values for project-specific `--[not-]jobs`, `--[not-]tags`, and `--[not-]phases`.
+
+Install with completion support:
+```bash
+pip install -e ".[completion]"
+# or for a normal install:
+pip install "runem[completion]"
+```
+
+Enable completion:
+```bash
+# bash
+eval "$(register-python-argcomplete runem)"
+
+# zsh
+autoload -U bashcompinit && bashcompinit
+eval "$(register-python-argcomplete runem)"
+
+# fish
+register-python-argcomplete --shell fish runem | source
+```
+
+### Completion mechanism
+`runem` supports `argcomplete` via its inbuilt completion mode.
+
+This is why completions can include your real job names/tags/phases from `.runem.yml`.
+

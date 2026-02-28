@@ -7,7 +7,9 @@
   "ignorePaths": ["**/.pyenv/**", "./build", "*.egg-info/", "HISTORY.md"],
   // words - list of words to be always considered correct
   "words": [
+    "argcomplete", // python argparse completion package
     "autouse", // pytest fixture switch
+    "bashcompinit", // zsh helper to load bash completion
     "buildah", // Open Container Initiative (OCI) container builder
     "callables", // things that are callable
     "chdir", // python func for chnaging pwd

@@ -50,6 +50,11 @@ runem = "runem.__main__:main"
 runem = ["VERSION"]
 
 [project.optional-dependencies]
+completion = [
+  # Shell tab-completion support via argparse integration.
+  "argcomplete>=2.0.0",
+]
+
 tests = [
   # This requirements are for development and testing only, not for production.
   "coverage==7.5",
