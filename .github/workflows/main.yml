@@ -78,7 +78,7 @@ jobs:
 
       - name: Upload Artifacts
         if: failure() # This step runs only if any previous step failed
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: reports-${{ matrix.os }}-python${{ matrix.python-version }}
           path: reports/**
