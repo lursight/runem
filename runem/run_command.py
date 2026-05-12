@@ -1,15 +1,14 @@
 import os
 import pathlib
 import typing
-from datetime import timedelta
 from subprocess import PIPE as SUBPROCESS_PIPE
 from subprocess import STDOUT as SUBPROCESS_STDOUT
 from subprocess import Popen
-from timeit import default_timer as timer
 
 from rich.markup import escape
 
 from runem.log import log
+from runem.timer import RecordSubJobTimeType, runem_timer
 
 TERMINAL_WIDTH = 86
 
@@ -51,10 +50,6 @@ class RunemJobThreadError(RunemJobInternalError):  # pragma: no cover
               using multiprocessing.
         """
         super().__init__(friendly_message="A stdio-drain-thread errored. Check logs.")
-
-
-# A function type for recording timing information.
-RecordSubJobTimeType = typing.Callable[[str, timedelta], None]
 
 
 def parse_stdout(stdout: str, prefix: str) -> str:
@@ -195,12 +190,8 @@ def run_command(  # noqa: C901
     **kwargs: typing.Any,
 ) -> str:
     """Runs the given command, returning stdout or throwing on any error."""
-    if True: # wip
+    with runem_timer(label, record_sub_job_time):
         cmd_string = " ".join(cmd)
-
-        if record_sub_job_time is not None:
-            # start the capture of how long this sub-task takes.
-            start = timer()
 
         run_env: typing.Dict[str, str] = _prepare_environment(
             env_overrides,
@@ -243,7 +234,9 @@ def run_command(  # noqa: C901
             )
 
             if process.returncode not in valid_exit_ids:
-                valid_exit_strs = ",".join([str(exit_code) for exit_code in valid_exit_ids])
+                valid_exit_strs = ",".join(
+                    [str(exit_code) for exit_code in valid_exit_ids]
+                )
                 raise RunCommandBadExitCode(
                     (
                         f"non-zero exit [red]{process.returncode}[/red] (allowed are "
@@ -286,11 +279,5 @@ def run_command(  # noqa: C901
                 f"running: done: [blue]{label}[/blue]: [yellow]{cmd_string}[/yellow]",
                 prefix=decorate_logs,
             )
-
-        if record_sub_job_time is not None:
-            # Capture how long this run took
-            end = timer()
-            time_taken: timedelta = timedelta(seconds=end - start)
-            record_sub_job_time(label, time_taken)
 
     return stdout
