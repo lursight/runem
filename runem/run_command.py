@@ -1,15 +1,14 @@
 import os
 import pathlib
 import typing
-from datetime import timedelta
 from subprocess import PIPE as SUBPROCESS_PIPE
 from subprocess import STDOUT as SUBPROCESS_STDOUT
 from subprocess import Popen
-from timeit import default_timer as timer
 
 from rich.markup import escape
 
 from runem.log import log
+from runem.timer import RecordSubJobTimeType, runem_timer
 
 TERMINAL_WIDTH = 86
 
@@ -51,10 +50,6 @@ class RunemJobThreadError(RunemJobInternalError):  # pragma: no cover
               using multiprocessing.
         """
         super().__init__(friendly_message="A stdio-drain-thread errored. Check logs.")
-
-
-# A function type for recording timing information.
-RecordSubJobTimeType = typing.Callable[[str, timedelta], None]
 
 
 def parse_stdout(stdout: str, prefix: str) -> str:
@@ -195,101 +190,94 @@ def run_command(  # noqa: C901
     **kwargs: typing.Any,
 ) -> str:
     """Runs the given command, returning stdout or throwing on any error."""
-    cmd_string = " ".join(cmd)
+    with runem_timer(label, record_sub_job_time):
+        cmd_string = " ".join(cmd)
 
-    if record_sub_job_time is not None:
-        # start the capture of how long this sub-task takes.
-        start = timer()
-
-    run_env: typing.Dict[str, str] = _prepare_environment(
-        env_overrides,
-    )
-    _log_command_execution(
-        cmd_string,
-        label,
-        env_overrides,
-        valid_exit_ids,
-        decorate_logs,
-        verbose,
-        cwd,
-    )
-
-    if valid_exit_ids is None:
-        valid_exit_ids = (0,)
-
-    # init the process in case it throws for things like not being able to
-    # convert the command to a list of strings.
-    process: typing.Optional[Popen[str]] = None
-    stdout: str = ""
-
-    try:
-        process = Popen(  # pylint: disable=consider-using-with
-            cmd,
-            env=run_env,
-            stdout=SUBPROCESS_PIPE,
-            stderr=SUBPROCESS_STDOUT,
-            cwd=cwd,
-            text=True,
-            bufsize=1,  # buffer it for every character return
-            universal_newlines=True,
+        run_env: typing.Dict[str, str] = _prepare_environment(
+            env_overrides,
         )
-        assert process.stdout is not None  # for type checkers
-
-        stdout += _watch_process(
+        _log_command_execution(
+            cmd_string,
             label,
-            process,
+            env_overrides,
+            valid_exit_ids,
+            decorate_logs,
             verbose,
+            cwd,
         )
 
-        if process.returncode not in valid_exit_ids:
-            valid_exit_strs = ",".join([str(exit_code) for exit_code in valid_exit_ids])
-            raise RunCommandBadExitCode(
-                (
-                    f"non-zero exit [red]{process.returncode}[/red] (allowed are "
-                    f"[green]{valid_exit_strs}[/green]) from {cmd_string}"
+        if valid_exit_ids is None:
+            valid_exit_ids = (0,)
+
+        # init the process in case it throws for things like not being able to
+        # convert the command to a list of strings.
+        process: typing.Optional[Popen[str]] = None
+        stdout: str = ""
+
+        try:
+            process = Popen(  # pylint: disable=consider-using-with
+                cmd,
+                env=run_env,
+                stdout=SUBPROCESS_PIPE,
+                stderr=SUBPROCESS_STDOUT,
+                cwd=cwd,
+                text=True,
+                bufsize=1,  # buffer it for every character return
+                universal_newlines=True,
+            )
+            assert process.stdout is not None  # for type checkers
+
+            stdout += _watch_process(
+                label,
+                process,
+                verbose,
+            )
+
+            if process.returncode not in valid_exit_ids:
+                valid_exit_strs = ",".join(
+                    [str(exit_code) for exit_code in valid_exit_ids]
                 )
+                raise RunCommandBadExitCode(
+                    (
+                        f"non-zero exit [red]{process.returncode}[/red] (allowed are "
+                        f"[green]{valid_exit_strs}[/green]) from {cmd_string}"
+                    )
+                )
+        except RunemJobInternalError:  # pragma: no cover
+            # Treat *internal runem* errors as systemic errors.
+            # ... so we do not allow silent-erroring.
+            # FIXME: unused at time or writing but may be useful in the future
+            raise  # re-raise internal errors and do NOT fall through
+        except BaseException as err:
+            # A non-internal error occurred, make it user friendly.
+            if ignore_fails:
+                return ""
+            parsed_stdout: str = (
+                parse_stdout(stdout, prefix="[red]| [/red]") if process else ""
             )
-    except RunemJobInternalError:  # pragma: no cover
-        # Treat *internal runem* errors as systemic errors.
-        # ... so we do not allow silent-erroring.
-        # FIXME: unused at time or writing but may be useful in the future
-        raise  # re-raise internal errors and do NOT fall through
-    except BaseException as err:
-        # A non-internal error occurred, make it user friendly.
-        if ignore_fails:
-            return ""
-        parsed_stdout: str = (
-            parse_stdout(stdout, prefix="[red]| [/red]") if process else ""
-        )
-        env_overrides_as_string = ""
-        if env_overrides:
-            env_overrides_as_string = " ".join(
-                [f"{key}='{value}'" for key, value in env_overrides.items()]
+            env_overrides_as_string = ""
+            if env_overrides:
+                env_overrides_as_string = " ".join(
+                    [f"{key}='{value}'" for key, value in env_overrides.items()]
+                )
+                env_overrides_as_string = f"{env_overrides_as_string} "
+            error_string = (
+                f"runem: [red bold]FATAL[/red bold]: command failed: [blue]{label}[/blue]"
+                f"\n\t[yellow]{env_overrides_as_string}{cmd_string}[/yellow]"
+                f"\n[red underline]| ERROR[/red underline]: [blue]{label}[/blue]"
+                f"\n{str(parsed_stdout)}"
+                f"\n[red underline]| ERROR END[/red underline]: [blue]{label}[/blue]"
             )
-            env_overrides_as_string = f"{env_overrides_as_string} "
-        error_string = (
-            f"runem: [red bold]FATAL[/red bold]: command failed: [blue]{label}[/blue]"
-            f"\n\t[yellow]{env_overrides_as_string}{cmd_string}[/yellow]"
-            f"\n[red underline]| ERROR[/red underline]: [blue]{label}[/blue]"
-            f"\n{str(parsed_stdout)}"
-            f"\n[red underline]| ERROR END[/red underline]: [blue]{label}[/blue]"
-        )
 
-        if isinstance(err, RunCommandBadExitCode):
-            raise RunCommandBadExitCode(error_string) from err
-        # fallback to raising a RunCommandUnhandledError
-        raise RunCommandUnhandledError(error_string) from err
+            if isinstance(err, RunCommandBadExitCode):
+                raise RunCommandBadExitCode(error_string) from err
+            # fallback to raising a RunCommandUnhandledError
+            raise RunCommandUnhandledError(error_string) from err
 
-    if verbose:
-        log(
-            f"running: done: [blue]{label}[/blue]: [yellow]{cmd_string}[/yellow]",
-            prefix=decorate_logs,
-        )
-
-    if record_sub_job_time is not None:
-        # Capture how long this run took
-        end = timer()
-        time_taken: timedelta = timedelta(seconds=end - start)
-        record_sub_job_time(label, time_taken)
+        if verbose:
+            log(
+                f"running: done: [blue]{label}[/blue]: [yellow]{cmd_string}[/yellow]",
+                prefix=decorate_logs,
+            )
 
     return stdout
