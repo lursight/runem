@@ -4,12 +4,6 @@ Changelog
 
 (unreleased)
 ------------
-- Chore(release): sorts existing tags by human-readible. [Frank
-  Harrison]
-
-
-0.11.0 (2026-05-24)
--------------------
 
 Fix
 ~~~
@@ -21,6 +15,9 @@ Fix
 
 Other
 ~~~~~
+- Release: version 0.11.0 🚀 [Frank Harrison]
+- Chore(release): sorts existing tags by human-readible. [Frank
+  Harrison]
 - Release: version 0.11.0 🚀 [Frank Harrison]
 - Chore(deps): adds verbose logging to the deps-install task. [Frank
   Harrison]
