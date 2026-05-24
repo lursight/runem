@@ -4,6 +4,163 @@ Changelog
 
 (unreleased)
 ------------
+
+Fix
+~~~
+- Avoid extra newline when prefixing subprocess output. [Frank Harrison]
+
+  Change parse_stdout to use splitlines() and avoid generating an extra
+  prefix-only entry for single trailing newlines. Adjust tests
+  accordingly.
+
+Other
+~~~~~
+- Chore(deps): adds verbose logging to the deps-install task. [Frank
+  Harrison]
+- Merge branch 'chore/linearlise_hist' [Frank Harrison]
+- Chore(deps): bump actions/deploy-pages from 4 to 5. [dependabot[bot]]
+
+  Bumps [actions/deploy-pages](https://github.com/actions/deploy-pages) from 4 to 5.
+  - [Release notes](https://github.com/actions/deploy-pages/releases)
+  - [Commits](https://github.com/actions/deploy-pages/compare/v4...v5)
+
+  ---
+  updated-dependencies:
+  - dependency-name: actions/deploy-pages
+    dependency-version: '5'
+    dependency-type: direct:production
+    update-type: version-update:semver-major
+  ...
+- Chore(deps): bump actions/configure-pages from 5 to 6.
+  [dependabot[bot]]
+
+  Bumps [actions/configure-pages](https://github.com/actions/configure-pages) from 5 to 6.
+  - [Release notes](https://github.com/actions/configure-pages/releases)
+  - [Commits](https://github.com/actions/configure-pages/compare/v5...v6)
+
+  ---
+  updated-dependencies:
+  - dependency-name: actions/configure-pages
+    dependency-version: '6'
+    dependency-type: direct:production
+    update-type: version-update:semver-major
+  ...
+- Chore(deps): bump actions/upload-pages-artifact from 4 to 5.
+  [dependabot[bot]]
+
+  Bumps [actions/upload-pages-artifact](https://github.com/actions/upload-pages-artifact) from 4 to 5.
+  - [Release notes](https://github.com/actions/upload-pages-artifact/releases)
+  - [Commits](https://github.com/actions/upload-pages-artifact/compare/v4...v5)
+
+  ---
+  updated-dependencies:
+  - dependency-name: actions/upload-pages-artifact
+    dependency-version: '5'
+    dependency-type: direct:production
+    update-type: version-update:semver-major
+  ...
+- Chore(deps): bump softprops/action-gh-release from 2 to 3.
+  [dependabot[bot]]
+
+  Bumps [softprops/action-gh-release](https://github.com/softprops/action-gh-release) from 2 to 3.
+  - [Release notes](https://github.com/softprops/action-gh-release/releases)
+  - [Changelog](https://github.com/softprops/action-gh-release/blob/master/CHANGELOG.md)
+  - [Commits](https://github.com/softprops/action-gh-release/compare/v2...v3)
+
+  ---
+  updated-dependencies:
+  - dependency-name: softprops/action-gh-release
+    dependency-version: '3'
+    dependency-type: direct:production
+    update-type: version-update:semver-major
+  ...
+- Merge pull request #114 from lursight/feat/timing-context. [Frank
+  Harrison]
+
+  feat/timing-context
+- Fixup. [Frank Harrison]
+- Chore(yarn): pins yarn to 4.5.0. [Frank Harrison]
+- Chore(nvm): pin node version. [Frank Harrison]
+- Feat(timing-context): adds a utils for timing arbitrary python blocks.
+  [Frank Harrison]
+
+  ... that gives reports on the output.
+- Feat(timing-context): whitespace-only change. [Frank Harrison]
+- Merge pull request #108 from lursight/feat/auto-complete. [Frank
+  Harrison]
+
+  feat/auto-complete
+- Feat(auto-complete): adds auto-complete for runem. [Frank Harrison]
+- Chore(deps): removes unused pylama. [Frank Harrison]
+- Merge branch 'chore/dependabot_lodash_fix' [Frank Harrison]
+- Chore(deps): bump lodash from 4.17.21 to 4.17.23. [dependabot[bot]]
+
+  Bumps [lodash](https://github.com/lodash/lodash) from 4.17.21 to 4.17.23.
+  - [Release notes](https://github.com/lodash/lodash/releases)
+  - [Commits](https://github.com/lodash/lodash/compare/4.17.21...4.17.23)
+
+  ---
+  updated-dependencies:
+  - dependency-name: lodash
+    dependency-version: 4.17.23
+    dependency-type: indirect
+  ...
+- Merge pull request #107 from lursight/chore/ci-gate-and-pr-script.
+  [Frank Harrison]
+
+  chore: minor pre-push fixups
+- Ci: add merge_group trigger for merge queue. [Cursor, Frank Harrison]
+- Chore(pre-push): missed commits from last. [Frank Harrison]
+- Merge branch 'chore/dependabot_fix' [Frank Harrison]
+- Chore(deps): bump js-yaml from 4.1.0 to 4.1.1. [dependabot[bot]]
+
+  Bumps [js-yaml](https://github.com/nodeca/js-yaml) from 4.1.0 to 4.1.1.
+  - [Changelog](https://github.com/nodeca/js-yaml/blob/master/CHANGELOG.md)
+  - [Commits](https://github.com/nodeca/js-yaml/compare/4.1.0...4.1.1)
+
+  ---
+  updated-dependencies:
+  - dependency-name: js-yaml
+    dependency-version: 4.1.1
+    dependency-type: indirect
+  ...
+- Merge pull request #105 from lursight/chore/ci-gate-and-pr-script.
+  [Frank Harrison]
+
+  Chore/ci gate and pr script
+- Chore(pre-push): slightly better pre-push. [Frank Harrison]
+
+  This uses git-clone depth=1 for faster git checkouts.
+
+  Also we we (required) `uv` for pip deps.
+- Chore(pre-push): add script to push branch and create or auto-merge
+  PR. [Frank Harrison]
+
+  Add scripts/push_and_pr.sh: push current branch to origin, then create PR
+  via gh (if available). Optional --auto-merge runs gh pr merge --auto so
+  the PR merges when required checks pass. Auto-merge requires maintainer
+  (or admin) role and repo auto-merge enabled; document in script and
+  CONTRIBUTING.
+- Docs(ci): document CI gate behaviour and edge-cases. [Frank Harrison]
+
+  Add docs/ci.md describing the single required check (CI / ci_tests_gate),
+  gate result handling (success, failure, cancelled, skipped), and when
+  skipped is treated as pass vs fail. Link from CONTRIBUTING.md.
+- Chore(ci): add gate job for single required check. [Frank Harrison]
+
+  Add ci_tests_gate job that depends on ci_tests and runs with if: always().
+  Branch protection can require "CI / ci_tests_gate" so all matrix variants
+  are covered without listing each combination. Gate fails when matrix fails,
+  is cancelled, or is skipped (strict always-run policy).
+- Merge pull request #103 from lursight/fix/newlines_in_verbose. [Frank
+  Harrison]
+
+  fix: avoid extra newline when prefixing subprocess output
+
+
+0.10.0 (2026-01-24)
+-------------------
+- Release: version 0.10.0 🚀 [Frank Harrison]
 - Merge pull request #101 from
   lursight/dependabot/github_actions/actions/upload-artifact-6. [Frank
   Harrison]
