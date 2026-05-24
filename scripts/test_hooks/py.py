@@ -342,7 +342,11 @@ def _install_python_requirements(
     options: Options = kwargs["options"]
     if not (options["install-deps"]):
         # not enabled
+        if not kwargs["verbose"]:
+            print("install python requirements: 'install-deps' not set, skipping")
         return
+    if not kwargs["verbose"]:
+        print("install python requirements: 'install-deps' set, [re]installing")
     cmd = [
         "python3",
         "-m",
