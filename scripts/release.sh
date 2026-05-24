@@ -3,7 +3,7 @@ set -o pipefail
 set -e
 
 ENV_PREFIX=$1
-git tag
+git tag | sort -V
 echo "WARNING: This operation will create s version tag and push to github"
 read -p "Version? (provide the next x.y.z semver) : " TAG
 if [[ -z "${TAG}" ]]; then
