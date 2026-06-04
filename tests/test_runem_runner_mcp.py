@@ -5,6 +5,7 @@ import pathlib
 from collections import defaultdict
 from datetime import timedelta
 
+import pytest
 import yaml
 
 import runem_runner_mcp
@@ -60,7 +61,7 @@ def _metadata() -> ConfigMetadata:
     return metadata
 
 
-def test_list_jobs_is_minimal_by_default(monkeypatch) -> None:
+def test_list_jobs_is_minimal_by_default(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(runem_runner_mcp, "_load_metadata", _metadata)
 
     payload = yaml.safe_load(runem_runner_mcp.list_jobs())
@@ -68,7 +69,7 @@ def test_list_jobs_is_minimal_by_default(monkeypatch) -> None:
     assert payload == {"jobs": [{"name": "build"}, {"name": "test"}]}
 
 
-def test_list_jobs_can_include_compact_docs(monkeypatch) -> None:
+def test_list_jobs_can_include_compact_docs(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(runem_runner_mcp, "_load_metadata", _metadata)
 
     payload = yaml.safe_load(runem_runner_mcp.list_jobs(include_docs=True))
@@ -84,7 +85,9 @@ def test_list_jobs_can_include_compact_docs(monkeypatch) -> None:
     assert payload["jobs"][1]["module"] == "tests.example.test"
 
 
-def test_list_options_defaults_to_name_default_and_type(monkeypatch) -> None:
+def test_list_options_defaults_to_name_default_and_type(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     monkeypatch.setattr(runem_runner_mcp, "_load_metadata", _metadata)
 
     payload = yaml.safe_load(runem_runner_mcp.list_options())
@@ -94,7 +97,7 @@ def test_list_options_defaults_to_name_default_and_type(monkeypatch) -> None:
     }
 
 
-def test_minimal_identifier_lists(monkeypatch) -> None:
+def test_minimal_identifier_lists(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(runem_runner_mcp, "_load_metadata", _metadata)
 
     assert yaml.safe_load(runem_runner_mcp.list_phases()) == {
@@ -106,7 +109,9 @@ def test_minimal_identifier_lists(monkeypatch) -> None:
     }
 
 
-def test_get_timing_filters_latest_run_metadata(monkeypatch) -> None:
+def test_get_timing_filters_latest_run_metadata(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     monkeypatch.setattr(
         runem_runner_mcp,
         "LATEST_RUN_METADATA",
