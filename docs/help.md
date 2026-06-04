@@ -12,8 +12,8 @@ $ runem  --help
 usage: runem.py [-h] [--jobs JOBS [JOBS ...]] [--not-jobs JOBS_EXCLUDED [JOBS_EXCLUDED ...]] [--phases PHASES [PHASES ...]]
                 [--not-phases PHASES_EXCLUDED [PHASES_EXCLUDED ...]] [--tags TAGS [TAGS ...]] [--not-tags TAGS_EXCLUDED [TAGS_EXCLUDED ...]]
                 [--black] [--no-black] [--check-only] [--no-check-only] [--coverage] [--no-coverage] [--docformatter] [--no-docformatter]
-                [--generate-call-graphs] [--no-generate-call-graphs] [--install-deps] [--no-install-deps] [--isort] [--no-isort] [--profile]
-                [--no-profile] [--unit-test] [--no-unit-test]
+                [--generate-call-graphs] [--no-generate-call-graphs] [--install-deps] [--no-install-deps] [--isort] [--no-isort]
+                [--unit-test] [--no-unit-test]
                 [--call-graphs | --no-call-graphs]
                 [--procs PROCS] [--root ROOT_DIR] [--verbose | --no-verbose | -v]
 
@@ -66,8 +66,6 @@ job-param overrides:
   --no-install-deps     turn off gets dep-installing job to run
   --isort               allow/disallows isort from running on python files
   --no-isort            turn off allow/disallows isort from running on python files
-  --profile             generate profile information in jobs that can
-  --no-profile          turn off generate profile information in jobs that can
   --unit-test           run unit tests
   --no-unit-test        turn off run unit tests
 ```

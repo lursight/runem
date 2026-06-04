@@ -218,9 +218,6 @@ def _job_py_pytest(  # noqa: C901 # pylint: disable=too-many-branches,too-many-s
         # we've disabled unit-testing on the cli
         return reports
 
-    if options["profile"]:
-        raise RuntimeError("not implemented - see run_test.sh for how to implement")
-
     pytest_path = root_path / "tests"
     assert pytest_path.exists()
 
@@ -248,7 +245,6 @@ def _job_py_pytest(  # noqa: C901 # pylint: disable=too-many-branches,too-many-s
     if "verbose" in kwargs and kwargs["verbose"]:
         verbose_switches = ["-vvv"]
 
-    profile_switches: typing.List[str] = []
     cmd_pytest = [
         "python3",
         "-m",
@@ -260,7 +256,6 @@ def _job_py_pytest(  # noqa: C901 # pylint: disable=too-many-branches,too-many-s
         *coverage_switches,
         "--failed-first",
         "--exitfirst",
-        *profile_switches,
         *verbose_switches,
         str(pytest_path),
     ]
