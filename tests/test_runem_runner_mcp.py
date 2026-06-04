@@ -97,6 +97,14 @@ def test_list_options_defaults_to_name_default_and_type(
     }
 
 
+def test_get_run_ctx_returns_root_and_config(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(runem_runner_mcp, "_load_metadata", _metadata)
+
+    payload = yaml.safe_load(runem_runner_mcp.get_run_ctx())
+
+    assert payload == {"run_ctx": {"config_file": ".runem.yml", "pwd": "."}}
+
+
 def test_minimal_identifier_lists(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(runem_runner_mcp, "_load_metadata", _metadata)
 

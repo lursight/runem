@@ -366,6 +366,21 @@ def list_options(
     return _with_error_handling(build, fmt)
 
 
+def get_run_ctx(fmt: Format = "yaml") -> str:
+    """Return the active runem root directory and config file path."""
+
+    def build() -> typing.Any:
+        metadata = _load_metadata()
+        return {
+            "run_ctx": {
+                "pwd": metadata.cfg_filepath.parent,
+                "config_file": metadata.cfg_filepath,
+            }
+        }
+
+    return _with_error_handling(build, fmt)
+
+
 def _build_argv(
     jobs: typing.Optional[typing.List[str]],
     tags: typing.Optional[typing.List[str]],
@@ -627,6 +642,7 @@ def create_server() -> typing.Any:  # pragma: FIXME: add code coverage
     server.tool()(list_tags)
     server.tool()(list_filters)
     server.tool()(list_options)
+    server.tool()(get_run_ctx)
     server.tool()(execute)
     server.tool()(get_reports)
     server.tool()(get_timing)
