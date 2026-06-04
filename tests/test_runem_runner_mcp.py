@@ -8,9 +8,9 @@ from datetime import timedelta
 import pytest
 import yaml
 
-import runem_runner_mcp
 from runem.config_metadata import ConfigMetadata
 from runem.informative_dict import InformativeDict
+from runem.mcp import runner as runem_runner_mcp
 from runem.types.runem_config import JobConfig
 
 

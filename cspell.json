@@ -13,6 +13,7 @@
     "bashcompinit", // zsh helper to load bash completion
     "buildah", // Open Container Initiative (OCI) container builder
     "callables", // things that are callable
+    "capsys", // pyest fixture
     "chdir", // python func for chnaging pwd
     "cicd", // simplification of ci/cd
     "cobertura", // coverage auto format for ci/cd

@@ -87,6 +87,9 @@ Typical workflows are running all default jobs, filtering and viewing the job ma
 `runem --help` is your radar—instantly mapping out every available task:
 [Help & Job Discovery](https://lursight.github.io/runem/help/)
 
+Agents can use the structured MCP server instead of scraping help output:
+[Agent MCP Server](https://lursight.github.io/runem/agent_mcp/)
+
 ## Configuration File
 
 How and why to configure your projects `.runem.yml` file. How to scale up with multi-phase configs, how to apply filters and how to configure runtime options:

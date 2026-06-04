@@ -632,8 +632,8 @@ def create_server() -> typing.Any:  # pragma: FIXME: add code coverage
         from mcp.server.fastmcp import FastMCP
     except ImportError as err:
         raise RuntimeError(
-            "The MCP package is required to run this server. Install with "
-            "`python -m pip install mcp` in the environment that launches it."
+            "The MCP package is required to run this server. Reinstall runem with "
+            "its project dependencies in the environment that launches it."
         ) from err
 
     server = FastMCP("runem-runner")

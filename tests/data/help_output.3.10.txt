@@ -1,10 +1,11 @@
 runem: WARNING: no phase found for 'echo "hello world!"', using 'dummy phase 1'
-usage: -c [-H] [--jobs JOBS [JOBS ...]] [--not-jobs JOBS_EXCLUDED [JOBS_EXCLUDED ...]] [--phases PHASES [PHASES ...]] [--not-phases PHASES_EXCLUDED [PHASES_EXCLUDED ...]] [--tags TAGS [TAGS ...]] [--not-tags TAGS_EXCLUDED [TAGS_EXCLUDED ...]] [--dummy-option-1---complete-option] [--no-dummy-option-1---complete-option] [--dummy-option-2---minimal] [--no-dummy-option-2---minimal] [--call-graphs | --no-call-graphs] [-f | --modified-files | --no-modified-files] [-h | --git-head-files | --no-git-head-files] [--always-files ALWAYS_FILES [ALWAYS_FILES ...]] [--git-files-since-branch GIT_SINCE_BRANCH] [--procs PROCS] [--root ROOT_DIR] [--root-show | --no-root-show] [--silent | --no-silent | -s] [--spinner | --no-spinner] [--verbose | --no-verbose] [--version | --no-version | -v]
+usage: -c [-H] [--help-agents] [--jobs JOBS [JOBS ...]] [--not-jobs JOBS_EXCLUDED [JOBS_EXCLUDED ...]] [--phases PHASES [PHASES ...]] [--not-phases PHASES_EXCLUDED [PHASES_EXCLUDED ...]] [--tags TAGS [TAGS ...]] [--not-tags TAGS_EXCLUDED [TAGS_EXCLUDED ...]] [--dummy-option-1---complete-option] [--no-dummy-option-1---complete-option] [--dummy-option-2---minimal] [--no-dummy-option-2---minimal] [--call-graphs | --no-call-graphs] [-f | --modified-files | --no-modified-files] [-h | --git-head-files | --no-git-head-files] [--always-files ALWAYS_FILES [ALWAYS_FILES ...]] [--git-files-since-branch GIT_SINCE_BRANCH] [--procs PROCS] [--root ROOT_DIR] [--root-show | --no-root-show] [--silent | --no-silent | -s] [--spinner | --no-spinner] [--verbose | --no-verbose] [--version | --no-version | -v]
 
 Runs the Lursight Lang test-suite
 
 [TEST_REPLACED_OPTION_HEADER]
   -H, --help            show this help message and exit
+  --help-agents         show agent and MCP server usage guidance and exit
   --call-graphs, --no-call-graphs
   -f, --modified-files, --no-modified-files
                         only use files that have changed (default: False)

@@ -45,6 +45,7 @@ exclude = ["tests", ".github"]
 
 [project.scripts]
 runem = "runem.__main__:main"
+runem-mcp = "runem.mcp.runner:main"
 
 [tool.setuptools.package-data]
 runem = ["VERSION"]
@@ -53,6 +54,11 @@ runem = ["VERSION"]
 completion = [
   # Shell tab-completion support via argparse integration.
   "argcomplete>=2.0.0",
+]
+
+mcp = [
+# For the agent-facing MCP server entry point.
+  "mcp>=1.0.0",
 ]
 
 tests = [
