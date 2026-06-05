@@ -651,10 +651,12 @@ def test_runem_help(
     version_str: str
     if sys.version_info < (3, 11):  # pragma: no cover
         version_str = "3.10"
+    elif sys.version_info < (3, 13):  # pragma: no cover
+        # between 3.11 and 3.12 matches, for now at least
+        version_str = "3.11"  # pragma: no cover
     else:  # pragma: no cover
-        # above 3.11 seems to be stable, for now at least
-        version_str = "3.11"
-        # version_str = f"{sys.version_info.major}.{sys.version_info.minor}"
+        # 3.13 and 3.14 match
+        version_str = "3.13"  # pragma: no cover
 
     # grab the expected output
     help_dump: pathlib.Path = (

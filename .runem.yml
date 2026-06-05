@@ -54,11 +54,6 @@
           type: bool
           desc: allow/disallows isort from running on python files
       - option:
-          default: false
-          name: profile
-          desc: generate profile information in jobs that can
-          type: bool
-      - option:
           default: true
           name: ruff
           type: bool

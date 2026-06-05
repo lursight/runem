@@ -57,7 +57,7 @@ completion = [
 
 tests = [
   # This requirements are for development and testing only, not for production.
-  "coverage==7.5",
+  "coverage==7.6.10", # <- fixes issues in 3.14 with member type coverage
   "flake8-bugbear==24.2.6",
   "flake8==7.0.0",
   "gitchangelog==3.0.4",
@@ -67,7 +67,6 @@ tests = [
   "pydocstyle==6.3.0",
   "pylint==3.3.6",
   "pytest-cov==6.1.1",
-  "pytest-profiling==1.7.0",
   "pytest-xdist==3.6.1",
   "pytest==8.3.5",
   "ruff==0.11.6",
