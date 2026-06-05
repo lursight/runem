@@ -4,6 +4,53 @@ Changelog
 
 (unreleased)
 ------------
+- Merge pull request #116 from lursight/feat/mcp_server. [Frank
+  Harrison]
+
+  feat/mcp_server
+- Feat(mcp): productise the mcp server. [Frank Harrison]
+
+  Add to the installer for distribution
+  Adds docs that explain how users and agents can use the tool.
+  Fixes up tests.
+- Feat(mcp): add `get_run_ctx` mcp tool: confirms runtime has correct
+  env. [Frank Harrison]
+
+  An obvious requirement when running `runem` in a project is that the
+  project's context is used.
+- Feat(mcp): gets new code passing runem's dogfood checks. [Frank
+  Harrison]
+- Feat(mcp): initial mcp server toy. [Frank Harrison]
+
+  This commit is:
+  - tested in a working project
+  - fully agent written
+
+  I will review later, thoroughly.
+- Merge pull request #115 from lursight/feat/update-python-support.
+  [Frank Harrison]
+
+  feat/update-python-support
+- Chore(py3.14): offically support python 3.14. [Frank Harrison]
+- Chore(py3.14): updates `coverage` module to fix missing coverage on
+  class-member types. [Frank Harrison]
+- Chore(py3.13): officially support python 3.13. [Frank Harrison]
+- Chore(py3.13): updates the help comparitor for 3.13. [Frank Harrison]
+
+  ... I think this is useful.... maybe.
+- Chore(py3.13): remove pytest-profiling: broken in py3.13 (pipes module
+  removed) [Frank Harrison]
+
+  Support was incomplete,partially implemented anyway.
+- Chore(drop-3.9): drop direct python 3.9 support as EOL'd on
+  2025-10-31. [Frank Harrison]
+
+  NOTE: implicitly early-drops support 3.10 support which is in security
+  mode and will be dropped 2 months after this commit.
+
+
+0.11.0 (2026-05-24)
+-------------------
 
 Fix
 ~~~
@@ -15,6 +62,7 @@ Fix
 
 Other
 ~~~~~
+- Release: version 0.11.0 🚀 [Frank Harrison]
 - Release: version 0.11.0 🚀 [Frank Harrison]
 - Chore(release): sorts existing tags by human-readible. [Frank
   Harrison]
