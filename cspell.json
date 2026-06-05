@@ -7,11 +7,13 @@
   "ignorePaths": ["**/.pyenv/**", "./build", "*.egg-info/", "HISTORY.md"],
   // words - list of words to be always considered correct
   "words": [
+    "agentic", // agentic AI, as we live in an AI world now
     "argcomplete", // python argparse completion package
     "autouse", // pytest fixture switch
     "bashcompinit", // zsh helper to load bash completion
     "buildah", // Open Container Initiative (OCI) container builder
     "callables", // things that are callable
+    "capsys", // pyest fixture
     "chdir", // python func for chnaging pwd
     "cicd", // simplification of ci/cd
     "cobertura", // coverage auto format for ci/cd
@@ -24,6 +26,7 @@
     "elsewise",
     "exitfirst", // pylint switch
     "fixup", // used alot to denot fixing an issue
+    "fastmcp", // wrapper for creating an MCP server in python-land
     "funcs", // convenience for functions
     "gotchas", // things that might get ya 👻
     "getfixturevalue", // pytest

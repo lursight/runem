@@ -173,6 +173,51 @@ def test_runem_basic_with_config_no_options(
         ]
 
 
+@patch(
+    "runem.runem.load_user_configs",
+    return_value=[],
+)
+@patch(
+    "runem.runem.load_project_config",
+)
+@patch(
+    "runem.runem.find_files",
+)
+def test_runem_help_agents(
+    find_files_mock: Mock,
+    load_config_mock: Mock,
+    load_config_metadata_mock: Mock,
+) -> None:
+    global_config: GlobalSerialisedConfig = {
+        "config": {  # type: ignore[typeddict-item]
+            "phases": ("mock phase",),
+            "files": [],
+            # "options": [],
+        }
+    }
+    empty_config: Config = [
+        global_config,
+    ]
+    minimal_file_lists = defaultdict(list)
+    minimal_file_lists["mock phase"].append(pathlib.Path("/test") / "dummy" / "path")
+    load_config_mock.return_value = (empty_config, pathlib.Path())
+    find_files_mock.return_value = minimal_file_lists
+    with io.StringIO() as buf, redirect_stdout(buf):
+        # with pytest.raises(SystemExit):
+        timed_main(["--help-agents"])
+        runem_stdout = buf.getvalue()
+        assert sanitise_reports_footer(runem_stdout) == [
+            "runem: reports:",
+            "runem (total wall-clock)  [<float>]",
+            "├runem.pre-build          [<float>]",
+            "└runem.run-phases         [<float>]",
+            " └mock phase (user-time)  [<float>]",
+            "runem: DONE: runem took: <float>, saving you <float>, without runem you "
+            "would have waited <float>",
+            "",
+        ]
+
+
 MOCK_JOB_EXECUTE_INNER_RET: typing.Tuple[JobTiming, JobReturn] = (
     {"job": ("mocked job run", timedelta(0)), "commands": []},
     None,

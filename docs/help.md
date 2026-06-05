@@ -3,6 +3,13 @@ Using `--help`` to get an overview of your Jobs
 
 The `--help` switch will show you a full list of all the configured job-tasks, the tags, and the override options. `--help` describes how to configure a specific run for *your* `.runem.yml` setup, and does NOT just document `runem` itself; it documents *your* workflow.
 
+For coding agents and MCP clients, prefer the structured MCP server instead of
+scraping this help text. See [Agent MCP server](agent_mcp.md), or run:
+
+```bash
+runem --help-agents
+```
+
 ```bash
 $ python -m runem --help
 # or
@@ -100,4 +107,3 @@ register-python-argcomplete --shell fish runem | source
 `runem` supports `argcomplete` via its inbuilt completion mode.
 
 This is why completions can include your real job names/tags/phases from `.runem.yml`.
-

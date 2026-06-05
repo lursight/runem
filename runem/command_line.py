@@ -89,7 +89,7 @@ def error_on_log_logic(verbose: bool, silent: bool) -> None:
         sys.exit(1)
 
 
-def parse_args(
+def parse_args(  # pylint: disable=too-many-statements
     config_metadata: ConfigMetadata, argv: typing.List[str]
 ) -> ConfigMetadata:
     """Parses the args and defines the filter inputs.
@@ -111,6 +111,12 @@ def parse_args(
     )
     parser.add_argument(
         "-H", "--help", action="help", help="show this help message and exit"
+    )
+    parser.add_argument(
+        "--help-agents",
+        action="store_true",
+        help="show agent and MCP server usage guidance and exit",
+        required=False,
     )
 
     job_group = parser.add_argument_group("jobs")
