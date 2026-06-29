@@ -34,7 +34,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Cache pip
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ matrix.python-version }}
@@ -52,7 +52,7 @@ jobs:
 
       # - name: Cache Yarn
       #   if: ${{ matrix.os != 'windows-latest' }}
-      #   uses: actions/cache@v5
+      #   uses: actions/cache@v6
       #   with:
       #     path: ~/.cache/yarn
       #     key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
