@@ -425,6 +425,7 @@ def execute(
                 "selected_jobs": _selected_job_names(selected),
                 "skipped_jobs": _skipped_job_names(metadata, selected),
                 "failed_jobs": [],
+                "failures": [],
                 "reports": [],
                 "timing": {},
             }
@@ -439,9 +440,12 @@ def execute(
             "status": "failed" if failure else "ok",
             "selected_jobs": _executed_job_names(job_run_metadatas),
             "skipped_jobs": _skipped_job_names(
-                run_metadata, _jobs_by_phase_from_metadata(job_run_metadatas)
+                run_metadata,
+                _jobs_by_phase_from_metadata(job_run_metadatas),
+                set(_failed_job_names(failure)),
             ),
             "failed_jobs": _failed_job_names(failure),
+            "failures": _failure_payload(failure),
             "reports": _report_payload(job_run_metadatas, include_content=False),
             "timing": _timing_summary(job_run_metadatas),
             "stdout": _compact_text(stdout.getvalue()),
@@ -484,9 +488,11 @@ def _executed_job_names(
 
 
 def _skipped_job_names(
-    metadata: ConfigMetadata, selected: PhaseGroupedJobs
+    metadata: ConfigMetadata,
+    selected: PhaseGroupedJobs,
+    failed: typing.Optional[typing.Set[str]] = None,
 ) -> typing.List[str]:  # pragma: FIXME: add code coverage
-    selected_names = set(_selected_job_names(selected))
+    selected_names = set(_selected_job_names(selected)) | (failed or set())
     return sorted(
         _job_name(job)
         for job in _all_jobs(metadata)
@@ -499,7 +505,22 @@ def _failed_job_names(
 ) -> typing.List[str]:  # pragma: FIXME: add code coverage
     if not failure:
         return []
-    return [str(failure)]
+    job_name = getattr(failure, "job_name", None)
+    return [job_name] if job_name else [str(failure)]
+
+
+def _failure_payload(
+    failure: typing.Optional[BaseException],
+) -> typing.List[typing.Dict[str, JsonLike]]:  # pragma: FIXME: add code coverage
+    if not failure:
+        return []
+    return [
+        {
+            "job": _failed_job_names(failure)[0],
+            "message": str(failure),
+            "output": getattr(failure, "stdout", ""),
+        }
+    ]
 
 
 def _report_payload(

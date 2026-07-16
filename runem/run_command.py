@@ -20,9 +20,34 @@ class RunemJobError(RuntimeError):
     allows an opportunity to parse the markup in it.
     """
 
-    def __init__(self, friendly_message: str, stdout: str) -> None:
+    def __init__(
+        self,
+        friendly_message: str,
+        stdout: str,
+        job_name: typing.Optional[str] = None,
+    ) -> None:
         self.stdout = stdout
+        self.job_name = job_name
         super().__init__(friendly_message)
+
+    def __reduce__(self) -> typing.Any:
+        """Preserve diagnostic data when multiprocessing pickles the error."""
+        return (
+            _rebuild_runem_job_error,
+            (type(self), str(self), self.stdout, self.job_name),
+        )
+
+
+def _rebuild_runem_job_error(
+    error_type: typing.Type[RunemJobError],
+    friendly_message: str,
+    stdout: str,
+    job_name: typing.Optional[str],
+) -> RunemJobError:
+    """Rebuild a RunemJobError without relying on subclass constructor args."""
+    error = error_type.__new__(error_type)
+    RunemJobError.__init__(error, friendly_message, stdout, job_name)
+    return error
 
 
 class RunCommandBadExitCode(RunemJobError):
