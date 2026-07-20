@@ -12,6 +12,7 @@ from runem.informative_dict import ReadOnlyInformativeDict
 from runem.job import Job
 from runem.job_wrapper import get_job_wrapper
 from runem.log import error, log, warn
+from runem.run_command import RunemJobError
 from runem.types.common import FilePathList, JobTags
 from runem.types.filters import FilePathListLookup
 from runem.types.runem_config import JobConfig
@@ -139,6 +140,11 @@ def job_execute(
             file_lists,
             **kwargs,
         )
+    except RunemJobError as err:
+        # The exception crosses a multiprocessing boundary. Attach the job
+        # identity before it is pickled so callers can report the real job.
+        err.job_name = Job.get_job_name(job_config)
+        raise
     finally:
         # Always tidy-up job statuses
         completed_jobs[this_id] = running_jobs[this_id]

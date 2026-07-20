@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import pathlib
+import pickle
 from collections import defaultdict
 from datetime import timedelta
 
@@ -11,7 +12,10 @@ import yaml
 from runem.config_metadata import ConfigMetadata
 from runem.informative_dict import InformativeDict
 from runem.mcp import runner as runem_runner_mcp
+from runem.run_command import RunCommandBadExitCode
 from runem.types.runem_config import JobConfig
+
+# pylint: disable=protected-access
 
 
 def _metadata() -> ConfigMetadata:
@@ -151,3 +155,33 @@ def test_get_timing_filters_latest_run_metadata(
             }
         ]
     }
+
+
+def test_failure_payload_preserves_job_name_and_command_output() -> None:
+    failure = RunCommandBadExitCode("compiler diagnostic")
+    failure.job_name = "dummy:job:name"
+    round_tripped = pickle.loads(pickle.dumps(failure))
+
+    assert runem_runner_mcp._failed_job_names(round_tripped) == ["dummy:job:name"]
+    assert runem_runner_mcp._failure_payload(round_tripped) == [
+        {
+            "job": "dummy:job:name",
+            "message": "Bad exit-code",
+            "output": "compiler diagnostic",
+        }
+    ]
+
+
+def test_failed_job_is_not_also_reported_as_skipped() -> None:
+    metadata = _metadata()
+    assert (
+        runem_runner_mcp._skipped_job_names(
+            metadata,
+            defaultdict(
+                list,
+                {"build": [metadata.jobs["build"][0]]},
+            ),
+            {"test"},
+        )
+        == []
+    )
