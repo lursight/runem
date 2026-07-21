@@ -14,6 +14,9 @@
           tag: json
           regex: ".*\\.(json)$"
       - filter:
+          tag: markdown
+          regex: ".*\\.(md|mdx|mdc)$"
+      - filter:
           tag: spell
           regex: ".*\\.(py|yml|json)$"
     options:
@@ -165,6 +168,14 @@
       phase: analysis
       tags:
         - spell
+- job:
+    command: yarn run prettier '**/*.md' --write
+    label: prettier markdown
+    when:
+      phase: edit
+      tags:
+        - markdown
+        - format
 - job:
     addr:
       file: scripts/test_hooks/yarn.py
