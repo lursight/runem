@@ -1,0 +1,25 @@
+# markdownlint-cli2 configuration for project Markdown.
+
+# Use markdownlint's standard rule set as the baseline.
+config:
+  default: true
+
+  # Prettier owns prose wrapping and uses an 88-column width here.
+  MD013: false
+
+  # README badges and other intentional embedded HTML are allowed.
+  MD033: false
+
+  # The README begins with badges before its title.
+  MD041: false
+
+  # Existing documentation uses emphasis for a few intentional lead-ins.
+  MD036: false
+
+# Do not lint generated dependencies or local virtual environments.
+ignores:
+  - "**/node_modules/**"
+  - "**/.pyenv*/**"
+  - "**/.git/**"
+  - "**/.tox/**"
+  - "**/docs_build/**"

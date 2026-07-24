@@ -169,6 +169,14 @@
       tags:
         - spell
 - job:
+    command: yarn exec markdownlint-cli2 '**/*.md'
+    label: markdown lint
+    when:
+      phase: analysis
+      tags:
+        - markdown
+        - lint
+- job:
     command: yarn run prettier '**/*.md' --write
     label: prettier markdown
     when:
