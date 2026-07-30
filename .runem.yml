@@ -169,7 +169,9 @@
       tags:
         - spell
 - job:
-    command: yarn exec markdownlint-cli2 '**/*.md'
+    addr:
+      file: scripts/test_hooks/markdown.py
+      function: _job_markdown_lint
     label: markdown lint
     when:
       phase: analysis
@@ -177,7 +179,9 @@
         - markdown
         - lint
 - job:
-    command: yarn run prettier '**/*.md' --write
+    addr:
+      file: scripts/test_hooks/markdown.py
+      function: _job_markdown_prettier
     label: prettier markdown
     when:
       phase: edit

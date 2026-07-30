@@ -18,6 +18,7 @@ config:
 
 # Do not lint generated dependencies or local virtual environments.
 ignores:
+  - "HISTORY.md"
   - "**/node_modules/**"
   - "**/.pyenv*/**"
   - "**/.git/**"
