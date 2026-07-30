@@ -31,7 +31,7 @@ all job and tasks for a project. A single source of truth for all tasks.
 This allows faster on-boarding, easier discovery, and better team communication. It
 makes access and visibility of tasks easier and better.
 
-### Parallel Execution:
+### Parallel Execution
 
 Save time by running dev-ops tasks in parallel, and by getting metrics on those
 runtimes.
@@ -42,7 +42,7 @@ dependencies.
 NOTE: It is not yet a full resource analyser or dependency-execution graph, but by
 version 1.0.0 it will be.
 
-### Filtering:
+### Filtering
 
 Use powerful and flexible filtering. Select or excluded tasks by `tags`, `name` and
 `phase`. Chose the task to be run based on your needs, right now.

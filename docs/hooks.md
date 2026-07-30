@@ -20,9 +20,9 @@ Currently we only support `on-exit` hooks.
 `on-exit` hooks are called when runem has completed, irrespective of the pass/fail
 status.
 
-### `on-exit` examples:
+### `on-exit` examples
 
-#### Example OSX text-to-speech:
+#### Example OSX text-to-speech
 
 ```yml
 - hook:
@@ -32,7 +32,7 @@ status.
     ON_EXIT = "on-exit"
 ```
 
-#### Example OSX notification:
+#### Example OSX notification
 
 ```yml
 - hook:

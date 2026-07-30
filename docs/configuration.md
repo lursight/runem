@@ -53,7 +53,7 @@ will receive all files that match those filters.
 **Values:** A list of dictionaries, each containing a 'filter' key with 'tag' and
 'regex' subkeys.
 
-### config.options:
+### config.options
 
 Configures various option-overrides for the job-tasks. Overrides can be set on the
 command line and accessed by jobs to turn on or off features such as 'check-only' or to
@@ -69,7 +69,7 @@ opt out of sub-tasks.
 
 NOTE: only 'bool' types are currently supported.
 
-### config.options.default:\*\* Specifies the default value of the option.
+### config.options.default:\*\* Specifies the default value of the option
 
 - **name:** A string for the name of the option.
 - **type:** Indicates the data type of the option (e.g., bool for boolean) NOTE: only
@@ -187,7 +187,7 @@ the directory tree.
 If `python3 -c "import my.module.runem_func"` works then `module: my.module.runem_func`
 _should_ also work.
 
-### job.addr:
+### job.addr
 
 Specifies where a stand-alone python function can be found by `runem`.
 
@@ -226,7 +226,7 @@ the `runem` environment. If you're expecting to be able to do import other proje
 python modules from your runem job, and you are getting import-errors, consider using
 `job.module` instead.
 
-### job.ctx:
+### job.ctx
 
 _Description:_ Provides the _execution_ context for the job, including the working
 directory and parameters. Not to be confused with the kwargs context that the job is
@@ -246,7 +246,7 @@ params:
   limitFilesToGroup: true
 ```
 
-### job.label:
+### job.label
 
 Assigns a label to the job for identification.
 
@@ -256,7 +256,7 @@ _Example:_
 label: reformat py
 ```
 
-### job.when:
+### job.when
 
 _Description:_ Defines the conditions under which the job should run.
 

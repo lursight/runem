@@ -54,13 +54,13 @@ even if they have tags set via the `--tags` switch. Meaning you can choose to ru
 `python` tagged job but not run the `lint` jobs with `--tags python --not-tags lint`,
 and so on.
 
-### Run jobs only with the 'lint' tag:
+### Run jobs only with the 'lint' tag
 
 ```bash
 runem --tags lint
 ```
 
-### If you want to lint all code _except_ nodejs code (and you have the appropriate tags):
+### If you want to lint all code _except_ nodejs code (and you have the appropriate tags)
 
 ```bash
 runem --tags lint --not-tags deprecated
@@ -76,7 +76,7 @@ echo "runem --tags pre-commit" > scripts/git-hooks/pre-commit
 # add the following to .git/config
 # [core]
 #   # ... existing config ...
-#	  hooksPath = ./scripts/git-hooks/husky/
+#   hooksPath = ./scripts/git-hooks/husky/
 ```
 
 ## Filtering by Phase

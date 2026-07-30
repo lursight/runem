@@ -2,11 +2,11 @@
 
 runem welcomes contributions from the community.
 
-We strongly recommend `pyenv` (see https://github.com/pyenv/pyenv#readme)
+We strongly recommend `pyenv` (see <https://github.com/pyenv/pyenv#readme>)
 
 This instructions are for linux base systems. (Linux, MacOS, BSD, etc.)
 
-## Setting up your own fork of this repo.
+## Setting up your own fork of this repo
 
 - On github interface click on `Fork` button.
 - Clone your fork of this repo. `git clone git@github.com:YOUR_GIT_USERNAME/runem.git`
