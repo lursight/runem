@@ -57,8 +57,8 @@ completion = [
 ]
 
 mcp = [
-# For the agent-facing MCP server entry point.
-  "mcp>=1.0.0",
+  # For the agent-facing MCP server entry point. MCP v2 changes the FastMCP API.
+  "mcp>=1.28.1,<2",
 ]
 
 tests = [
