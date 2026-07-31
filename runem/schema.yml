@@ -40,6 +40,10 @@ $defs:
         uniqueItems: true
 
   # ----- top‑level entity types ---------------------------------------------
+  import:
+    type: string
+    minLength: 1
+
   config:
     type: object
     required: []
@@ -128,10 +132,12 @@ items:
   type: object
   additionalProperties: false
   oneOf:
+    - required: [import]
     - required: [config]
     - required: [hook]
     - required: [job]
   properties:
+    import: { $ref: "#/$defs/import" }
     config: { $ref: "#/$defs/config" }
     hook:   { $ref: "#/$defs/hook" }
     job:    { $ref: "#/$defs/job" }

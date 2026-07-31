@@ -45,7 +45,8 @@ def test_loaded_config_sources_follow_first_seen_order(
             ConfigEntry(first_node[0], root_source),
             ConfigEntry(second_node[0], imported_source),
             ConfigEntry(first_node[0], root_source),
-        )
+        ),
+        all_sources=(root_source, imported_source, root_source),
     )
 
     assert loaded.sources() == (root_source, imported_source)
