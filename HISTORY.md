@@ -4,6 +4,207 @@ Changelog
 
 (unreleased)
 ------------
+- Merge pull request #133 from lursight/fix/mcp-deps. [Frank Harrison]
+
+  fix/mcp-deps
+- Fix(mcp-dep): pin to <2.0 version of mcp, for now. [Frank Harrison]
+- Merge pull request #131 from lursight/dependabot/npm_and_yarn/brace-
+  expansion-1.1.18. [Frank Harrison]
+
+  chore(deps): bump brace-expansion from 1.1.11 to 1.1.18
+- Chore(deps): bump brace-expansion from 1.1.11 to 1.1.18.
+  [dependabot[bot]]
+
+  Bumps [brace-expansion](https://github.com/juliangruber/brace-expansion) from 1.1.11 to 1.1.18.
+  - [Release notes](https://github.com/juliangruber/brace-expansion/releases)
+  - [Commits](https://github.com/juliangruber/brace-expansion/commits)
+
+  ---
+  updated-dependencies:
+  - dependency-name: brace-expansion
+    dependency-version: 1.1.18
+    dependency-type: indirect
+  ...
+- Merge pull request #132 from lursight/chore/md. [Frank Harrison]
+
+  Chore/md
+- Chore(md): markdown as python jobs. [Frank Harrison]
+- Chore(md): md-lint. [Frank Harrison]
+- Chore(md): fix linting issues. [Frank Harrison]
+- Chore(md): adds a markdown-prettier for uniform prettier tasks. [Frank
+  Harrison]
+- Chore(md): apply md prettier config to the docs. [Frank Harrison]
+- Chore(md): more conformant markdown in github templates. [Frank
+  Harrison]
+- Merge branch 'chore/errata/delete-mis-commited-file' [Frank Harrison]
+- Chore(errata): removes file from lursight's main project. [Frank
+  Harrison]
+
+  ... erroniously commited here.
+- Merge pull request #130 from lursight/chore/delete-defunct-file.
+  [Frank Harrison]
+
+  chore(py3.10): deletes deprecated file for tests realted to python 3.10
+- Chore(py3.10): deletes deprecated file for tests realted to python
+  3.10. [Frank Harrison]
+- Merge pull request #129 from lursight/chore/yarn-dependabot. [Frank
+  Harrison]
+
+  chore/yarn-dependabot
+- Chore(deps): bump js-yaml from 4.1.1 to 4.3.0. [dependabot[bot]]
+
+  Bumps [js-yaml](https://github.com/nodeca/js-yaml) from 4.1.1 to 4.3.0.
+  - [Changelog](https://github.com/nodeca/js-yaml/blob/master/CHANGELOG.md)
+  - [Commits](https://github.com/nodeca/js-yaml/compare/4.1.1...4.3.0)
+
+  ---
+  updated-dependencies:
+  - dependency-name: js-yaml
+    dependency-version: 4.3.0
+    dependency-type: indirect
+  ...
+- Chore(deps): bump picomatch from 2.3.1 to 2.3.2. [dependabot[bot]]
+
+  Bumps [picomatch](https://github.com/micromatch/picomatch) from 2.3.1 to 2.3.2.
+  - [Release notes](https://github.com/micromatch/picomatch/releases)
+  - [Changelog](https://github.com/micromatch/picomatch/blob/master/CHANGELOG.md)
+  - [Commits](https://github.com/micromatch/picomatch/compare/2.3.1...2.3.2)
+
+  ---
+  updated-dependencies:
+  - dependency-name: picomatch
+    dependency-version: 2.3.2
+    dependency-type: indirect
+  ...
+- Merge pull request #118 from
+  lursight/dependabot/github_actions/actions/cache-6. [Frank Harrison]
+
+  chore(deps): bump actions/cache from 5 to 6
+- Chore(deps): bump actions/cache from 5 to 6. [dependabot[bot]]
+
+  Bumps [actions/cache](https://github.com/actions/cache) from 5 to 6.
+  - [Release notes](https://github.com/actions/cache/releases)
+  - [Changelog](https://github.com/actions/cache/blob/main/RELEASES.md)
+  - [Commits](https://github.com/actions/cache/compare/v5...v6)
+
+  ---
+  updated-dependencies:
+  - dependency-name: actions/cache
+    dependency-version: '6'
+    dependency-type: direct:production
+    update-type: version-update:semver-major
+  ...
+- Chore(deps): bump actions/checkout from 6 to 7. [dependabot[bot]]
+
+  Bumps [actions/checkout](https://github.com/actions/checkout) from 6 to 7.
+  - [Release notes](https://github.com/actions/checkout/releases)
+  - [Changelog](https://github.com/actions/checkout/blob/main/CHANGELOG.md)
+  - [Commits](https://github.com/actions/checkout/compare/v6...v7)
+
+  ---
+  updated-dependencies:
+  - dependency-name: actions/checkout
+    dependency-version: '7'
+    dependency-type: direct:production
+    update-type: version-update:semver-major
+  ...
+- Chore(deps): bump actions/setup-python from 6 to 7. [dependabot[bot]]
+
+  Bumps [actions/setup-python](https://github.com/actions/setup-python) from 6 to 7.
+  - [Release notes](https://github.com/actions/setup-python/releases)
+  - [Commits](https://github.com/actions/setup-python/compare/v6...v7)
+
+  ---
+  updated-dependencies:
+  - dependency-name: actions/setup-python
+    dependency-version: '7'
+    dependency-type: direct:production
+    update-type: version-update:semver-major
+  ...
+- Chore(deps): bump lodash from 4.17.23 to 4.18.1. [dependabot[bot]]
+
+  Bumps [lodash](https://github.com/lodash/lodash) from 4.17.23 to 4.18.1.
+  - [Release notes](https://github.com/lodash/lodash/releases)
+  - [Commits](https://github.com/lodash/lodash/compare/4.17.23...4.18.1)
+
+  ---
+  updated-dependencies:
+  - dependency-name: lodash
+    dependency-version: 4.18.1
+    dependency-type: indirect
+  ...
+- Chore(deps-dev): bump mcp from 1.27.1 to 1.28.1. [dependabot[bot]]
+
+  Bumps [mcp](https://github.com/modelcontextprotocol/python-sdk) from 1.27.1 to 1.28.1.
+  - [Release notes](https://github.com/modelcontextprotocol/python-sdk/releases)
+  - [Changelog](https://github.com/modelcontextprotocol/python-sdk/blob/main/RELEASE.md)
+  - [Commits](https://github.com/modelcontextprotocol/python-sdk/compare/v1.27.1...v1.28.1)
+
+  ---
+  updated-dependencies:
+  - dependency-name: mcp
+    dependency-version: 1.28.1
+    dependency-type: direct:development
+  ...
+- Chore(deps): bump fast-uri from 3.0.3 to 3.1.4. [dependabot[bot]]
+
+  Bumps [fast-uri](https://github.com/fastify/fast-uri) from 3.0.3 to 3.1.4.
+  - [Release notes](https://github.com/fastify/fast-uri/releases)
+  - [Commits](https://github.com/fastify/fast-uri/compare/v3.0.3...v3.1.4)
+
+  ---
+  updated-dependencies:
+  - dependency-name: fast-uri
+    dependency-version: 3.1.4
+    dependency-type: indirect
+  ...
+- Chore(deps): bump flatted from 3.3.2 to 3.4.3. [dependabot[bot]]
+
+  Bumps [flatted](https://github.com/WebReflection/flatted) from 3.3.2 to 3.4.3.
+  - [Commits](https://github.com/WebReflection/flatted/compare/v3.3.2...v3.4.3)
+
+  ---
+  updated-dependencies:
+  - dependency-name: flatted
+    dependency-version: 3.4.3
+    dependency-type: indirect
+  ...
+- Chore(deps): bump minimatch from 3.1.2 to 3.1.5. [dependabot[bot]]
+
+  Bumps [minimatch](https://github.com/isaacs/minimatch) from 3.1.2 to 3.1.5.
+  - [Changelog](https://github.com/isaacs/minimatch/blob/main/changelog.md)
+  - [Commits](https://github.com/isaacs/minimatch/compare/v3.1.2...v3.1.5)
+
+  ---
+  updated-dependencies:
+  - dependency-name: minimatch
+    dependency-version: 3.1.5
+    dependency-type: indirect
+  ...
+- Chore(deps-dev): bump pytest from 8.3.5 to 9.0.3. [dependabot[bot]]
+
+  Bumps [pytest](https://github.com/pytest-dev/pytest) from 8.3.5 to 9.0.3.
+  - [Release notes](https://github.com/pytest-dev/pytest/releases)
+  - [Changelog](https://github.com/pytest-dev/pytest/blob/main/CHANGELOG.rst)
+  - [Commits](https://github.com/pytest-dev/pytest/compare/8.3.5...9.0.3)
+
+  ---
+  updated-dependencies:
+  - dependency-name: pytest
+    dependency-version: 9.0.3
+    dependency-type: direct:development
+  ...
+- Merge pull request #119 from lursight/fix/mcp/job-error-info. [Frank
+  Harrison]
+
+  fix(mcp): adds more information mcp-clients
+- Fix(mcp): mcp clients weren't getting the correct info on job-
+  failures. [Frank Harrison]
+
+
+0.12.0 (2026-06-05)
+-------------------
+- Release: version 0.12.0 🚀 [Frank Harrison]
 - Merge pull request #116 from lursight/feat/mcp_server. [Frank
   Harrison]
 
