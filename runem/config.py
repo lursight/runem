@@ -4,6 +4,7 @@ import typing
 
 from packaging.version import Version
 
+from runem.config_sources import LoadedConfig
 from runem.config_validate import validate_runem_file
 from runem.log import error, log
 from runem.runem_version import get_runem_version
@@ -116,8 +117,8 @@ def _conform_global_config_types(
     return all_config, global_config
 
 
-def load_and_parse_config(cfg_filepath: pathlib.Path) -> Config:
-    """For the given config file pass, project or user, load it & parse/conform it."""
+def load_and_parse_config_with_sources(cfg_filepath: pathlib.Path) -> LoadedConfig:
+    """Load a config while retaining the source that declared each node."""
     all_config = load_yaml_object(cfg_filepath)
     validate_runem_file(
         cfg_filepath,
@@ -145,7 +146,12 @@ def load_and_parse_config(cfg_filepath: pathlib.Path) -> Config:
                 )
             )
             sys.exit(1)
-    return conformed_config
+    return LoadedConfig.from_root(conformed_config, cfg_filepath)
+
+
+def load_and_parse_config(cfg_filepath: pathlib.Path) -> Config:
+    """Load a project or user config using the historical public representation."""
+    return load_and_parse_config_with_sources(cfg_filepath).as_config()
 
 
 def load_project_config() -> typing.Tuple[Config, pathlib.Path]:
