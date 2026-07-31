@@ -24,6 +24,37 @@ sections, a single `config` entry and one or more `job` entries:
     - code coverage
     - any other type of command.
 
+## Importing local config files
+
+A config can import jobs, hooks, and global settings from other YAML files:
+
+```yaml
+- import: config/python.yml
+- import: config/frontend.yml
+- config:
+    phases: [analysis]
+```
+
+Imports expand depth-first at their position in the file, preserving source order.
+Imported files may contain imports of their own. Every import path is resolved from the
+directory containing the root config, even when a nested file declares it; the process
+working directory does not affect the result.
+
+Import paths must be relative and their canonical targets must be regular files inside
+the root config directory. Runem rejects absolute paths, missing files, directories,
+root or symlink escapes, cycles, and graphs deeper than 50 import edges. Repeated
+imports are expanded repeatedly, so duplicate jobs or global settings are reported as
+conflicts.
+
+File-addressed Python jobs and hooks use the YAML file that declares them as their path
+base. For example, `addr.file: jobs.py` in `config/python.yml` refers to
+`config/jobs.py`. Dotted `module` entries continue to use the Python environment and
+project import rules; they are not relative to an imported YAML fragment. Supporting
+arbitrary Python environments for module jobs requires a separate execution design.
+
+Project, local, and user config layers each have their own import root. One layer cannot
+use imports to escape into another layer's directory.
+
 ## `config` - runem's global project settings
 
 ### config.phases
