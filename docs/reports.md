@@ -4,7 +4,8 @@ Runem has a built-in support for reporting on tasks
 
 ### Task timings report
 
-Runem will run the task and report how long the task took and whether it saved you any time, for example:
+Runem will run the task and report how long the task took and whether it saved you any
+time, for example:
 
 ```text
 # output from runem when run on runem's project, without `termplotlib`
@@ -63,5 +64,5 @@ runem: report: coverage cobertura: ./reports/coverage_python/cobertura.xml
 runem: DONE: runem took: 14.174612s, saving you 22.6414s
 ```
 
-NOTE: each phase's total system-time is reported above the timing for the individual jobs ran in that phase. This is NOT wall-clock time.
-
+NOTE: each phase's total system-time is reported above the timing for the individual
+jobs ran in that phase. This is NOT wall-clock time.

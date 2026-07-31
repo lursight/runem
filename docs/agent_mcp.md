@@ -1,10 +1,10 @@
 # Agent MCP server
 
-Run'em includes a small MCP server for coding agents that need to inspect or run
-the active `.runem.yml` with low token usage.
+Run'em includes a small MCP server for coding agents that need to inspect or run the
+active `.runem.yml` with low token usage.
 
-Use the MCP server instead of scraping `runem --help` when an agent needs
-structured access to jobs, phases, tags, filters, options, reports, or timing.
+Use the MCP server instead of scraping `runem --help` when an agent needs structured
+access to jobs, phases, tags, filters, options, reports, or timing.
 
 ## Discoverability
 
@@ -34,8 +34,8 @@ During local development from a checkout:
 python -m runem.mcp.runner
 ```
 
-The server should be started from a runem project root, or from a directory under
-one. It uses the same `.runem.yml` discovery logic as `runem`.
+The server should be started from a runem project root, or from a directory under one.
+It uses the same `.runem.yml` discovery logic as `runem`.
 
 ## Tools
 
@@ -51,19 +51,18 @@ The server exposes these tools:
 - `get_reports`: returns report metadata from the latest in-process execution.
 - `get_timing`: returns timing metadata from the latest in-process execution.
 
-Most tools default to compact YAML. Pass `format="json"` when JSON is more
-convenient for the client.
+Most tools default to compact YAML. Pass `format="json"` when JSON is more convenient
+for the client.
 
 ## Recommended agent workflow
 
 1. Call `get_run_ctx` to confirm the root and config file.
-2. Call `list_jobs`, `list_phases`, `list_tags`, `list_filters`, or
-   `list_options` with defaults for compact identifiers.
+2. Call `list_jobs`, `list_phases`, `list_tags`, `list_filters`, or `list_options` with
+   defaults for compact identifiers.
 3. Request richer documentation only with explicit `include_*` flags.
 4. Call `execute` with `dry_run=True` before broad or expensive runs.
 5. Call `execute` without `dry_run` for the chosen run.
-6. Call `get_reports` or `get_timing` only when report or timing summaries are
-   needed.
+6. Call `get_reports` or `get_timing` only when report or timing summaries are needed.
 
 ## Output shape
 
@@ -75,16 +74,15 @@ jobs:
   - name: test
 ```
 
-Richer metadata is available through explicit flags such as
-`include_docs=True`, `include_jobs=True`, `include_regex=True`, and
-`include_content=True`.
+Richer metadata is available through explicit flags such as `include_docs=True`,
+`include_jobs=True`, `include_regex=True`, and `include_content=True`.
 
 ## Safety model
 
-The server is read-only with respect to config files. It may execute `runem`,
-read generated reports, and read timing/run metadata. It does not edit
-`.runem.yml`, `.runem.local.yml`, or `.runem.user.yml`.
+The server is read-only with respect to config files. It may execute `runem`, read
+generated reports, and read timing/run metadata. It does not edit `.runem.yml`,
+`.runem.local.yml`, or `.runem.user.yml`.
 
-The `execute` tool validates requested jobs, tags, phases, and options before
-running where possible. It calls runem's Python execution path directly rather
-than shelling out.
+The `execute` tool validates requested jobs, tags, phases, and options before running
+where possible. It calls runem's Python execution path directly rather than shelling
+out.

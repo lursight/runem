@@ -38,6 +38,7 @@
     "kwargs", // key-word args shorthand
     "linters", // collection of linting tools
     "lursight", // creator
+    "markdownlint", // ronseal: markdown-lint's executable name
     "metadatas", // can't think of a better word
     "MDGM",
     "mkdocs", // python module for building docs from .md files

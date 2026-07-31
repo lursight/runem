@@ -14,6 +14,9 @@
           tag: json
           regex: ".*\\.(json)$"
       - filter:
+          tag: markdown
+          regex: ".*\\.(md|mdx|mdc)$"
+      - filter:
           tag: spell
           regex: ".*\\.(py|yml|json)$"
     options:
@@ -165,6 +168,26 @@
       phase: analysis
       tags:
         - spell
+- job:
+    addr:
+      file: scripts/test_hooks/markdown.py
+      function: _job_markdown_lint
+    label: markdown lint
+    when:
+      phase: analysis
+      tags:
+        - markdown
+        - lint
+- job:
+    addr:
+      file: scripts/test_hooks/markdown.py
+      function: _job_markdown_prettier
+    label: prettier markdown
+    when:
+      phase: edit
+      tags:
+        - markdown
+        - format
 - job:
     addr:
       file: scripts/test_hooks/yarn.py

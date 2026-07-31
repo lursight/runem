@@ -12,12 +12,20 @@ data_file=.coverage_report
 omit =
     */setup.py
     *env*/*
+    scripts/test_hooks/json_validators.py
+    scripts/test_hooks/py.py
+    scripts/test_hooks/runem_hooks.py
+    scripts/test_hooks/yarn.py
 
 [report]
 # Exclude any pyenvs
 omit =
     */setup.py
     *env*/*
+    scripts/test_hooks/json_validators.py
+    scripts/test_hooks/py.py
+    scripts/test_hooks/runem_hooks.py
+    scripts/test_hooks/yarn.py
 
 # Regexes for lines to exclude from consideration
 exclude_lines =

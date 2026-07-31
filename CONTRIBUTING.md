@@ -2,10 +2,11 @@
 
 runem welcomes contributions from the community.
 
-We strongly recommend `pyenv` (see https://github.com/pyenv/pyenv#readme)
+We strongly recommend `pyenv` (see <https://github.com/pyenv/pyenv#readme>)
 
 This instructions are for linux base systems. (Linux, MacOS, BSD, etc.)
-## Setting up your own fork of this repo.
+
+## Setting up your own fork of this repo
 
 - On github interface click on `Fork` button.
 - Clone your fork of this repo. `git clone git@github.com:YOUR_GIT_USERNAME/runem.git`
@@ -65,12 +66,14 @@ Ensure your new changes are documented.
 
 ## Commit your changes
 
-This project uses [conventional git commit messages](https://www.conventionalcommits.org/en/v1.0.0/).
+This project uses
+[conventional git commit messages](https://www.conventionalcommits.org/en/v1.0.0/).
 
-Examples: 
- - `chore(package): update setup.py arguments 🎉` (emojis are fine too)
- - `feat(fancy): adds fancy feature 🚀`
- - `fix(some-bug): splats some annoying bug 🐞`
+Examples:
+
+- `chore(package): update setup.py arguments 🎉` (emojis are fine too)
+- `feat(fancy): adds fancy feature 🚀`
+- `fix(some-bug): splats some annoying bug 🐞`
 
 ## Push your changes to your fork
 
@@ -78,19 +81,24 @@ Run `git push my_fork my_contribution`
 
 NOTE: `runem` will be run via `tox` on pre-push
 
-Alternatively, from the repo root run `./scripts/push_and_pr.sh` to push the current branch and create a PR (requires [GitHub CLI](https://cli.github.com/) `gh`). Use `--auto-merge` to enable auto-merge when required checks pass; that requires maintainer (or admin) role and the repo to have auto-merge enabled.
+Alternatively, from the repo root run `./scripts/push_and_pr.sh` to push the current
+branch and create a PR (requires [GitHub CLI](https://cli.github.com/) `gh`). Use
+`--auto-merge` to enable auto-merge when required checks pass; that requires maintainer
+(or admin) role and the repo to have auto-merge enabled.
 
 ## Submit a pull request
 
 On github interface, click on `Pull Request` button.
 
-Wait for CI to run and one of the developers will review your PR. Branch protection requires the single check **CI / ci_tests_gate** (all matrix variants are covered); see [CI and branch protection](https://lursight.github.io/runem/ci/) for details.
+Wait for CI to run and one of the developers will review your PR. Branch protection
+requires the single check **CI / ci_tests_gate** (all matrix variants are covered); see
+[CI and branch protection](https://lursight.github.io/runem/ci/) for details.
 
 ## Makefile utilities
 
 This project comes with a `Makefile` that contains a number of useful utility.
 
-```bash 
+```bash
 ❯ make
 Usage: make <target>
 
@@ -107,30 +115,34 @@ switch-to-poetry: ## Switch to poetry package manager.
 
 ## Making a new release
 
-This project uses [semantic versioning](https://semver.org/) and tags releases with `X.Y.Z`
-Every time a new tag is created and pushed to the remote repo, github actions will
-automatically create a new release on github and trigger a release on PyPI.
+This project uses [semantic versioning](https://semver.org/) and tags releases with
+`X.Y.Z` Every time a new tag is created and pushed to the remote repo, github actions
+will automatically create a new release on github and trigger a release on PyPI.
 
-For this to work you need to setup a secret called `PYPI_API_TOKEN` on the project settings>secrets, 
-this token can be generated on [pypi.org](https://pypi.org/account/).
+For this to work you need to setup a secret called `PYPI_API_TOKEN` on the project
+settings>secrets, this token can be generated on [pypi.org](https://pypi.org/account/).
 
 To trigger a new release all you need to do is.
 
 1. If you have changes to add to the repo
-    * Make your changes following the steps described above.
-    * Commit your changes following the [conventional git commit messages](https://www.conventionalcommits.org/en/v1.0.0/).
+   - Make your changes following the steps described above.
+   - Commit your changes following the
+     [conventional git commit messages](https://www.conventionalcommits.org/en/v1.0.0/).
 2. Run the tests to ensure everything is working.
-4. Run `make release` to create a new tag and push it to the remote repo.
+3. Run `make release` to create a new tag and push it to the remote repo.
 
-the `make release` will ask you the version number to create the tag, ex: type `0.1.1` when you are asked.
+the `make release` will ask you the version number to create the tag, ex: type `0.1.1`
+when you are asked.
 
-> **CAUTION**:  The make release will change local changelog files and commit all the unstaged changes you have.
+> **CAUTION**: The make release will change local changelog files and commit all the
+> unstaged changes you have.
 
 ## Docs
+
 We use `github-pages` and `mkdocs` run via a `github-action` to deploy the docs.
 
-To test docs locally, from the command you can run `make docs` and open `site/index.html`.
+To test docs locally, from the command you can run `make docs` and open
+`site/index.html`.
 
-You can also push to `chore/docs` via `git push origin <branch>:chore/docs` to force a deploy.
-
-
+You can also push to `chore/docs` via `git push origin <branch>:chore/docs` to force a
+deploy.

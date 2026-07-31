@@ -1,10 +1,14 @@
 # Job manifest
+
 Using `--help`` to get an overview of your Jobs
 
-The `--help` switch will show you a full list of all the configured job-tasks, the tags, and the override options. `--help` describes how to configure a specific run for *your* `.runem.yml` setup, and does NOT just document `runem` itself; it documents *your* workflow.
+The `--help` switch will show you a full list of all the configured job-tasks, the tags,
+and the override options. `--help` describes how to configure a specific run for _your_
+`.runem.yml` setup, and does NOT just document `runem` itself; it documents _your_
+workflow.
 
-For coding agents and MCP clients, prefer the structured MCP server instead of
-scraping this help text. See [Agent MCP server](agent_mcp.md), or run:
+For coding agents and MCP clients, prefer the structured MCP server instead of scraping
+this help text. See [Agent MCP server](agent_mcp.md), or run:
 
 ```bash
 runem --help-agents
@@ -15,7 +19,8 @@ $ python -m runem --help
 # or
 $ runem  --help
 ```
-```
+
+```text
 usage: runem.py [-h] [--jobs JOBS [JOBS ...]] [--not-jobs JOBS_EXCLUDED [JOBS_EXCLUDED ...]] [--phases PHASES [PHASES ...]]
                 [--not-phases PHASES_EXCLUDED [PHASES_EXCLUDED ...]] [--tags TAGS [TAGS ...]] [--not-tags TAGS_EXCLUDED [TAGS_EXCLUDED ...]]
                 [--black] [--no-black] [--check-only] [--no-check-only] [--coverage] [--no-coverage] [--docformatter] [--no-docformatter]
@@ -79,11 +84,14 @@ job-param overrides:
 
 ## Shell tab completion (bash, zsh, fish)
 
-`runem` supports shell completion through the optional (`argcomplete`)[https://pypi.org/project/argcomplete/] dependency.
+`runem` supports shell completion through the optional
+(`argcomplete`)[https://pypi.org/project/argcomplete/] dependency.
 
-The parser provides completion values for project-specific `--[not-]jobs`, `--[not-]tags`, and `--[not-]phases`.
+The parser provides completion values for project-specific `--[not-]jobs`,
+`--[not-]tags`, and `--[not-]phases`.
 
 Install with completion support:
+
 ```bash
 pip install -e ".[completion]"
 # or for a normal install:
@@ -91,6 +99,7 @@ pip install "runem[completion]"
 ```
 
 Enable completion:
+
 ```bash
 # bash
 eval "$(register-python-argcomplete runem)"
@@ -104,6 +113,7 @@ register-python-argcomplete --shell fish runem | source
 ```
 
 ### Completion mechanism
+
 `runem` supports `argcomplete` via its inbuilt completion mode.
 
 This is why completions can include your real job names/tags/phases from `.runem.yml`.

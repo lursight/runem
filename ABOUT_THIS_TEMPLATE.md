@@ -2,17 +2,16 @@
 
 Hi, I created this template to help you get started with a new project.
 
-I have created and maintained a number of python libraries, applications and 
-frameworks and during those years I have learned a lot about how to create a 
-project structure and how to structure a project to be as modular and simple 
-as possible.
+I have created and maintained a number of python libraries, applications and frameworks
+and during those years I have learned a lot about how to create a project structure and
+how to structure a project to be as modular and simple as possible.
 
 Some decisions I have made while creating this template are:
 
- - Create a project structure that is as modular as possible.
- - Keep it simple and easy to maintain.
- - Allow for a lot of flexibility and customizability.
- - Low dependency (this template doesn't add dependencies)
+- Create a project structure that is as modular as possible.
+- Keep it simple and easy to maintain.
+- Allow for a lot of flexibility and customizability.
+- Low dependency (this template doesn't add dependencies)
 
 ## Structure
 
@@ -54,15 +53,16 @@ Frequent asked questions.
 
 ### Why this template is not using [Poetry](https://python-poetry.org/) ?
 
-I really like Poetry and I think it is a great tool to manage your python projects,
-if you want to switch to poetry, you can run `make switch-to-poetry`.
+I really like Poetry and I think it is a great tool to manage your python projects, if
+you want to switch to poetry, you can run `make switch-to-poetry`.
 
 But for this template I wanted to keep it simple.
 
-Setuptools is the most simple and well supported way of packaging a Python project,
-it doesn't require extra dependencies and is the easiest way to install the project.
+Setuptools is the most simple and well supported way of packaging a Python project, it
+doesn't require extra dependencies and is the easiest way to install the project.
 
-Also, poetry doesn't have a good support for installing projects in development mode yet.
+Also, poetry doesn't have a good support for installing projects in development mode
+yet.
 
 ### Why the `requirements.txt` is empty ?
 
@@ -70,42 +70,42 @@ This template is a low dependency project, so it doesn't have any extra dependen
 
 ### Why there is a `requirements-test.txt` file ?
 
-This file lists all the requirements for testing and development,
-I think the development environment and testing environment should be as similar as possible.
+This file lists all the requirements for testing and development, I think the
+development environment and testing environment should be as similar as possible.
 
 ### Why `VERSION` is kept in a static plain text file?
 
-I used to have my version inside my main module in a `__version__` variable, then
-I had to do some tricks to read that version variable inside the setuptools 
-`setup.py` file because that would be available only after the installation.
+I used to have my version inside my main module in a `__version__` variable, then I had
+to do some tricks to read that version variable inside the setuptools `setup.py` file
+because that would be available only after the installation.
 
 I decided to keep the version in a static file because it is easier to read from
 wherever I want without the need to install the package.
 
-e.g: `cat runem/VERSION` will get the project version without harming
-with module imports or anything else, it is useful for CI, logs and debugging.
+e.g: `cat runem/VERSION` will get the project version without harming with module
+imports or anything else, it is useful for CI, logs and debugging.
 
 ### Why to include `tests`, `history` and `Containerfile` as part of the release?
 
-The `MANIFEST.in` file is used to include the files in the release, once the 
-project is released to PyPI all the files listed on MANIFEST.in will be included
-even if the files are static or not related to Python.
+The `MANIFEST.in` file is used to include the files in the release, once the project is
+released to PyPI all the files listed on MANIFEST.in will be included even if the files
+are static or not related to Python.
 
-Some build systems such as RPM, DEB, AUR for some Linux distributions, and also
-internal repackaging systems tends to run the tests before the packaging is performed.
+Some build systems such as RPM, DEB, AUR for some Linux distributions, and also internal
+repackaging systems tends to run the tests before the packaging is performed.
 
-The Containerfile can be useful to provide a safer execution environment for 
-the project when running on a testing environment.
+The Containerfile can be useful to provide a safer execution environment for the project
+when running on a testing environment.
 
 I added those files to make it easier for packaging in different formats.
 
-### Why conftest includes a go_to_tmp_path_ fixture?
+### Why conftest includes a go*to_tmp_path* fixture?
 
-When your project deals with file system operations, it is a good idea to use
-a fixture to create a temporary directory and then remove it after the test.
+When your project deals with file system operations, it is a good idea to use a fixture
+to create a temporary directory and then remove it after the test.
 
-Before executing each test pytest will create a temporary directory and will
-change the working directory to that path and run the test.
+Before executing each test pytest will create a temporary directory and will change the
+working directory to that path and run the test.
 
 So the test can create temporary artifacts isolated from other tests.
 
@@ -115,19 +115,20 @@ After the execution Pytest will remove the temporary directory.
 
 pre-commit is an excellent tool to automate checks and formatting on your code.
 
-However I figured out that pre-commit adds extra dependency and it an entry barrier
-for new contributors.
+However I figured out that pre-commit adds extra dependency and it an entry barrier for
+new contributors.
 
 Having the linting, checks and formatting as simple commands on the [Makefile](Makefile)
 makes it easier to understand and change.
 
-Once the project is bigger and complex, having pre-commit as a dependency can be a good idea.
+Once the project is bigger and complex, having pre-commit as a dependency can be a good
+idea.
 
 ### Why the CLI is not using click?
 
-I wanted to provide a simple template for a CLI application on the project main entry point
-click and other tools are great alternatives but are external dependencies and this template
-doesn't add dependencies besides those used for development.
+I wanted to provide a simple template for a CLI application on the project main entry
+point click and other tools are great alternatives but are external dependencies and
+this template doesn't add dependencies besides those used for development.
 
 ## The Makefile
 
