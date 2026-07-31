@@ -45,7 +45,7 @@ class HookManager:
             log(
                 f"hooks: registered hook for '{hook_name}', "
                 f"have {len(self.hooks_store[hook_name])}: "
-                f"{Job.get_job_name(hook_config)}"  # type: ignore[arg-type]
+                f"{Job.get_job_name(hook_config)}"
             )
 
     def deregister_hook(

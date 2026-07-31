@@ -4,7 +4,12 @@ import typing
 
 from packaging.version import Version
 
-from runem.config_sources import ConfigEntry, LoadedConfig, load_config_with_sources
+from runem.config_sources import (
+    ConfigEntry,
+    LoadedConfig,
+    load_config_with_sources,
+    validate_imported_config_conflicts,
+)
 from runem.config_validate import validate_runem_file
 from runem.log import error, log
 from runem.runem_version import get_runem_version
@@ -119,6 +124,7 @@ def _conform_global_config_types(
 def load_and_parse_config_with_sources(cfg_filepath: pathlib.Path) -> LoadedConfig:
     """Load a config while retaining the source that declared each node."""
     loaded_config = load_config_with_sources(cfg_filepath)
+    validate_imported_config_conflicts(loaded_config)
     all_config = loaded_config.as_config()
     validate_runem_file(
         cfg_filepath,

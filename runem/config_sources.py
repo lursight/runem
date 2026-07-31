@@ -9,6 +9,7 @@ import yaml
 from typing_extensions import TypeGuard
 
 from runem.config_validate import validate_runem_file
+from runem.job import Job
 from runem.types.runem_config import (
     Config,
     ConfigDocument,
@@ -267,6 +268,18 @@ def _normalise_imported_address(
             requested_path=requested_path,
         ) from err
 
+    if not canonical_path.is_file():
+        raise ConfigImportError(
+            code="address_not_file",
+            message=(
+                f"Python address '{requested_path}' in '{entry.source.path}' "
+                "does not exist or is not a regular file"
+            ),
+            source_path=entry.source.path,
+            import_chain=entry.source.import_chain,
+            requested_path=requested_path,
+        )
+
     normalised_node = copy.deepcopy(node)
     if _is_job_node(normalised_node):
         normalised_node["job"]["addr"]["file"] = str(root_relative_path)
@@ -315,3 +328,43 @@ def load_config_with_sources(config_path: pathlib.Path) -> LoadedConfig:
     """Load and expand one local config graph with source context."""
     root_source = ConfigSource.root(config_path)
     return _expand_source(root_source.path.parent, root_source)
+
+
+def validate_imported_config_conflicts(loaded_config: LoadedConfig) -> None:
+    """Report cross-source global and job conflicts with both source files."""
+    if not loaded_config.import_edges:
+        return
+
+    first_global_source: typing.Optional[ConfigSource] = None
+    job_sources: typing.Dict[str, ConfigSource] = {}
+    for entry in loaded_config.entries:
+        if "config" in entry.node:
+            if first_global_source is not None:
+                raise ConfigImportError(
+                    code="duplicate_global_config",
+                    message=(
+                        "Found multiple global config entries in "
+                        f"'{first_global_source.path}' and '{entry.source.path}'"
+                    ),
+                    source_path=entry.source.path,
+                    import_chain=entry.source.import_chain,
+                )
+            first_global_source = entry.source
+            continue
+
+        job = entry.node.get("job")
+        if not isinstance(job, typing.Mapping):
+            continue
+        job_name = Job.get_job_name(job)
+        first_job_source = job_sources.get(job_name)
+        if first_job_source is not None:
+            raise ConfigImportError(
+                code="duplicate_job",
+                message=(
+                    f"Job '{job_name}' is declared in both "
+                    f"'{first_job_source.path}' and '{entry.source.path}'"
+                ),
+                source_path=entry.source.path,
+                import_chain=entry.source.import_chain,
+            )
+        job_sources[job_name] = entry.source

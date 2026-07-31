@@ -179,18 +179,49 @@ def test_import_node_is_validated_by_schema(
         load_and_parse_config(root)
 
 
-def test_repeated_imports_expand_repeatedly(tmp_path: pathlib.Path) -> None:
+def test_repeated_imports_report_the_resulting_duplicate(
+    tmp_path: pathlib.Path,
+) -> None:
     root = tmp_path / ".runem.yml"
     imported = tmp_path / "imported.yml"
     root.write_text("- import: imported.yml\n- import: imported.yml\n")
     imported.write_text("- job:\n    command: repeated\n    label: repeated\n")
 
-    loaded = load_and_parse_config(root)
+    with pytest.raises(ConfigImportError) as raised:
+        load_and_parse_config(root)
 
-    assert [typing.cast(typing.Any, node)["job"]["label"] for node in loaded] == [
-        "repeated",
-        "repeated",
-    ]
+    assert raised.value.code == "duplicate_job"
+    assert str(imported.resolve()) in str(raised.value)
+
+
+def test_duplicate_jobs_report_both_declaring_sources(tmp_path: pathlib.Path) -> None:
+    root = tmp_path / ".runem.yml"
+    imported = tmp_path / "imported.yml"
+    root.write_text(
+        "- job:\n    command: root\n    label: duplicate\n- import: imported.yml\n"
+    )
+    imported.write_text("- job:\n    command: imported\n    label: duplicate\n")
+
+    with pytest.raises(ConfigImportError) as raised:
+        load_and_parse_config(root)
+
+    assert raised.value.code == "duplicate_job"
+    assert str(root.resolve()) in str(raised.value)
+    assert str(imported.resolve()) in str(raised.value)
+
+
+def test_duplicate_global_configs_report_both_sources(tmp_path: pathlib.Path) -> None:
+    root = tmp_path / ".runem.yml"
+    imported = tmp_path / "imported.yml"
+    root.write_text("- config: {}\n- import: imported.yml\n")
+    imported.write_text("- config: {}\n")
+
+    with pytest.raises(ConfigImportError) as raised:
+        load_and_parse_config(root)
+
+    assert raised.value.code == "duplicate_global_config"
+    assert str(root.resolve()) in str(raised.value)
+    assert str(imported.resolve()) in str(raised.value)
 
 
 def test_imported_python_job_and_hook_resolve_from_declaring_file(
@@ -252,6 +283,24 @@ def test_imported_python_address_cannot_escape_root(
     assert raised.value.code == "address_outside_root"
 
 
+def test_imported_python_address_must_be_a_file(tmp_path: pathlib.Path) -> None:
+    root = tmp_path / ".runem.yml"
+    imported = tmp_path / "imported.yml"
+    root.write_text("- import: imported.yml\n")
+    imported.write_text(
+        "- job:\n"
+        "    addr:\n"
+        "      file: missing.py\n"
+        "      function: run\n"
+        "    label: missing\n"
+    )
+
+    with pytest.raises(ConfigImportError) as raised:
+        load_and_parse_config(root)
+
+    assert raised.value.code == "address_not_file"
+
+
 def test_root_python_address_keeps_existing_path_semantics(
     tmp_path: pathlib.Path,
 ) -> None:
@@ -275,6 +324,7 @@ def test_imported_absolute_python_address_is_normalised_within_root(
     root = tmp_path / ".runem.yml"
     imported = tmp_path / "imported.yml"
     jobs = tmp_path / "jobs.py"
+    jobs.touch()
     root.write_text("- import: imported.yml\n")
     imported.write_text(
         "- job:\n"

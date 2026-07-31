@@ -85,7 +85,7 @@ class Job:
         return sorted(file_list)
 
     @staticmethod
-    def get_job_name(job: JobConfig) -> str:
+    def get_job_name(job: typing.Mapping[str, object]) -> str:
         """Returns a name to use for a given job config.
 
         TODO: make a non-static member function
@@ -93,12 +93,17 @@ class Job:
         # First try one of the following keys.
         valid_name_keys = ("label", "command")
         for candidate in valid_name_keys:
-            name: typing.Optional[str] = job.get(candidate, None)  # type: ignore # NO_COMMIT
-            if name:
+            name = job.get(candidate)
+            if isinstance(name, str) and name:
                 return name
 
-        # The try the python-wrapper address
-        try:
-            return f"{job['addr']['file']}.{job['addr']['function']}"
-        except KeyError:
-            raise NoJobName()  # pylint: disable=raise-missing-from
+        # Then try the python-wrapper address.
+        address = job.get("addr")
+        if not isinstance(address, typing.Mapping):
+            raise NoJobName()
+
+        file_name = address.get("file")
+        function_name = address.get("function")
+        if not isinstance(file_name, str) or not isinstance(function_name, str):
+            raise NoJobName()
+        return f"{file_name}.{function_name}"
