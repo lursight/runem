@@ -16,16 +16,17 @@ Development command:
 
 Recommended agent workflow:
   1. Call get_run_ctx to confirm the runem root and config file.
-  2. Call list_jobs, list_phases, list_tags, list_filters, or list_options with
+  2. Call list_config_sources when the config imports other YAML files.
+  3. Call list_jobs, list_phases, list_tags, list_filters, or list_options with
      default arguments for compact identifiers.
-  3. Request richer docs only with explicit include_* flags.
-  4. Call execute with jobs, tags, phases, and options. Use dry_run=True before
+  4. Request richer docs only with explicit include_* flags.
+  5. Call execute with jobs, tags, phases, and options. Use dry_run=True before
      expensive or broad runs.
-  5. Call get_reports or get_timing after execution when summaries are needed.
+  6. Call get_reports or get_timing after execution when summaries are needed.
 
 Tools:
-  get_run_ctx, list_jobs, list_phases, list_tags, list_filters, list_options,
-  execute, get_reports, get_timing
+  get_run_ctx, list_config_sources, list_jobs, list_phases, list_tags,
+  list_filters, list_options, execute, get_reports, get_timing
 
 Docs:
   https://lursight.github.io/runem/agent_mcp/

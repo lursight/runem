@@ -170,6 +170,12 @@ def load_project_config() -> typing.Tuple[Config, pathlib.Path]:
     return conformed_config, cfg_filepath
 
 
+def load_project_config_with_sources() -> typing.Tuple[LoadedConfig, pathlib.Path]:
+    """Load the discovered project config with its import graph."""
+    cfg_filepath = _find_project_cfg()
+    return load_and_parse_config_with_sources(cfg_filepath), cfg_filepath
+
+
 def load_user_configs() -> UserConfigMetadata:
     """Returns the user-local configs, that extend/override runem behaviour."""
     user_configs: typing.List[typing.Tuple[Config, pathlib.Path]] = []
