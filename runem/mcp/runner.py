@@ -18,9 +18,10 @@ import yaml
 from typing_extensions import Literal
 
 from runem.command_line import parse_args
-from runem.config import load_project_config, load_user_configs
+from runem.config import load_project_config_with_sources, load_user_configs
 from runem.config_metadata import ConfigMetadata
 from runem.config_parse import load_config_metadata
+from runem.config_sources import ConfigImportError, LoadedConfig
 from runem.job import Job
 from runem.job_filter import filter_jobs
 from runem.runem import _main
@@ -94,6 +95,19 @@ def _with_error_handling(
 ) -> str:  # pragma: FIXME: add code coverage
     try:
         return _serialise(func(), output_format)
+    except ConfigImportError as err:
+        return _serialise(
+            {
+                "error": {
+                    "code": err.code,
+                    "message": str(err),
+                    "source": str(err.source_path),
+                    "requested_path": err.requested_path,
+                    "import_chain": [str(path) for path in err.import_chain],
+                }
+            },
+            output_format,
+        )
     except RunemMcpError as err:
         return _serialise(err.as_payload(), output_format)
     except SystemExit as err:
@@ -124,7 +138,7 @@ def _with_error_handling(
 def _load_metadata() -> ConfigMetadata:  # pragma: FIXME: add code coverage
     """Load and validate the active runem config using runem's discovery logic."""
     try:
-        config, cfg_filepath = load_project_config()
+        loaded_config, cfg_filepath = load_project_config_with_sources()
     except SystemExit as err:
         raise RunemMcpError(
             "config_not_found",
@@ -133,7 +147,34 @@ def _load_metadata() -> ConfigMetadata:  # pragma: FIXME: add code coverage
         ) from err
 
     user_configs = load_user_configs()
-    return load_config_metadata(config, cfg_filepath, user_configs, silent=True)
+    return load_config_metadata(
+        loaded_config.as_config(), cfg_filepath, user_configs, silent=True
+    )
+
+
+def _config_sources_payload(loaded_config: LoadedConfig) -> typing.Dict[str, JsonLike]:
+    """Build the compact serialisable representation of one import graph."""
+    return {
+        "sources": [str(source.path) for source in loaded_config.sources()],
+        "imports": [
+            {
+                "from": str(edge.importing_source.path),
+                "to": str(edge.imported_source.path),
+                "requested_path": edge.requested_path,
+            }
+            for edge in loaded_config.import_edges
+        ],
+    }
+
+
+def list_config_sources(fmt: Format = "yaml") -> str:
+    """List config sources and directed import edges without executing jobs."""
+
+    def build() -> typing.Dict[str, JsonLike]:
+        loaded_config, _ = load_project_config_with_sources()
+        return _config_sources_payload(loaded_config)
+
+    return _with_error_handling(build, fmt)
 
 
 def _job_name(job: JobConfig) -> str:
@@ -663,6 +704,7 @@ def create_server() -> typing.Any:  # pragma: FIXME: add code coverage
     server.tool()(list_tags)
     server.tool()(list_filters)
     server.tool()(list_options)
+    server.tool()(list_config_sources)
     server.tool()(get_run_ctx)
     server.tool()(execute)
     server.tool()(get_reports)

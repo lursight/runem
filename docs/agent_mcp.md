@@ -42,6 +42,8 @@ It uses the same `.runem.yml` discovery logic as `runem`.
 The server exposes these tools:
 
 - `get_run_ctx`: returns the active runem root directory and config file path.
+- `list_config_sources`: lists config source paths and directed import edges without
+  executing jobs.
 - `list_jobs`: lists jobs. Defaults to names only in compact YAML.
 - `list_phases`: lists phases. Defaults to phase names only.
 - `list_tags`: lists tags. Defaults to tag names only.
@@ -57,12 +59,13 @@ for the client.
 ## Recommended agent workflow
 
 1. Call `get_run_ctx` to confirm the root and config file.
-2. Call `list_jobs`, `list_phases`, `list_tags`, `list_filters`, or `list_options` with
+2. Call `list_config_sources` when the config imports other YAML files.
+3. Call `list_jobs`, `list_phases`, `list_tags`, `list_filters`, or `list_options` with
    defaults for compact identifiers.
-3. Request richer documentation only with explicit `include_*` flags.
-4. Call `execute` with `dry_run=True` before broad or expensive runs.
-5. Call `execute` without `dry_run` for the chosen run.
-6. Call `get_reports` or `get_timing` only when report or timing summaries are needed.
+4. Request richer documentation only with explicit `include_*` flags.
+5. Call `execute` with `dry_run=True` before broad or expensive runs.
+6. Call `execute` without `dry_run` for the chosen run.
+7. Call `get_reports` or `get_timing` only when report or timing summaries are needed.
 
 ## Output shape
 
@@ -76,6 +79,19 @@ jobs:
 
 Richer metadata is available through explicit flags such as `include_docs=True`,
 `include_jobs=True`, `include_regex=True`, and `include_content=True`.
+
+For imported configs, `list_config_sources` returns canonical source paths and the
+requested path for each directed edge:
+
+```yaml
+imports:
+  - from: /project/.runem.yml
+    requested_path: config/python.yml
+    to: /project/config/python.yml
+sources:
+  - /project/.runem.yml
+  - /project/config/python.yml
+```
 
 ## Safety model
 

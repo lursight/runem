@@ -158,6 +158,16 @@ ConfigNodes = typing.Union[
 ]
 # The config format as it is serialised to/from disk
 Config = typing.List[ConfigNodes]
+
+# Import directives are valid only while loading a config document. Expansion removes
+# them before the existing public Config representation reaches config parsing.
+ImportSerialisedConfig = typing.TypedDict(
+    "ImportSerialisedConfig",
+    {"import": str},
+)
+ConfigDocumentNode = typing.Union[ConfigNodes, ImportSerialisedConfig]
+ConfigDocument = typing.List[ConfigDocumentNode]
+
 UserConfigMetadata = typing.List[typing.Tuple[Config, pathlib.Path]]
 Hooks = typing.DefaultDict[HookName, typing.List[HookConfig]]
 # A dictionary to hold hooks, with hook names as keys

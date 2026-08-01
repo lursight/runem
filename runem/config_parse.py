@@ -35,6 +35,10 @@ def _support_job_module(cfg_filepath: pathlib.Path) -> None:
     """Support `module` job-configs, by adding the .runem.yml dir to the sys.path.
 
     This allows dynamic import of the job-config.
+
+    Dotted modules intentionally keep Python's project/environment import rules.
+    Supporting arbitrary Python environments needs an explicit execution design;
+    config fragments must not mutate ``sys.path`` with their own directories.
     """
     # Capture the ctx-path for `module` type jobs. Ensure we are using the
     # fully-qualified and resolved version of the path.

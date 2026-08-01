@@ -4,6 +4,12 @@ import typing
 
 from packaging.version import Version
 
+from runem.config_sources import (
+    ConfigEntry,
+    LoadedConfig,
+    load_config_with_sources,
+    validate_imported_config_conflicts,
+)
 from runem.config_validate import validate_runem_file
 from runem.log import error, log
 from runem.runem_version import get_runem_version
@@ -13,7 +19,6 @@ from runem.types.runem_config import (
     GlobalSerialisedConfig,
     UserConfigMetadata,
 )
-from runem.yaml_utils import load_yaml_object
 
 CFG_FILE_YAML = pathlib.Path(".runem.yml")
 
@@ -116,9 +121,11 @@ def _conform_global_config_types(
     return all_config, global_config
 
 
-def load_and_parse_config(cfg_filepath: pathlib.Path) -> Config:
-    """For the given config file pass, project or user, load it & parse/conform it."""
-    all_config = load_yaml_object(cfg_filepath)
+def load_and_parse_config_with_sources(cfg_filepath: pathlib.Path) -> LoadedConfig:
+    """Load a config while retaining the source that declared each node."""
+    loaded_config = load_config_with_sources(cfg_filepath)
+    validate_imported_config_conflicts(loaded_config)
+    all_config = loaded_config.as_config()
     validate_runem_file(
         cfg_filepath,
         all_config,
@@ -145,7 +152,20 @@ def load_and_parse_config(cfg_filepath: pathlib.Path) -> Config:
                 )
             )
             sys.exit(1)
-    return conformed_config
+    conformed_entries = tuple(
+        ConfigEntry(node=node, source=entry.source)
+        for node, entry in zip(conformed_config, loaded_config.entries)
+    )
+    return LoadedConfig(
+        entries=conformed_entries,
+        all_sources=loaded_config.all_sources,
+        import_edges=loaded_config.import_edges,
+    )
+
+
+def load_and_parse_config(cfg_filepath: pathlib.Path) -> Config:
+    """Load a project or user config using the historical public representation."""
+    return load_and_parse_config_with_sources(cfg_filepath).as_config()
 
 
 def load_project_config() -> typing.Tuple[Config, pathlib.Path]:
@@ -154,6 +174,12 @@ def load_project_config() -> typing.Tuple[Config, pathlib.Path]:
     conformed_config: Config = load_and_parse_config(cfg_filepath)
 
     return conformed_config, cfg_filepath
+
+
+def load_project_config_with_sources() -> typing.Tuple[LoadedConfig, pathlib.Path]:
+    """Load the discovered project config with its import graph."""
+    cfg_filepath = _find_project_cfg()
+    return load_and_parse_config_with_sources(cfg_filepath), cfg_filepath
 
 
 def load_user_configs() -> UserConfigMetadata:

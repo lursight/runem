@@ -97,6 +97,18 @@ def test_get_job_name() -> None:
     assert result == "Job 1"
 
 
+def test_get_job_name_ignores_non_string_labels() -> None:
+    """A weakly typed mapping cannot return a non-string job name."""
+    job_config: typing.Dict[str, object] = {
+        "label": 42,
+        "command": "fallback command",
+    }
+
+    result = Job.get_job_name(job_config)
+
+    assert result == "fallback command"
+
+
 def test_get_job_name_command_key() -> None:
     """Test case for the get_job_name method when using the "command" key."""
     job_config: JobConfig = {
@@ -118,5 +130,13 @@ def test_get_job_name_addr_key() -> None:
 def test_get_job_name_invalid_config() -> None:
     """Test case for the get_job_name method with an invalid configuration."""
     job_config: JobConfig = {}
+    with pytest.raises(NoJobName):
+        Job.get_job_name(job_config)
+
+
+def test_get_job_name_rejects_incomplete_address() -> None:
+    """Both address members are required to construct a job name."""
+    job_config: typing.Dict[str, object] = {"addr": {"file": "script.py"}}
+
     with pytest.raises(NoJobName):
         Job.get_job_name(job_config)

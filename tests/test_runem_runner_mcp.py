@@ -1,13 +1,18 @@
 from __future__ import annotations
 
 import argparse
+import json
 import pathlib
 import pickle
+import sys
 from collections import defaultdict
 from datetime import timedelta
 
 import pytest
 import yaml
+from mcp import ClientSession, StdioServerParameters
+from mcp.client.stdio import stdio_client
+from mcp.types import TextContent
 
 from runem.config_metadata import ConfigMetadata
 from runem.informative_dict import InformativeDict
@@ -185,3 +190,102 @@ def test_failed_job_is_not_also_reported_as_skipped() -> None:
         )
         == []
     )
+
+
+def test_imported_config_is_visible_to_mcp_tools(tmp_path: pathlib.Path) -> None:
+    root = tmp_path / ".runem.yml"
+    imported = tmp_path / "imported.yml"
+    root.write_text("- config:\n    phases: [analysis]\n- import: imported.yml\n")
+    imported.write_text(
+        "- job:\n"
+        "    command: python -m pytest\n"
+        "    label: imported test\n"
+        "    when:\n"
+        "      phase: analysis\n"
+        "      tags: [py]\n"
+    )
+
+    sources = json.loads(runem_runner_mcp.list_config_sources(fmt="json"))
+    jobs = json.loads(runem_runner_mcp.list_jobs(names_only=True, fmt="json"))
+    dry_run = json.loads(
+        runem_runner_mcp.execute(jobs=["imported test"], dry_run=True, fmt="json")
+    )
+
+    assert sources == {
+        "imports": [
+            {
+                "from": str(root.resolve()),
+                "requested_path": "imported.yml",
+                "to": str(imported.resolve()),
+            }
+        ],
+        "sources": [str(root.resolve()), str(imported.resolve())],
+    }
+    assert jobs == {"jobs": ["imported test"]}
+    assert dry_run["status"] == "dry_run"
+    assert dry_run["selected_jobs"] == ["imported test"]
+
+
+def test_mcp_import_error_is_structured(tmp_path: pathlib.Path) -> None:
+    root = tmp_path / ".runem.yml"
+    root.write_text("- import: missing.yml\n")
+
+    payload = json.loads(runem_runner_mcp.list_config_sources(fmt="json"))
+
+    assert payload["error"] == {
+        "code": "import_not_file",
+        "import_chain": [str(root.resolve())],
+        "message": (
+            f"Unable to import 'missing.yml' from '{root.resolve()}': target does "
+            f"not exist or is not a regular file; import chain: {root.resolve()}"
+        ),
+        "requested_path": "missing.yml",
+        "source": str(root.resolve()),
+    }
+
+
+@pytest.fixture
+def anyio_backend() -> str:
+    """Use the transport implementation supported by the MCP standard-I/O client."""
+    return "asyncio"
+
+
+@pytest.mark.anyio
+async def test_mcp_server_transport_lists_imported_config(
+    tmp_path: pathlib.Path,
+) -> None:
+    root = tmp_path / ".runem.yml"
+    imported = tmp_path / "imported.yml"
+    root.write_text("- config:\n    phases: [analysis]\n- import: imported.yml\n")
+    imported.write_text(
+        "- job:\n"
+        "    command: python -m pytest\n"
+        "    label: imported test\n"
+        "    when:\n"
+        "      phase: analysis\n"
+    )
+    server = StdioServerParameters(
+        command=sys.executable,
+        args=["-m", "runem.mcp.runner"],
+        cwd=tmp_path,
+    )
+
+    async with stdio_client(server) as (read_stream, write_stream):
+        async with ClientSession(read_stream, write_stream) as session:
+            await session.initialize()
+            tools = await session.list_tools()
+            source_result = await session.call_tool("list_config_sources")
+            jobs_result = await session.call_tool(
+                "list_jobs", {"names_only": True, "fmt": "json"}
+            )
+
+    assert "list_config_sources" in [tool.name for tool in tools.tools]
+    source_content = source_result.content[0]
+    jobs_content = jobs_result.content[0]
+    assert isinstance(source_content, TextContent)
+    assert isinstance(jobs_content, TextContent)
+    assert yaml.safe_load(source_content.text)["sources"] == [
+        str(root.resolve()),
+        str(imported.resolve()),
+    ]
+    assert json.loads(jobs_content.text) == {"jobs": ["imported test"]}
