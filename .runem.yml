@@ -1,3 +1,4 @@
+- import: .config/runem/jobs/md/runem.yml
 - config:
     phases:
       - pre-run
@@ -168,26 +169,6 @@
       phase: analysis
       tags:
         - spell
-- job:
-    addr:
-      file: scripts/test_hooks/markdown.py
-      function: _job_markdown_lint
-    label: markdown lint
-    when:
-      phase: analysis
-      tags:
-        - markdown
-        - lint
-- job:
-    addr:
-      file: scripts/test_hooks/markdown.py
-      function: _job_markdown_prettier
-    label: prettier markdown
-    when:
-      phase: edit
-      tags:
-        - markdown
-        - format
 - job:
     addr:
       file: scripts/test_hooks/yarn.py
