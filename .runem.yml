@@ -1,3 +1,4 @@
+- import: .config/runem/hooks/on_exit/log_times/runem.yml
 - import: .config/runem/jobs/md/runem.yml
 - import: .config/runem/jobs/json/runem.yml
 - import: .config/runem/jobs/node_js/runem.yml
@@ -70,10 +71,5 @@
           name: unit-test
           desc: run unit tests
           type: bool
-- hook:
-    hook_name: on-exit
-    addr:
-      file: scripts/test_hooks/runem_hooks.py
-      function: _on_exit_hook
 - job:
     command: ls -alh runem
