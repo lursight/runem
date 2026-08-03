@@ -3,6 +3,7 @@
 - import: .config/runem/jobs/json/runem.yml
 - import: .config/runem/jobs/node_js/runem.yml
 - import: .config/runem/jobs/python/runem.yml
+- import: .config/runem/jobs/dog_food/runem.yml
 - config:
     phases:
       - pre-run
@@ -71,5 +72,3 @@
           name: unit-test
           desc: run unit tests
           type: bool
-- job:
-    command: ls -alh runem
