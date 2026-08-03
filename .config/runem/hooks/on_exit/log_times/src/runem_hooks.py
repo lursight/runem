@@ -12,8 +12,9 @@ def _on_exit_hook(
     """A noddy hook."""
     assert "wall_clock_time_saved" in kwargs
     wall_clock_time_saved: timedelta = kwargs["wall_clock_time_saved"]
-    root_path: pathlib.Path = pathlib.Path(__file__).parent.parent.parent
-    assert (root_path / ".runem.yml").exists()
+    root_path: pathlib.Path = kwargs["root_path"]
+    root_cfg: pathlib.Path = root_path / ".runem.yml"
+    assert root_cfg.exists(), str(root_cfg)
     times_log: pathlib.Path = root_path / ".times.log"
     with times_log.open("a", encoding="utf-8") as file:
         file.write(f"{str(wall_clock_time_saved.total_seconds())}\n")

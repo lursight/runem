@@ -1,0 +1,32 @@
+# Markdown-file specific jobs (formatting, linting, etc.)
+- job:
+    addr:
+      file: ./src/markdown_jobs.py
+      function: _job_markdown_lint
+    label: markdown lint
+    when:
+      phase: analysis
+      tags:
+        - markdown
+        - lint
+- job:
+    addr:
+      file: ./src/markdown_jobs.py
+      function: _job_markdown_prettier
+    label: prettier markdown
+    when:
+      phase: edit
+      tags:
+        - markdown
+        - format
+- job:
+    command: pytest .
+    label: test markdown_jobs
+    ctx:
+      cwd: .config/runem/jobs/md/
+    when:
+      phase: analysis
+      tags:
+        - markdown
+        - py
+        - unit test

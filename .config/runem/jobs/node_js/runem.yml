@@ -1,0 +1,27 @@
+- job:
+    addr:
+      file: ./src/yarn.py
+      function: _job_yarn_deps
+    label: yarn:deps
+    when:
+      phase: pre-run
+      tags:
+        - yarn-deps
+- job:
+    command: yarn run spellCheck
+    ctx:
+      cwd: .
+    when:
+      phase: analysis
+      tags:
+        - spell
+- job:
+    addr:
+      file: ./src/yarn.py
+      function: _job_prettier
+    label: prettier
+    when:
+      phase: analysis
+      tags:
+        - json
+        - format

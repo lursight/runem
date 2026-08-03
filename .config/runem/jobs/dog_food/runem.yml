@@ -1,0 +1,8 @@
+# A set of runem jobs, that simply test that key features work. We do this in
+# the main config so that any drift or regressions in our own setup are more
+# likely to be detected early - not guaranteed, but more liklely.
+- job:
+    # A simple job
+    # FIXME: make this platform agnostic.
+    # FIXME: make this silent/non-spammy.
+    command: ls -alh runem

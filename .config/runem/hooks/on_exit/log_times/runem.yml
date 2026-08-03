@@ -1,0 +1,5 @@
+- hook:
+    hook_name: on-exit
+    addr:
+      file: ./src/runem_hooks.py
+      function: _on_exit_hook

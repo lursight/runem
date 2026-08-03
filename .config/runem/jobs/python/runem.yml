@@ -1,0 +1,78 @@
+# Python specific jobs
+# - lint
+# - test
+# - auto-format
+# - dependency install
+- job:
+    addr:
+      file: ./src/py.py
+      function: _job_py_code_ruff_reformat
+    label: reformat py ruff
+    when:
+      phase: edit
+      tags:
+        - py
+        - format
+        - py format
+        - ruff
+- job:
+    addr:
+      file: ./src/py.py
+      function: _job_py_pylint
+    label: pylint py
+    when:
+      phase: analysis
+      tags:
+        - py
+        - lint
+- job:
+    addr:
+      file: ./src/py.py
+      function: _job_py_flake8
+    label: flake8 py
+    when:
+      phase: analysis
+      tags:
+        - py
+        - lint
+- job:
+    addr:
+      file: ./src/py.py
+      function: _job_py_ruff_lint
+    label: ruff py lint
+    when:
+      phase: analysis
+      tags:
+        - py
+        - lint
+        - ruff
+- job:
+    addr:
+      file: ./src/py.py
+      function: _job_py_mypy
+    label: mypy py
+    when:
+      phase: analysis
+      tags:
+        - py
+        - type
+- job:
+    addr:
+      file: ./src/py.py
+      function: _job_py_pytest
+    label: pytest
+    when:
+      phase: analysis
+      tags:
+        - py
+        - unit test
+        - test
+- job:
+    addr:
+      file: ./src/py.py
+      function: _install_python_requirements
+    label: install python requirements
+    when:
+      phase: pre-run
+      tags:
+        - py
