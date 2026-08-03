@@ -1,4 +1,5 @@
 - import: .config/runem/jobs/md/runem.yml
+- import: .config/runem/jobs/node_js/runem.yml
 - import: .config/runem/jobs/python/runem.yml
 - config:
     phases:
@@ -75,15 +76,6 @@
       function: _on_exit_hook
 - job:
     addr:
-      file: scripts/test_hooks/yarn.py
-      function: _job_yarn_deps
-    label: yarn:deps
-    when:
-      phase: pre-run
-      tags:
-        - yarn-deps
-- job:
-    addr:
       file: scripts/test_hooks/json_validators.py
       function: _json_validate
     label: json validate
@@ -91,21 +83,5 @@
       phase: analysis
       tags:
         - json
-- job:
-    command: yarn run spellCheck
-    when:
-      phase: analysis
-      tags:
-        - spell
-- job:
-    addr:
-      file: scripts/test_hooks/yarn.py
-      function: _job_prettier
-    label: prettier
-    when:
-      phase: analysis
-      tags:
-        - json
-        - format
 - job:
     command: ls -alh runem
