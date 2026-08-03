@@ -1,0 +1,10 @@
+- job:
+    addr:
+      file: ./src/json_validators.py
+      function: _json_validate
+    label: json validate
+    when:
+      phase: analysis
+      tags:
+        - json
+

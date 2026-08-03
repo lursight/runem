@@ -1,4 +1,5 @@
 - import: .config/runem/jobs/md/runem.yml
+- import: .config/runem/jobs/json/runem.yml
 - import: .config/runem/jobs/node_js/runem.yml
 - import: .config/runem/jobs/python/runem.yml
 - config:
@@ -74,14 +75,5 @@
     addr:
       file: scripts/test_hooks/runem_hooks.py
       function: _on_exit_hook
-- job:
-    addr:
-      file: scripts/test_hooks/json_validators.py
-      function: _json_validate
-    label: json validate
-    when:
-      phase: analysis
-      tags:
-        - json
 - job:
     command: ls -alh runem
