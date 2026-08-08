@@ -4,6 +4,18 @@ Changelog
 
 (unreleased)
 ------------
+- Merge pull request #138 from lursight/fix/job.addr.file. [Frank
+  Harrison]
+
+  fix: job.addr.files behaving differently from other paths
+- Fix(job.addr.file): make [job|hook].addr.file behave the same as other
+  paths e.g. cwd. [Frank Harrison]
+
+  ... for now
+
+
+0.13.0 (2026-08-08)
+-------------------
 
 Fix
 ~~~
@@ -17,6 +29,7 @@ Fix
 
 Other
 ~~~~~
+- Release: version 0.13.0 🚀 [Frank Harrison]
 - Merge pull request #137 from lursight/fix/security/js-yaml. [Frank
   Harrison]
 
