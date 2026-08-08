@@ -35,7 +35,7 @@ class ConfigImportError(ValueError):
         message: str,
         source_path: pathlib.Path,
         import_chain: ConfigImportStack,
-        requested_path: typing.Optional[str] = None,
+        requested_path: typing.Optional[pathlib.Path] = None,
     ) -> None:
         chain_text = " -> ".join(str(path) for path in import_chain)
         super().__init__(f"{message}; import chain: {chain_text}")
@@ -73,7 +73,7 @@ class ConfigImportEdge:
 
     importing_source: ConfigSource
     imported_source: ConfigSource
-    requested_path: str
+    requested_path: pathlib.Path
 
 
 @dataclass(frozen=True)
@@ -103,7 +103,7 @@ class LoadedConfig:
 def _resolve_import_path(
     root_dir: pathlib.Path,
     source: ConfigSource,
-    requested_path: str,
+    requested_path: pathlib.Path,
 ) -> pathlib.Path:
     """Resolve one local import while enforcing its root boundary."""
     import_path = pathlib.Path(requested_path)
@@ -208,7 +208,7 @@ def _callable_wrapper(node: ConfigNodes) -> typing.Optional[JobWrapper]:
 def _create_imported_source(
     root_dir: pathlib.Path,
     source: ConfigSource,
-    requested_path: str,
+    requested_path: pathlib.Path,
 ) -> ConfigSource:
     """Create the child source after checking depth, containment, and cycles."""
     if len(source.import_chain) - 1 >= MAX_CONFIG_IMPORT_DEPTH:
@@ -249,10 +249,20 @@ def _normalise_imported_address(
     if wrapper is None or "addr" not in wrapper:
         return entry
 
-    requested_path = wrapper["addr"]["file"]
-    address_path = pathlib.Path(requested_path)
-    if not address_path.is_absolute():
-        address_path = entry.source.path.parent / address_path
+    requested_path = pathlib.Path(wrapper["addr"]["file"])
+    if requested_path.is_absolute():
+        raise ConfigImportError(
+            code="address_absolute",
+            message=(
+                f"Imported config '{entry.source.path}' has invalid jobs.addr.file. "
+                f"'{requested_path}' is not specified as relative to the runem config "
+                "directory"
+            ),
+            source_path=entry.source.path,
+            import_chain=entry.source.import_chain,
+            requested_path=requested_path,
+        )
+    address_path = root_dir / requested_path
     canonical_path = address_path.resolve()
     try:
         root_relative_path = canonical_path.relative_to(root_dir)
@@ -304,7 +314,7 @@ def _expand_source(
 
         if not _is_import_node(node):
             raise AssertionError("Validated config node has no recognised type")
-        requested_path = node["import"]
+        requested_path = pathlib.Path(node["import"])
         imported_source = _create_imported_source(root_dir, source, requested_path)
         imported_config = _expand_source(root_dir, imported_source)
         entries.extend(imported_config.entries)

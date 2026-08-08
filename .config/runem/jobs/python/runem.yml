@@ -5,7 +5,7 @@
 # - dependency install
 - job:
     addr:
-      file: ./src/py.py
+      file: ./.config/runem/jobs/python/src/py.py
       function: _job_py_code_ruff_reformat
     label: reformat py ruff
     when:
@@ -17,7 +17,7 @@
         - ruff
 - job:
     addr:
-      file: ./src/py.py
+      file: ./.config/runem/jobs/python/src/py.py
       function: _job_py_pylint
     label: pylint py
     when:
@@ -27,7 +27,7 @@
         - lint
 - job:
     addr:
-      file: ./src/py.py
+      file: ./.config/runem/jobs/python/src/py.py
       function: _job_py_flake8
     label: flake8 py
     when:
@@ -37,7 +37,7 @@
         - lint
 - job:
     addr:
-      file: ./src/py.py
+      file: ./.config/runem/jobs/python/src/py.py
       function: _job_py_ruff_lint
     label: ruff py lint
     when:
@@ -48,7 +48,7 @@
         - ruff
 - job:
     addr:
-      file: ./src/py.py
+      file: ./.config/runem/jobs/python/src/py.py
       function: _job_py_mypy
     label: mypy py
     when:
@@ -58,7 +58,7 @@
         - type
 - job:
     addr:
-      file: ./src/py.py
+      file: ./.config/runem/jobs/python/src/py.py
       function: _job_py_pytest
     label: pytest
     when:
@@ -69,7 +69,7 @@
         - test
 - job:
     addr:
-      file: ./src/py.py
+      file: ./.config/runem/jobs/python/src/py.py
       function: _install_python_requirements
     label: install python requirements
     when:

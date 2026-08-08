@@ -1,5 +1,5 @@
 - hook:
     hook_name: on-exit
     addr:
-      file: ./src/runem_hooks.py
+      file: ./.config/runem/hooks/on_exit/log_times/src/runem_hooks.py
       function: _on_exit_hook

@@ -1,7 +1,7 @@
 # Markdown-file specific jobs (formatting, linting, etc.)
 - job:
     addr:
-      file: ./src/markdown_jobs.py
+      file: ./.config/runem/jobs/md/src/markdown_jobs.py
       function: _job_markdown_lint
     label: markdown lint
     when:
@@ -11,7 +11,7 @@
         - lint
 - job:
     addr:
-      file: ./src/markdown_jobs.py
+      file: ./.config/runem/jobs/md/src/markdown_jobs.py
       function: _job_markdown_prettier
     label: prettier markdown
     when:

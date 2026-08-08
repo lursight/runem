@@ -102,7 +102,7 @@ def _with_error_handling(
                     "code": err.code,
                     "message": str(err),
                     "source": str(err.source_path),
-                    "requested_path": err.requested_path,
+                    "requested_path": str(err.requested_path),
                     "import_chain": [str(path) for path in err.import_chain],
                 }
             },
@@ -160,7 +160,7 @@ def _config_sources_payload(loaded_config: LoadedConfig) -> typing.Dict[str, Jso
             {
                 "from": str(edge.importing_source.path),
                 "to": str(edge.imported_source.path),
-                "requested_path": edge.requested_path,
+                "requested_path": str(edge.requested_path),
             }
             for edge in loaded_config.import_edges
         ],
