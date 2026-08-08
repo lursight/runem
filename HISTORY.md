@@ -4,6 +4,151 @@ Changelog
 
 (unreleased)
 ------------
+
+Fix
+~~~
+- Upstream security issues in js-yaml used by dev-tools only. [Frank
+  Harrison]
+
+  We do this by updating to patched versions of:
+  - markdownlint-cli2
+  - commitlint
+  - cspell
+
+Other
+~~~~~
+- Merge pull request #137 from lursight/fix/security/js-yaml. [Frank
+  Harrison]
+
+  fix/security/js-yaml
+- Merge branch 'chore/direnv-ignores' [Frank Harrison]
+- Chore(ignore): ignore direnv config. [Frank Harrison]
+- Merge pull request #136 from lursight/chore/split-runem-files. [Frank
+  Harrison]
+
+  chore/split-runem-files
+- Chore(dog-food-imports): move final job into dog-food import arena.
+  [Frank Harrison]
+
+  This job was always for dogfood-testing but it wasn't clear that this
+  was the intent. This makes that clear.
+- Chore(dog-food-imports): moves on_exit hook for time-logging to an
+  imported file. [Frank Harrison]
+- Chore(dog-food-imports): splits json jobs to imported set. [Frank
+  Harrison]
+- Chore(dog-food-imports): splits yarn wrappers into node_js import
+  package. [Frank Harrison]
+- Chore(dog-food-imports): split out the python-specific jobs. [Frank
+  Harrison]
+- Chore(dog-food-imports): move markdown-jobs to importable config.
+  [Frank Harrison]
+
+  ... Ensuring the pytest tests for that hook still run
+- Merge pull request #135 from lursight/feat/config-imports-
+  reimplementation. [Frank Harrison]
+
+  feat: local-config-file import support
+- Feat(import-cfg): add docs on local import semantics. [Frank Harrison]
+- Feat(import-cfg): improve validation-error feedback. [Frank Harrison]
+
+  Restore combined-config invariants after depth-first import expansion.
+
+  Give greater error-context by validating config-entries before
+  discarding "provenance".
+  For example:
+  - Duplicate global configuration and duplicate job name check to report
+    which files contain the dupes.
+  - Similarly, duplicated/repeated imports lines surface as errors instead
+    of silently producing an ambiguous combined config.
+
+  We limit this additional pass to graphs with imports so existing
+  root-only validation and diagnostics remain unchanged.
+
+  Additionally we:
+  - Require imported `addr.file` targets to be regular files after
+    containment checks.
+  - Generalise `Job.get_job_name` to validate a read-only Mapping of
+    boundary data, allowing conflict detection and hook reporting to share
+    one safe naming contract without casts or type ignores.
+- Feat(import-cfg): expose source-aware imported configuration via MCP
+  server. [Frank Harrison]
+
+  Make MCP discovery use the same source-aware project loader as the CLI so job
+  listing, selection, and dry runs cannot disagree about imported configuration.
+
+  Add a read-only list_config_sources tool that serialises canonical source paths
+  and directed import edges from LoadedConfig. Translate ConfigImportError at the
+  MCP response boundary into a stable structured payload containing its code,
+  source, requested path, and complete chain.
+
+  Keep metadata construction behind the existing Config compatibility boundary;
+  MCP gains provenance for inspection without creating a second parsing path or
+  executing jobs. Direct tool tests and a real standard-I/O client session verify
+  the registered server, imported job visibility, and transport representation.
+- Feat(import-cfg): support local-config imports. [Frank Harrison]
+
+  Allow a config document to include local YAML fragments while preserving the
+  ordering, provenance, and public return shape required by existing parsing.
+
+  Model the on-disk ConfigDocument separately from the expanded Config: import
+  directives exist only at the loading boundary. Schema-backed TypeGuard
+  validation narrows loaded YAML without casts. A concrete depth-first loader
+  emits source-aware ConfigEntry values and a ConfigImportEdge graph, then uses
+  the existing Config representation at the compatibility boundary.
+
+  Resolve every import from the root config directory and canonicalise targets
+  before enforcing containment. Reject absolute paths, lexical and symlink
+  escapes, non-files, cycles, and excessive depth with structured errors and a
+  complete import chain. Preserve source order and repeated imports rather than
+  silently deduplicating them.
+
+  Resolve imported addr.file values from their declaring document and normalise
+  them for the existing root-based execution path. Dotted modules deliberately
+  retain normal Python import semantics. One concrete local loader is sufficient
+  until a second source kind provides real requirements for an abstraction.
+- Feat(import-cfg): preserve config source-file metadata while loading.
+  [Frank Harrison]
+
+  Prepare config loading for imports without changing the public Config API.
+
+  Introduce immutable ConfigSource, ConfigEntry, and LoadedConfig values. Each
+  node can now retain its canonical declaring file and import chain, while
+  LoadedConfig.as_config() preserves the historical source-free return shape.
+  Route root config loading through this representation so later import handling
+  has a real, tested provenance path instead of a parallel loader or speculative
+  service hierarchy.
+
+  Keep dotted module resolution tied to the existing project and environment
+  Python semantics. Config fragments must not mutate sys.path independently;
+  broader execution environments require a separate design.
+- Feat(import-cfg): use correct typing_extensions for 'Unpack' 3.0 ->
+  4.1. [Frank Harrison]
+
+  This is the version that should have been used Require the earliest typing_extensions release that supplies every helper
+  imported at runtime on supported Python versions.
+
+  Runem already imports Unpack, introduced by typing_extensions 4.1.0, and local
+  config parsing adds TypeGuard for schema-backed narrowing. The former
+  typing_extensions>3.0.0 range allowed installations that lack one or both
+  names and can therefore fail during module import.
+
+  Set the lower bound to 4.1.0 and keep the adjacent annotation explicit about
+  this compatibility contract. Isolate the dependency correction from config
+  imports so its intent and rollback boundary remain clear.
+- Merge pull request #134 from lursight/fix/supported-py-versions.
+  [Frank Harrison]
+
+  fix(python-support): update the pyproject match python.org's support list
+- Fix(python-support): update the pyproject match python.org's support
+  list. [Frank Harrison]
+
+  This is just to reduce warnings/noise in uv and other introspection
+  tools.
+
+
+0.12.1 (2026-07-31)
+-------------------
+- Release: version 0.12.1 🚀 [Frank Harrison]
 - Merge pull request #133 from lursight/fix/mcp-deps. [Frank Harrison]
 
   fix/mcp-deps
