@@ -1,6 +1,6 @@
 - job:
     addr:
-      file: ./src/json_validators.py
+      file: ./.config/runem/jobs/json/src/json_validators.py
       function: _json_validate
     label: json validate
     when:

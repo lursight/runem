@@ -55,8 +55,8 @@ def test_nested_imports_expand_from_root_in_source_order(
         "nested.yml",
     ]
     assert [edge.requested_path for edge in loaded.import_edges] == [
-        "config/inner.yml",
-        "nested.yml",
+        pathlib.Path("config/inner.yml"),
+        pathlib.Path("nested.yml"),
     ]
 
 
@@ -83,7 +83,7 @@ def test_imports_reject_unsafe_or_missing_targets(
 
     assert raised.value.code == expected_code
     assert raised.value.source_path == root.resolve()
-    assert raised.value.requested_path == requested_path
+    assert raised.value.requested_path == pathlib.Path(requested_path)
     assert str(root.resolve()) in str(raised.value)
 
 
@@ -236,14 +236,14 @@ def test_imported_python_job_and_hook_resolve_from_declaring_file(
         "- job:\n"
         "    label: imported job\n"
         "    addr:\n"
-        "      file: jobs.py\n"
+        "      file: config/jobs.py\n"
         "      function: run_job\n"
         "    when:\n"
         "      phase: analysis\n"
         "- hook:\n"
         "    hook_name: on-exit\n"
         "    addr:\n"
-        "      file: jobs.py\n"
+        "      file: config/jobs.py\n"
         "      function: run_hook\n"
     )
     (config_dir / "jobs.py").write_text(
@@ -318,7 +318,7 @@ def test_root_python_address_keeps_existing_path_semantics(
     assert _mapping(_job(loaded[0])["addr"])["file"] == "../outside.py"
 
 
-def test_imported_absolute_python_address_is_normalised_within_root(
+def test_imported_absolute_python_addresses_are_disallowed(
     tmp_path: pathlib.Path,
 ) -> None:
     root = tmp_path / ".runem.yml"
@@ -334,9 +334,10 @@ def test_imported_absolute_python_address_is_normalised_within_root(
         "    label: absolute\n"
     )
 
-    loaded = load_and_parse_config(root)
+    with pytest.raises(ConfigImportError) as raised:
+        load_and_parse_config(root)
 
-    assert _mapping(_job(loaded[0])["addr"])["file"] == "jobs.py"
+    assert raised.value.code == "address_absolute"
 
 
 def test_imported_module_remains_unchanged(tmp_path: pathlib.Path) -> None:
