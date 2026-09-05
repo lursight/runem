@@ -42,13 +42,17 @@ class JobAddressConfig(typing.TypedDict):
     function: str  # the 'function' in module to run
 
 
+JobCwdMulti = typing.List[str]
+JobCwd = typing.Union[str, JobCwdMulti]
+
+
 class JobContextConfig(typing.TypedDict, total=False):
     # what parameters the job needs # DEFUNCT
     params: typing.Optional[JobParamConfig]
 
     # the path or paths to run the command in. If given a list the job will be
     # duplicated for each given path.
-    cwd: typing.Optional[typing.Union[str, typing.List[str]]]
+    cwd: typing.Optional[JobCwd]
 
 
 class JobWhen(typing.TypedDict, total=False):

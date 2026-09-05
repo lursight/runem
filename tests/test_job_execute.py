@@ -11,7 +11,7 @@ import pytest
 
 from runem.config_metadata import ConfigMetadata
 from runem.informative_dict import InformativeDict
-from runem.job_execute import job_execute
+from runem.job_execute import BadDeveloperExecute, _chdir_into_ctx, job_execute
 from runem.timer import RecordSubJobTimeType
 from runem.types.filters import FilePathListLookup
 from runem.types.runem_config import JobConfig, PhaseGroupedJobs
@@ -60,6 +60,63 @@ def _job_execute_and_capture_stdout(
 def create_mock_print_sleep() -> typing.Generator[None, None, None]:
     with patch("runem.job_execute.timer", return_value=0.0):  # as mock_timer
         yield
+
+
+def test_chdir_into_ctx_returns_without_a_cwd(tmp_path: pathlib.Path) -> None:
+    with patch("runem.job_execute.os.chdir") as mock_chdir:
+        _chdir_into_ctx(tmp_path, "example job", {})
+
+    mock_chdir.assert_not_called()
+
+
+def test_chdir_into_ctx_rejects_multiple_directories(tmp_path: pathlib.Path) -> None:
+    with pytest.raises(
+        BadDeveloperExecute,
+        match="Dev-error: Impossible to cd into multi-cwd ctx",
+    ):
+        _chdir_into_ctx(tmp_path, "example job", {"cwd": ["first", "second"]})
+
+
+def test_chdir_into_ctx_rejects_a_missing_directory(tmp_path: pathlib.Path) -> None:
+    missing_path = tmp_path / "missing"
+    expected_error = f"job: job 'example job' ctx path not found! '{missing_path}'"
+
+    with patch("runem.job_execute.error") as mock_error:
+        with pytest.raises(ValueError, match="ctx path not found") as error_info:
+            _chdir_into_ctx(tmp_path, "example job", {"cwd": "missing"})
+
+    assert str(error_info.value) == expected_error
+    mock_error.assert_called_once_with(expected_error)
+
+
+def test_chdir_into_ctx_changes_to_the_context_directory(
+    tmp_path: pathlib.Path,
+) -> None:
+    context_path = tmp_path / "context"
+    context_path.mkdir()
+
+    _chdir_into_ctx(tmp_path, "example job", {"cwd": "context"})
+
+    assert pathlib.Path.cwd() == context_path
+
+
+def test_chdir_into_ctx_logs_and_re_raises_chdir_errors(
+    tmp_path: pathlib.Path,
+) -> None:
+    context_path = tmp_path / "context"
+    context_path.mkdir()
+    expected_error = (
+        f"job: job 'example job' failed to chdir into ctx path! '{context_path}'"
+    )
+
+    with (
+        patch("runem.job_execute.os.chdir", side_effect=IntentionalTestError()),
+        patch("runem.job_execute.error") as mock_error,
+        pytest.raises(IntentionalTestError),
+    ):
+        _chdir_into_ctx(tmp_path, "example job", {"cwd": "context"})
+
+    mock_error.assert_called_once_with(expected_error)
 
 
 def test_job_execute_basic_call() -> None:
