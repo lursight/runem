@@ -15,7 +15,7 @@ from runem.log import error, log, warn
 from runem.run_command import RunemJobError
 from runem.types.common import FilePathList, JobTags
 from runem.types.filters import FilePathListLookup
-from runem.types.runem_config import JobConfig
+from runem.types.runem_config import JobConfig, JobContextConfig, JobCwd
 from runem.types.types_jobs import (
     AllKwargs,
     HookSpecificKwargs,
@@ -28,6 +28,41 @@ from runem.types.types_jobs import (
 )
 
 
+class BadDeveloperExecute(ValueError):
+    """Raised when there's a developer error using the system.
+
+    ie. a function was called in an unexpected way with an unexpected config.
+    """
+
+    pass
+
+
+def _chdir_into_ctx(
+    root_path: pathlib.Path,
+    job_name: str,
+    job_ctx: JobContextConfig,
+) -> None:
+    """Changes directory into the job's given context cwd"""
+    cwd: typing.Optional[JobCwd] = job_ctx.get("cwd", None)
+    if cwd is None:
+        return
+    if isinstance(cwd, typing.List):
+        raise BadDeveloperExecute("Dev-error: Impossible to cd into multi-cwd ctx")
+
+    ctx_path = root_path / cwd
+    if not ctx_path.exists():
+        error_msg = f"job: job '{job_name}' ctx path not found! '{ctx_path}'"
+        error(error_msg)
+        raise ValueError(error_msg)
+
+    try:
+        os.chdir(ctx_path)
+    except BaseException:  # pylint: disable=broad-exception-caught
+        error(f"job: job '{job_name}' failed to chdir into ctx path! '{ctx_path}'")
+        # re-raise
+        raise
+
+
 def job_execute_inner(
     job_config: JobConfig,
     config_metadata: ConfigMetadata,
@@ -38,7 +73,7 @@ def job_execute_inner(
 
     Returns the time information and any reports the job generated
     """
-    label = Job.get_job_name(job_config)
+    label: str = Job.get_job_name(job_config)
     if config_metadata.args.verbose:
         log(f"START: '{label}'")
     root_path: pathlib.Path = config_metadata.cfg_filepath.parent
@@ -67,20 +102,15 @@ def job_execute_inner(
         """
         sub_command_timings.append((label, timing))
 
-    if (
-        "ctx" in job_config
-        and job_config["ctx"] is not None
-        and "cwd" in job_config["ctx"]
-        and job_config["ctx"]["cwd"]
-    ):
-        assert isinstance(job_config["ctx"]["cwd"], str)
-        os.chdir(root_path / job_config["ctx"]["cwd"])
+    job_ctx: JobContextConfig | None = job_config.get("ctx", None)
+    if job_ctx and "cwd" in job_ctx and job_ctx["cwd"]:
+        _chdir_into_ctx(root_path, label, job_ctx)
     else:
         os.chdir(root_path)
 
     start = timer()
     if config_metadata.args.verbose:
-        log(f"job: running: '{Job.get_job_name(job_config)}'")
+        log(f"job: running: '{label}'")
     reports: JobReturn
     try:
         # Define the common args for all jobs and hooks.
@@ -88,7 +118,7 @@ def job_execute_inner(
             "config_metadata": config_metadata,
             "file_list": file_list,
             "job": job_config,
-            "label": Job.get_job_name(job_config),
+            "label": label,
             "options": ReadOnlyInformativeDict(config_metadata.options),
             "procs": config_metadata.args.procs,
             "record_sub_job_time": _record_sub_job_time,
@@ -107,7 +137,7 @@ def job_execute_inner(
     except BaseException:  # pylint: disable=broad-exception-caught
         # log that we hit an error on this job and re-raise
         log(prefix=False)
-        error(f"job: job '{Job.get_job_name(job_config)}' failed to complete!")
+        error(f"job: job '{label}' failed to complete!")
         # re-raise
         raise
 
