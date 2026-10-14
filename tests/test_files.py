@@ -8,7 +8,6 @@ import pytest
 
 from runem.config_metadata import ConfigMetadata
 from runem.files import find_files
-from runem.informative_dict import InformativeDict
 from runem.types.filters import FilePathListLookup
 
 
@@ -21,19 +20,7 @@ def _prep_config(
 ) -> ConfigMetadata:
     config_metadata: ConfigMetadata = ConfigMetadata(
         cfg_filepath=tmp_path / ".runem.yml.no-exist",  # only the path is used
-        phases=("dummy phase 1",),
-        options_config=tuple(),
-        file_filters={
-            "dummy tag": {
-                "tag": "dummy tag",
-                "regex": ".*1.txt",  # should match just one file
-            }
-        },
-        hook_manager=MagicMock(),
-        jobs=defaultdict(list),
-        all_job_names=set(),
-        all_job_phases=set(),
-        all_job_tags=set(),
+        args=Namespace(verbose=False),
     )
     config_metadata.set_cli_data(
         args=Namespace(
@@ -41,13 +28,29 @@ def _prep_config(
             check_head_files=check_head_files,
             always_files=always_files,
             git_since_branch=git_since_branch,
+            verbose=False,
+            procs=1,
+            jobs=[],
+            jobs_excluded=[],
+            tags=[],
+            tags_excluded=[],
+            phases=[],
+            phases_excluded=[],
         ),
-        jobs_to_run=set(),  # JobNames,
-        phases_to_run=set(),  # JobPhases,
-        tags_to_run=set(),  # ignored JobTags,
-        tags_to_avoid=set(),  # ignored  JobTags,
-        options=InformativeDict({}),  # Options,
     )
+    config_metadata.phases = ("dummy phase 1",)
+    config_metadata.options_config = tuple()
+    config_metadata.file_filters = {
+        "dummy tag": {
+            "tag": "dummy tag",
+            "regex": ".*1.txt",  # should match just one file
+        }
+    }
+    config_metadata.hook_manager = MagicMock()
+    config_metadata.jobs = defaultdict(list)
+    config_metadata.all_job_names = set()
+    config_metadata.all_job_phases = set()
+    config_metadata.all_job_tags = set()
 
     return config_metadata
 

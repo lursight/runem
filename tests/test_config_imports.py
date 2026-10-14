@@ -3,6 +3,7 @@
 import os
 import pathlib
 import typing
+from argparse import Namespace
 
 import pytest
 
@@ -253,7 +254,15 @@ def test_imported_python_job_and_hook_resolve_from_declaring_file(
     os.chdir(tmp_path)
 
     config = load_and_parse_config(root)
-    metadata = load_config_metadata(config, root, [])
+    metadata = load_config_metadata(
+        config,
+        root,
+        [],
+        Namespace(
+            verbose=False,
+            silent=False,
+        ),
+    )
 
     assert _mapping(_job(config[1])["addr"])["file"] == "config/jobs.py"
     assert (

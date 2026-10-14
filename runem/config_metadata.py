@@ -1,15 +1,16 @@
 import argparse
 import pathlib
 import typing
+from collections import defaultdict
 
+from runem.hook_manager import HookManager
 from runem.informative_dict import InformativeDict
-from runem.types.common import JobNames, JobPhases, JobTags, OrderedPhases
+from runem.types.common import JobNames, JobPhases, JobTags, OrderedPhases, PhaseName
 from runem.types.filters import TagFileFilters
+from runem.types.hooks import HookName
 from runem.types.options import OptionsWritable
 from runem.types.runem_config import OptionConfigs, PhaseGroupedJobs
-
-if typing.TYPE_CHECKING:  # pragma: no cover
-    from runem.hook_manager import HookManager
+from runem.types.types_jobs import HookSpecificKwargs
 
 
 class ConfigMetadata:
@@ -35,31 +36,23 @@ class ConfigMetadata:
     def __init__(
         self,
         cfg_filepath: pathlib.Path,
-        phases: OrderedPhases,
-        options_config: OptionConfigs,
-        file_filters: TagFileFilters,
-        hook_manager: "HookManager",
-        jobs: PhaseGroupedJobs,
-        all_job_names: JobNames,
-        all_job_phases: JobPhases,
-        all_job_tags: JobTags,
+        args: argparse.Namespace,
     ) -> None:
         self.cfg_filepath = cfg_filepath
-        self.phases = phases
-        self.options_config = options_config
-        self.file_filters = file_filters
+        self.args = args
+
+        self.phases = ()  # phases
+        self.options_config = ()  # options_config
+        self.file_filters = {}  # file_filters
         # initialise all the registered call-back hooks
-        self.hook_manager = hook_manager
-        self.jobs = jobs
-        self.all_job_names = all_job_names
-        self.all_job_phases = all_job_phases
-        self.all_job_tags = all_job_tags
+        self.hook_manager = HookManager()
+        self.jobs = defaultdict(list)
+        self.all_job_names = set()  # all_job_names
+        self.all_job_phases = set()  # all_job_phases
+        self.all_job_tags = set()  # all_job_tags
 
         self.options = InformativeDict()  # shows useful errors on bad-option lookups
 
-        self.args = (
-            argparse.Namespace()
-        )  # the raw cli args, defined after argument parsing
         self.jobs_to_run = set()  # will be defined after cli arg parsing
         self.phases_to_run = set()  # will be defined after cli arg parsing
         self.tags_to_run = set()  # will be defined after cli arg parsing
@@ -68,15 +61,43 @@ class ConfigMetadata:
     def set_cli_data(
         self,
         args: argparse.Namespace,
-        jobs_to_run: JobNames,
-        phases_to_run: JobPhases,
-        tags_to_run: JobTags,
-        tags_to_avoid: JobTags,
-        options: OptionsWritable,
     ) -> None:
-        self.options = options
         self.args = args
-        self.jobs_to_run = jobs_to_run
-        self.phases_to_run = phases_to_run
-        self.tags_to_run = tags_to_run
-        self.tags_to_avoid = tags_to_avoid
+
+        self._initialise_options(args)
+
+        # apply the cli filters to produce the high-level requirements. These will be used
+        # to further filter the jobs.
+        self.jobs_to_run = set(args.jobs).difference(args.jobs_excluded)
+        self.tags_to_run = set(args.tags).difference(args.tags_excluded)
+        self.tags_to_avoid = set(args.tags_excluded)
+        self.phases_to_run = set(args.phases).difference(args.phases_excluded)
+
+    def invoke_hooks(
+        self,
+        hook_name: HookName,
+        **kwargs: typing.Unpack[HookSpecificKwargs],
+    ) -> None:
+        self.hook_manager.invoke_hooks(hook_name, self, **kwargs)
+
+    def default_phase(self) -> PhaseName:
+        return self.phases[0]  # default to the first phase
+
+    def _initialise_options(
+        self,
+        args: argparse.Namespace,
+    ) -> None:
+        """Initialises the set of options to use for this run.
+
+        Sets the options dictionary
+        """
+        options: OptionsWritable = InformativeDict(
+            {option["name"]: option["default"] for option in self.options_config}
+        )
+        if self.options_config and args.overrides_on:  # pragma: no branch
+            for option_name in args.overrides_on:  # pragma: no branch
+                options[option_name] = True
+        if self.options_config and args.overrides_off:  # pragma: no branch
+            for option_name in args.overrides_off:
+                options[option_name] = False
+        self.options = options

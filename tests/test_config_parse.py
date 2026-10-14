@@ -2,21 +2,24 @@ import io
 import pathlib
 import typing
 import unittest
+from argparse import Namespace
 from collections import defaultdict
 from contextlib import redirect_stdout
-from unittest.mock import MagicMock, Mock, patch
+from unittest import mock
+from unittest.mock import Mock, patch
 
 import pytest
 
 from runem.config_metadata import ConfigMetadata
 from runem.config_parse import (
+    _ConfigMetadataCollector,
     _parse_global_config,
     _parse_hook_config,
     _parse_job,
     _parse_job_config,
     load_config_metadata,
 )
-from runem.types.common import JobNames, JobPhases, JobTags, OrderedPhases
+from runem.types.common import OrderedPhases
 from runem.types.errors import FunctionNotFound, SystemExitBad
 from runem.types.hooks import HookName
 from runem.types.runem_config import (
@@ -29,6 +32,8 @@ from runem.types.runem_config import (
     JobSerialisedConfig,
     PhaseGroupedJobs,
 )
+
+# pylint: disable=protected-access
 
 
 def test_parse_job_config() -> None:
@@ -49,22 +54,18 @@ def test_parse_job_config() -> None:
             ),
         },
     }
-    tags: JobTags = set(["py"])
-    jobs_by_phase: PhaseGroupedJobs = defaultdict(list)
-    job_names: JobNames = set()
-    phases: JobPhases = set()
-    phase_order: OrderedPhases = ()
+    metadata = ConfigMetadata(
+        pathlib.Path(__file__), Namespace(verbose=False, silent=True)
+    )
+    metadata.all_job_tags = {"py"}
+    collector = _ConfigMetadataCollector(metadata)
     _parse_job_config(
         cfg_filepath=pathlib.Path(__file__),
         job=job_config,
-        in_out_tags=tags,
-        in_out_jobs_by_phase=jobs_by_phase,
-        in_out_job_names=job_names,
-        in_out_phases=phases,
-        phase_order=phase_order,
+        config_collector=collector,
     )
-    assert tags == {"format", "py"}
-    assert jobs_by_phase == {
+    assert metadata.all_job_tags == {"format", "py"}
+    assert metadata.jobs == {
         "edit": [
             {
                 "addr": {
@@ -76,8 +77,8 @@ def test_parse_job_config() -> None:
             }
         ]
     }
-    assert job_names == {"reformat py"}
-    assert phases == {"edit"}
+    assert metadata.all_job_names == {"reformat py"}
+    assert metadata.all_job_phases == {"edit"}
 
 
 def test_parse_job_config_handles_multiple_cwd() -> None:
@@ -99,22 +100,18 @@ def test_parse_job_config_handles_multiple_cwd() -> None:
             ),
         },
     }
-    tags: JobTags = set(["py"])
-    jobs_by_phase: PhaseGroupedJobs = defaultdict(list)
-    job_names: JobNames = set()
-    phases: JobPhases = set()
-    phase_order: OrderedPhases = ()
+    metadata = ConfigMetadata(pathlib.Path(__file__), Namespace(verbose=False))
+    metadata.all_job_tags = {"py"}
+    collector = _ConfigMetadataCollector(metadata)
     _parse_job_config(
         cfg_filepath=pathlib.Path(__file__),
         job=job_config,
-        in_out_tags=tags,
-        in_out_jobs_by_phase=jobs_by_phase,
-        in_out_job_names=job_names,
-        in_out_phases=phases,
-        phase_order=phase_order,
+        config_collector=collector,
     )
-    assert tags == {"a", "b", "format", "py"}, "tags should include the explicit"
-    assert jobs_by_phase == {
+    assert metadata.all_job_tags == {"a", "b", "format", "py"}, (
+        "tags should include the explicit"
+    )
+    assert metadata.jobs == {
         "edit": [
             {
                 "addr": {
@@ -136,8 +133,8 @@ def test_parse_job_config_handles_multiple_cwd() -> None:
             },
         ]
     }
-    assert job_names == {"reformat py(path/a)", "reformat py(path/b)"}
-    assert phases == {"edit"}
+    assert metadata.all_job_names == {"reformat py(path/a)", "reformat py(path/b)"}
+    assert metadata.all_job_phases == {"edit"}
 
 
 def test_parse_job_config_throws_on_dupe_name() -> None:
@@ -158,34 +155,24 @@ def test_parse_job_config_throws_on_dupe_name() -> None:
             ),
         },
     }
-    tags: JobTags = set(["py"])
-    jobs_by_phase: PhaseGroupedJobs = defaultdict(list)
-    job_names: JobNames = set()
-    phases: JobPhases = set()
-    phase_order: OrderedPhases = ()
+    metadata = ConfigMetadata(pathlib.Path(__file__), Namespace(verbose=False))
+    metadata.all_job_tags = {"py"}
+    collector = _ConfigMetadataCollector(metadata)
 
     # first call should be fine
     _parse_job_config(
         cfg_filepath=pathlib.Path(__file__),
         job=job_config,
-        in_out_tags=tags,
-        in_out_jobs_by_phase=jobs_by_phase,
-        in_out_job_names=job_names,
-        in_out_phases=phases,
-        phase_order=phase_order,
+        config_collector=collector,
     )
-    assert job_config["label"] in job_names
+    assert job_config["label"] in metadata.all_job_names
 
     # second call should error
     with pytest.raises(SystemExit):
         _parse_job_config(
             cfg_filepath=pathlib.Path(__file__),
             job=job_config,
-            in_out_tags=tags,
-            in_out_jobs_by_phase=jobs_by_phase,
-            in_out_job_names=job_names,
-            in_out_phases=phases,
-            phase_order=phase_order,
+            config_collector=collector,
         )
 
 
@@ -208,20 +195,14 @@ def test_parse_job_config_throws_on_missing_key() -> None:
             ),
         },
     }
-    tags: JobTags = set(["py"])
-    jobs_by_phase: PhaseGroupedJobs = defaultdict(list)
-    job_names: JobNames = set()
-    phases: JobPhases = set()
-    phase_order: OrderedPhases = ()
+    metadata = ConfigMetadata(pathlib.Path(__file__), Namespace(verbose=False))
+    metadata.all_job_tags = {"py"}
+    collector = _ConfigMetadataCollector(metadata)
     with pytest.raises(ValueError) as err_info:
         _parse_job_config(
             cfg_filepath=pathlib.Path(__file__),
             job=job_config,
-            in_out_tags=tags,
-            in_out_jobs_by_phase=jobs_by_phase,
-            in_out_job_names=job_names,
-            in_out_phases=phases,
-            phase_order=phase_order,
+            config_collector=collector,
         )
     assert str(err_info.value).startswith(
         ("job config entry is missing 'function' data")
@@ -236,10 +217,12 @@ def test_parse_global_config_empty() -> None:
         "options": [],
         "files": [],
     }
-    phases, options, file_filters = _parse_global_config(dummy_global_config)
-    assert phases == tuple()
-    assert options == tuple()
-    assert not file_filters
+    metadata = ConfigMetadata(pathlib.Path(__file__), Namespace(verbose=False))
+    collector = _ConfigMetadataCollector(metadata)
+    _parse_global_config(dummy_global_config, collector)
+    assert metadata.phases == tuple()
+    assert metadata.options_config == tuple()
+    assert not metadata.file_filters
 
 
 def test_parse_global_config_missing() -> None:
@@ -249,16 +232,18 @@ def test_parse_global_config_missing() -> None:
         # intentionally missing: "options": [],
         # intentionally missing: "files": [],
     }
-    phases, options, file_filters = _parse_global_config(dummy_global_config)
-    assert phases == tuple()
-    assert options == tuple()
-    assert not file_filters
+    metadata = ConfigMetadata(pathlib.Path(__file__), Namespace(verbose=False))
+    collector = _ConfigMetadataCollector(metadata)
+    _parse_global_config(dummy_global_config, collector)
+    assert metadata.phases == tuple()
+    assert metadata.options_config == tuple()
+    assert not metadata.file_filters
 
 
 def test_parse_global_config_full() -> None:
-    """Test the global config parse handles missing data."""
+    """Test the global config parse handles populated data."""
     dummy_global_config: GlobalConfig = {
-        "phases": tuple(),
+        "phases": ("edit", "test"),
         "min_version": None,
         "options": [
             {
@@ -273,9 +258,13 @@ def test_parse_global_config_full() -> None:
         ],
         "files": [{"filter": {"tag": "dummy tag", "regex": ".*"}}],
     }
-    phases, options, file_filters = _parse_global_config(dummy_global_config)
-    assert phases == tuple()
-    assert options == (
+    metadata = ConfigMetadata(
+        pathlib.Path(__file__), Namespace(verbose=False, silent=False)
+    )
+    collector = _ConfigMetadataCollector(metadata)
+    _parse_global_config(dummy_global_config, collector)
+    assert metadata.phases == ("edit", "test")
+    assert metadata.options_config == (
         {
             "name": "dummy option",
             "aliases": None,
@@ -284,7 +273,7 @@ def test_parse_global_config_full() -> None:
             "desc": "dummy description",
         },
     )
-    assert file_filters == {"dummy tag": {"regex": ".*", "tag": "dummy tag"}}
+    assert metadata.file_filters == {"dummy tag": {"regex": ".*", "tag": "dummy tag"}}
 
 
 @pytest.mark.parametrize(
@@ -350,30 +339,19 @@ def test_load_config_metadata(do_hooks: bool) -> None:
     expected_jobs["dummy phase 1"] = [
         expected_job,
     ]
-    expected_config_metadata: ConfigMetadata = ConfigMetadata(
-        cfg_filepath=config_file_path,
-        phases=("dummy phase 1",),
-        options_config=tuple(),
-        file_filters={
-            # "dummy tag": {
-            #     "tag": "dummy tag",
-            #     "regex": ".*1.txt",  # should match just one file
-            # }
-        },
-        hook_manager=MagicMock(),
-        jobs=expected_jobs,
-        all_job_names=set(("dummy job label",)),
-        all_job_phases=set(("dummy phase 1",)),
-        all_job_tags=set(
-            (
-                "dummy tag 2",
-                "dummy tag 1",
-            )
-        ),
+    expected_config_metadata = ConfigMetadata(
+        config_file_path, Namespace(verbose=False, silent=False)
     )
+    expected_config_metadata.phases = ("dummy phase 1",)
+    expected_config_metadata.jobs = expected_jobs
+    expected_config_metadata.all_job_names = {"dummy job label"}
+    expected_config_metadata.all_job_phases = {"dummy phase 1"}
+    expected_config_metadata.all_job_tags = {"dummy tag 1", "dummy tag 2"}
 
     with io.StringIO() as buf, redirect_stdout(buf):
-        result: ConfigMetadata = load_config_metadata(full_config, config_file_path, [])
+        result: ConfigMetadata = load_config_metadata(
+            full_config, config_file_path, [], Namespace(verbose=False, silent=False)
+        )
         stdout = buf.getvalue().split("\n")
     assert stdout == [""]
     assert result.phases == expected_config_metadata.phases
@@ -433,8 +411,8 @@ def test_load_config_metadata_hooks() -> None:
     }
     user_jobs_only_config: JobSerialisedConfig = {
         "job": {
-            "command": "echo 'should not be seen'",
-            "label": "SHOULD NOT SEE ME",
+            "command": "echo 'user job'",
+            "label": "user job",
         }
     }
     full_config: Config = [global_config, job_config, hook_config]
@@ -454,27 +432,16 @@ def test_load_config_metadata_hooks() -> None:
     expected_jobs["dummy phase 1"] = [
         expected_job,
     ]
-    expected_config_metadata: ConfigMetadata = ConfigMetadata(
-        cfg_filepath=config_file_path,
-        phases=("dummy phase 1",),
-        options_config=tuple(),
-        file_filters={
-            # "dummy tag": {
-            #     "tag": "dummy tag",
-            #     "regex": ".*1.txt",  # should match just one file
-            # }
-        },
-        hook_manager=MagicMock(),
-        jobs=expected_jobs,
-        all_job_names=set(("dummy job label",)),
-        all_job_phases=set(("dummy phase 1",)),
-        all_job_tags=set(
-            (
-                "dummy tag 2",
-                "dummy tag 1",
-            )
-        ),
+    # User jobs are collected before the project defines its phase order.
+    expected_jobs["<NO PHASES FOUND>"] = [user_jobs_only_config["job"]]
+    expected_config_metadata = ConfigMetadata(
+        config_file_path, Namespace(verbose=False)
     )
+    expected_config_metadata.phases = ("dummy phase 1",)
+    expected_config_metadata.jobs = expected_jobs
+    expected_config_metadata.all_job_names = {"dummy job label", "user job"}
+    expected_config_metadata.all_job_phases = {"dummy phase 1", "<NO PHASES FOUND>"}
+    expected_config_metadata.all_job_tags = {"dummy tag 1", "dummy tag 2"}
 
     user_config_1: Config = [
         user_hook_config_1,
@@ -494,7 +461,15 @@ def test_load_config_metadata_hooks() -> None:
             (user_config_2, pathlib.Path(__file__)),
             (user_config_jobs_only, pathlib.Path(__file__)),
         ],
+        Namespace(verbose=False, silent=False),
     )
+    assert result.hook_manager.hooks_store == {
+        HookName.ON_EXIT: [
+            user_hook_config_1["hook"],
+            user_hook_config_2["hook"],
+            hook_config["hook"],
+        ]
+    }
     assert result.phases == expected_config_metadata.phases
     assert result.options_config == expected_config_metadata.options_config
     assert result.file_filters == expected_config_metadata.file_filters
@@ -515,7 +490,12 @@ def test_load_config_metadata_raises_on_invalid() -> None:
     config_file_path = pathlib.Path(__file__).parent / ".runem.yml"
 
     with pytest.raises(RuntimeError):
-        load_config_metadata(invalid_config, config_file_path, [])
+        load_config_metadata(
+            invalid_config,
+            config_file_path,
+            [],
+            Namespace(verbose=False, silent=False, jobs=[]),
+        )
 
 
 def test_load_config_metadata_duplicated_global_raises() -> None:
@@ -544,7 +524,9 @@ def test_load_config_metadata_duplicated_global_raises() -> None:
     ]
     config_file_path = pathlib.Path(__file__).parent / ".runem.yml"
     with pytest.raises(ValueError):
-        load_config_metadata(invalid_config, config_file_path, [])
+        load_config_metadata(
+            invalid_config, config_file_path, [], Namespace(verbose=False, silent=False)
+        )
 
 
 def test_load_config_metadata_empty_phases_raises() -> None:
@@ -573,7 +555,9 @@ def test_load_config_metadata_empty_phases_raises() -> None:
     ]
     config_file_path = pathlib.Path(__file__).parent / ".runem.yml"
     with pytest.raises(ValueError):
-        load_config_metadata(invalid_config, config_file_path, [])
+        load_config_metadata(
+            invalid_config, config_file_path, [], Namespace(verbose=False, silent=False)
+        )
 
 
 def test_load_config_metadata_missing_phases_raises() -> None:
@@ -600,12 +584,21 @@ def test_load_config_metadata_missing_phases_raises() -> None:
     ]
     config_file_path = pathlib.Path(__file__).parent / ".runem.yml"
     with pytest.raises(ValueError):
-        load_config_metadata(invalid_config, config_file_path, [])
+        load_config_metadata(
+            invalid_config,
+            config_file_path,
+            [],
+            Namespace(
+                verbose=False,
+                silent=False,
+                jobs=[],
+            ),
+        )
 
 
 @patch(
     "runem.config_parse._parse_global_config",
-    return_value=(None, (), {}),
+    return_value=None,
 )
 def test_load_config_metadata_warning_if_missing_phase_order(
     mock_parse_global_config: unittest.mock.Mock,
@@ -634,7 +627,9 @@ def test_load_config_metadata_warning_if_missing_phase_order(
 
     # run the command and capture output
     with io.StringIO() as buf, redirect_stdout(buf):
-        load_config_metadata(valid_config, config_file_path, [])
+        load_config_metadata(
+            valid_config, config_file_path, [], Namespace(verbose=False, silent=False)
+        )
         run_command_stdout = buf.getvalue()
 
     assert run_command_stdout.split("\n") == [
@@ -660,21 +655,15 @@ def test_parse_job_with_tags(mock_get_job_wrapper: Mock) -> None:
             }
         },
     }
-    in_out_tags: JobTags = set()
-    in_out_jobs_by_phase: PhaseGroupedJobs = defaultdict(list)
-    in_out_job_names: JobNames = set()
-    in_out_phases: JobPhases = set()
-    phase_order: OrderedPhases = ("phase1", "phase2")
+    metadata = ConfigMetadata(cfg_filepath, Namespace(verbose=False, silent=True))
+    metadata.phases = ("phase1", "phase2")
+    collector = _ConfigMetadataCollector(metadata)
 
     with io.StringIO() as buf, redirect_stdout(buf):
         _parse_job(
             cfg_filepath,
             job_config,
-            in_out_tags,
-            in_out_jobs_by_phase,
-            in_out_job_names,
-            in_out_phases,
-            phase_order,
+            collector,
         )
         run_command_stdout = buf.getvalue().split("\n")
 
@@ -684,7 +673,7 @@ def test_parse_job_with_tags(mock_get_job_wrapper: Mock) -> None:
         "runem: WARNING: no phase found for 'Job1', using 'phase1'",
         "",
     ]
-    assert in_out_tags == {"tag1", "tag2"}
+    assert metadata.all_job_tags == {"tag1", "tag2"}
 
 
 @patch(
@@ -700,28 +689,22 @@ def test_parse_job_without_tags(mock_get_job_wrapper: Mock) -> None:
             "phase": "phase1",
         },
     }
-    in_out_tags: JobTags = set()
-    in_out_jobs_by_phase: PhaseGroupedJobs = defaultdict(list)
-    in_out_job_names: JobNames = set()
-    in_out_phases: JobPhases = set()
-    phase_order: OrderedPhases = ("phase1", "phase2")
+    metadata = ConfigMetadata(cfg_filepath, Namespace(verbose=False, silent=True))
+    metadata.phases = ("phase1", "phase2")
+    collector = _ConfigMetadataCollector(metadata)
 
     with io.StringIO() as buf, redirect_stdout(buf):
         _parse_job(
             cfg_filepath,
             job_config,
-            in_out_tags,
-            in_out_jobs_by_phase,
-            in_out_job_names,
-            in_out_phases,
-            phase_order,
+            collector,
         )
         run_command_stdout = buf.getvalue().split("\n")
 
     mock_get_job_wrapper.assert_called_once()
 
     assert run_command_stdout == [""]
-    assert not in_out_tags
+    assert not metadata.all_job_tags
 
 
 @patch(
@@ -737,22 +720,16 @@ def test_parse_job_with_bad_function(mock_get_job_wrapper: Mock) -> None:
             "phase": "phase1",
         },
     }
-    in_out_tags: JobTags = set()
-    in_out_jobs_by_phase: PhaseGroupedJobs = defaultdict(list)
-    in_out_job_names: JobNames = set()
-    in_out_phases: JobPhases = set()
-    phase_order: OrderedPhases = ("phase1", "phase2")
+    metadata = ConfigMetadata(cfg_filepath, Namespace(verbose=False, silent=True))
+    metadata.phases = ("phase1", "phase2")
+    collector = _ConfigMetadataCollector(metadata)
 
     with io.StringIO() as buf, redirect_stdout(buf):
         with pytest.raises(SystemExitBad):
             _parse_job(
                 cfg_filepath,
                 job_config,
-                in_out_tags,
-                in_out_jobs_by_phase,
-                in_out_job_names,
-                in_out_phases,
-                phase_order,
+                collector,
             )
         run_command_stdout = buf.getvalue().split("\n")
 
@@ -762,7 +739,7 @@ def test_parse_job_with_bad_function(mock_get_job_wrapper: Mock) -> None:
         "runem: ERROR: Whilst loading job 'Job2'. a test message",
         "",
     ]
-    assert not in_out_tags
+    assert not metadata.all_job_tags
 
 
 @pytest.mark.parametrize(
@@ -788,20 +765,15 @@ def test_parse_job_with_missing_phase(
             # "phase": "phase1",
         },
     }
-    in_out_tags: JobTags = set()
-    in_out_jobs_by_phase: PhaseGroupedJobs = defaultdict(list)
-    in_out_job_names: JobNames = set()
-    in_out_phases: JobPhases = set()
+    metadata = ConfigMetadata(cfg_filepath, Namespace(verbose=False, silent=True))
+    metadata.phases = phase_order
+    collector = _ConfigMetadataCollector(metadata)
 
     with io.StringIO() as buf, redirect_stdout(buf):
         _parse_job(
             cfg_filepath,
             job_config,
-            in_out_tags,
-            in_out_jobs_by_phase,
-            in_out_job_names,
-            in_out_phases,
-            phase_order,
+            collector,
             warn_missing_phase=False,
         )
         run_command_stdout = buf.getvalue().split("\n")
@@ -809,7 +781,13 @@ def test_parse_job_with_missing_phase(
     mock_get_job_wrapper.assert_called_once()
 
     assert run_command_stdout == [""]
-    assert not in_out_tags
+    assert not metadata.all_job_tags
+    expected_phase = "<NO PHASES FOUND>"
+    if phase_order:
+        expected_phase = phase_order[0]
+    assert metadata.jobs == {expected_phase: [job_config]}
+    assert metadata.all_job_names == {"Job2"}
+    assert metadata.all_job_phases == {expected_phase}
 
 
 def test_parse_hook_config_with_valid_config() -> None:
@@ -819,7 +797,12 @@ def test_parse_hook_config_with_valid_config() -> None:
         "hook_name": HookName("on-exit"),
     }
     # should execute without raising
-    _parse_hook_config(hook, cfg_filepath)
+    _parse_hook_config(
+        hook,
+        cfg_filepath,
+        mock.MagicMock(),
+        verbose=False,
+    )
 
 
 def test_parse_hook_config_with_in_valid_hook_name() -> None:
@@ -829,7 +812,12 @@ def test_parse_hook_config_with_in_valid_hook_name() -> None:
         "hook_name": "bad-hook-name",  # type: ignore
     }
     with pytest.raises(ValueError):
-        _parse_hook_config(hook, cfg_filepath)
+        _parse_hook_config(
+            hook,
+            cfg_filepath,
+            mock.MagicMock(),
+            verbose=False,
+        )
 
 
 def test_parse_hook_config_with_missing_hook_name() -> None:
@@ -839,7 +827,12 @@ def test_parse_hook_config_with_missing_hook_name() -> None:
         # "hook_name": HookName("on-exit"),
     }
     with pytest.raises(ValueError):
-        _parse_hook_config(hook, cfg_filepath)
+        _parse_hook_config(
+            hook,
+            cfg_filepath,
+            mock.MagicMock(),
+            verbose=False,
+        )
 
 
 def test_parse_hook_config_with_missing_command() -> None:
@@ -849,7 +842,12 @@ def test_parse_hook_config_with_missing_command() -> None:
         "hook_name": HookName("on-exit"),
     }
     with pytest.raises(ValueError):
-        _parse_hook_config(hook, cfg_filepath)
+        _parse_hook_config(
+            hook,
+            cfg_filepath,
+            mock.MagicMock(),
+            verbose=False,
+        )
 
 
 def test_parse_hook_config_with_bad_function_address() -> None:
@@ -863,7 +861,12 @@ def test_parse_hook_config_with_bad_function_address() -> None:
         "hook_name": HookName("on-exit"),
     }
     with pytest.raises(SystemExitBad):
-        _parse_hook_config(hook, cfg_filepath)
+        _parse_hook_config(
+            hook,
+            cfg_filepath,
+            mock.MagicMock(),
+            verbose=False,
+        )
 
 
 @pytest.mark.parametrize(
@@ -880,4 +883,9 @@ def test_parse_hook_config_with_bad_hook_name_types(hook_type: typing.Any) -> No
         "hook_name": hook_type,
     }
     with pytest.raises(ValueError):
-        _parse_hook_config(hook, cfg_filepath)
+        _parse_hook_config(
+            hook,
+            cfg_filepath,
+            mock.MagicMock(),
+            verbose=False,
+        )

@@ -1,7 +1,7 @@
 import enum
 
 
-class HookName(enum.Enum):
+class HookName(enum.StrEnum):
     """List supported hooks.
 
     Todo:

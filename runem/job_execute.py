@@ -7,7 +7,6 @@ from timeit import default_timer as timer
 
 from typing_extensions import Unpack
 
-from runem.config_metadata import ConfigMetadata
 from runem.informative_dict import ReadOnlyInformativeDict
 from runem.job import Job
 from runem.job_wrapper import get_job_wrapper
@@ -26,6 +25,9 @@ from runem.types.types_jobs import (
     TimingEntries,
     TimingEntry,
 )
+
+if typing.TYPE_CHECKING:
+    from runem.config_metadata import ConfigMetadata
 
 
 class BadDeveloperExecute(ValueError):
@@ -65,7 +67,7 @@ def _chdir_into_ctx(
 
 def job_execute_inner(
     job_config: JobConfig,
-    config_metadata: ConfigMetadata,
+    config_metadata: "ConfigMetadata",
     file_lists: FilePathListLookup,
     **kwargs: Unpack[HookSpecificKwargs],
 ) -> typing.Tuple[JobTiming, JobReturn]:
@@ -153,7 +155,7 @@ def job_execute(
     job_config: JobConfig,
     running_jobs: typing.Dict[str, str],
     completed_jobs: typing.Dict[str, str],
-    config_metadata: ConfigMetadata,
+    config_metadata: "ConfigMetadata",
     file_lists: FilePathListLookup,
     **kwargs: Unpack[HookSpecificKwargs],
 ) -> typing.Tuple[JobTiming, JobReturn]:

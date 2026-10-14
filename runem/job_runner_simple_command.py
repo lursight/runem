@@ -4,12 +4,14 @@ import typing
 
 from typing_extensions import Unpack
 
-from runem.config_metadata import ConfigMetadata
 from runem.run_command import run_command
 from runem.types.common import FilePathList
 from runem.types.options import OptionsWritable
 from runem.types.runem_config import JobConfig
 from runem.types.types_jobs import AllKwargs
+
+if typing.TYPE_CHECKING:
+    from runem.config_metadata import ConfigMetadata
 
 RUNEM_CTX_PLACEHOLDER = "{runem_ctx}"
 
@@ -58,7 +60,7 @@ def job_runner_simple_command(
             "{file_list}", " ".join(file_list_with_quotes)
         )
 
-    config_metadata: ConfigMetadata = kwargs["config_metadata"]
+    config_metadata: "ConfigMetadata" = kwargs["config_metadata"]
     options: OptionsWritable = config_metadata.options
     command_string_options: str = command_string_files
     for name, value in options.items():

@@ -10,7 +10,6 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from runem.config_metadata import ConfigMetadata
-from runem.informative_dict import InformativeDict
 from runem.job_execute import BadDeveloperExecute, _chdir_into_ctx, job_execute
 from runem.timer import RecordSubJobTimeType
 from runem.types.filters import FilePathListLookup
@@ -144,32 +143,38 @@ def test_job_execute_basic_call() -> None:
     ]
     config_metadata: ConfigMetadata = ConfigMetadata(
         cfg_filepath=config_file_path,
-        phases=("dummy phase 1",),
-        options_config=tuple(),
-        file_filters={
-            # "dummy tag": {
-            #     "tag": "dummy tag",
-            #     "regex": ".*1.txt",  # should match just one file
-            # }
-        },
-        hook_manager=MagicMock(),
-        jobs=expected_jobs,
-        all_job_names=set(("dummy job label",)),
-        all_job_phases=set(("dummy phase 1",)),
-        all_job_tags=set(
-            (
-                "dummy tag 2",
-                "dummy tag 1",
-            )
-        ),
+        args=Namespace(verbose=False),
+    )
+    config_metadata.phases = ("dummy phase 1",)
+    config_metadata.options_config = tuple()
+    config_metadata.file_filters = {
+        # "dummy tag": {
+        #     "tag": "dummy tag",
+        #     "regex": ".*1.txt",  # should match just one file
+        # }
+    }
+    config_metadata.hook_manager = MagicMock()
+    config_metadata.jobs = expected_jobs
+    config_metadata.all_job_names = set(("dummy job label",))
+    config_metadata.all_job_phases = set(("dummy phase 1",))
+    config_metadata.all_job_tags = set(
+        (
+            "dummy tag 2",
+            "dummy tag 1",
+        )
     )
     config_metadata.set_cli_data(
-        args=Namespace(verbose=False, procs=1),
-        jobs_to_run=set((job_config["label"])),  # JobNames,
-        phases_to_run=set(),  # ignored JobPhases,
-        tags_to_run=set(),  # ignored JobTags,
-        tags_to_avoid=set(),  # ignored  JobTags,
-        options=InformativeDict({}),  # Options,
+        args=Namespace(
+            verbose=True,
+            silent=False,
+            procs=1,
+            jobs=[],
+            jobs_excluded=[],
+            tags=[],
+            tags_excluded=[],
+            phases=[],
+            phases_excluded=[],
+        ),
     )
 
     file_lists: FilePathListLookup = defaultdict(list)
@@ -180,7 +185,11 @@ def test_job_execute_basic_call() -> None:
         config_metadata,
         file_lists,
     )
-    assert stdout == ""
+    assert stdout.splitlines() == [
+        "runem: START: 'reformat py'",
+        "runem: job: running: 'reformat py'",
+        "runem: job: DONE: 'reformat py': 0:00:00",
+    ]
 
 
 def test_job_execute_basic_call_verbose() -> None:
@@ -203,32 +212,38 @@ def test_job_execute_basic_call_verbose() -> None:
     ]
     config_metadata: ConfigMetadata = ConfigMetadata(
         cfg_filepath=config_file_path,
-        phases=("dummy phase 1",),
-        options_config=tuple(),
-        file_filters={
-            # "dummy tag": {
-            #     "tag": "dummy tag",
-            #     "regex": ".*1.txt",  # should match just one file
-            # }
-        },
-        hook_manager=MagicMock(),
-        jobs=expected_jobs,
-        all_job_names=set(("dummy job label",)),
-        all_job_phases=set(("dummy phase 1",)),
-        all_job_tags=set(
-            (
-                "dummy tag 2",
-                "dummy tag 1",
-            )
-        ),
+        args=Namespace(verbose=False),
+    )
+    config_metadata.phases = ("dummy phase 1",)
+    config_metadata.options_config = tuple()
+    config_metadata.file_filters = {
+        # "dummy tag": {
+        #     "tag": "dummy tag",
+        #     "regex": ".*1.txt",  # should match just one file
+        # }
+    }
+    config_metadata.hook_manager = MagicMock()
+    config_metadata.jobs = expected_jobs
+    config_metadata.all_job_names = set(("dummy job label",))
+    config_metadata.all_job_phases = set(("dummy phase 1",))
+    config_metadata.all_job_tags = set(
+        (
+            "dummy tag 2",
+            "dummy tag 1",
+        )
     )
     config_metadata.set_cli_data(
-        args=Namespace(verbose=True, procs=1),
-        jobs_to_run=set((job_config["label"])),  # JobNames,
-        phases_to_run=set(),  # ignored JobPhases,
-        tags_to_run=set(),  # ignored JobTags,
-        tags_to_avoid=set(),  # ignored  JobTags,
-        options=InformativeDict({}),  # Options,
+        args=Namespace(
+            verbose=True,
+            silent=False,
+            procs=1,
+            jobs=[],
+            jobs_excluded=[],
+            tags=[],
+            tags_excluded=[],
+            phases=[],
+            phases_excluded=[],
+        ),
     )
 
     file_lists: FilePathListLookup = defaultdict(list)
@@ -273,32 +288,38 @@ def test_job_execute_empty_files(silent: bool) -> None:
     ]
     config_metadata: ConfigMetadata = ConfigMetadata(
         cfg_filepath=config_file_path,
-        phases=("dummy phase 1",),
-        options_config=tuple(),
-        file_filters={
-            # "dummy tag": {
-            #     "tag": "dummy tag",
-            #     "regex": ".*1.txt",  # should match just one file
-            # }
-        },
-        hook_manager=MagicMock(),
-        jobs=expected_jobs,
-        all_job_names=set(("dummy job label",)),
-        all_job_phases=set(("dummy phase 1",)),
-        all_job_tags=set(
-            (
-                "dummy tag 2",
-                "dummy tag 1",
-            )
-        ),
+        args=Namespace(verbose=False),
+    )
+    config_metadata.phases = ("dummy phase 1",)
+    config_metadata.options_config = tuple()
+    config_metadata.file_filters = {
+        # "dummy tag": {
+        #     "tag": "dummy tag",
+        #     "regex": ".*1.txt",  # should match just one file
+        # }
+    }
+    config_metadata.hook_manager = MagicMock()
+    config_metadata.jobs = expected_jobs
+    config_metadata.all_job_names = set(("dummy job label",))
+    config_metadata.all_job_phases = set(("dummy phase 1",))
+    config_metadata.all_job_tags = set(
+        (
+            "dummy tag 2",
+            "dummy tag 1",
+        )
     )
     config_metadata.set_cli_data(
-        args=Namespace(verbose=(not silent), procs=1, silent=silent),
-        jobs_to_run=set((job_config["label"])),  # JobNames,
-        phases_to_run=set(),  # ignored JobPhases,
-        tags_to_run=set(),  # ignored JobTags,
-        tags_to_avoid=set(),  # ignored  JobTags,
-        options=InformativeDict({}),  # Options,
+        args=Namespace(
+            verbose=(not silent),
+            procs=1,
+            silent=silent,
+            jobs=[],
+            jobs_excluded=[],
+            tags=[],
+            tags_excluded=[],
+            phases=[],
+            phases_excluded=[],
+        ),
     )
 
     file_lists: FilePathListLookup = defaultdict(list)
@@ -344,32 +365,38 @@ def test_job_execute_with_ctx_cwd() -> None:
     ]
     config_metadata: ConfigMetadata = ConfigMetadata(
         cfg_filepath=config_file_path,
-        phases=("dummy phase 1",),
-        options_config=tuple(),
-        file_filters={
-            # "dummy tag": {
-            #     "tag": "dummy tag",
-            #     "regex": ".*1.txt",  # should match just one file
-            # }
-        },
-        hook_manager=MagicMock(),
-        jobs=expected_jobs,
-        all_job_names=set(("dummy job label",)),
-        all_job_phases=set(("dummy phase 1",)),
-        all_job_tags=set(
-            (
-                "dummy tag 2",
-                "dummy tag 1",
-            )
-        ),
+        args=Namespace(verbose=False),
+    )
+    config_metadata.phases = ("dummy phase 1",)
+    config_metadata.options_config = tuple()
+    config_metadata.file_filters = {
+        # "dummy tag": {
+        #     "tag": "dummy tag",
+        #     "regex": ".*1.txt",  # should match just one file
+        # }
+    }
+    config_metadata.hook_manager = MagicMock()
+    config_metadata.jobs = expected_jobs
+    config_metadata.all_job_names = set(("dummy job label",))
+    config_metadata.all_job_phases = set(("dummy phase 1",))
+    config_metadata.all_job_tags = set(
+        (
+            "dummy tag 2",
+            "dummy tag 1",
+        )
     )
     config_metadata.set_cli_data(
-        args=Namespace(verbose=True, procs=1),
-        jobs_to_run=set((job_config["label"])),  # JobNames,
-        phases_to_run=set(),  # ignored JobPhases,
-        tags_to_run=set(),  # ignored JobTags,
-        tags_to_avoid=set(),  # ignored  JobTags,
-        options=InformativeDict({}),  # Options,
+        args=Namespace(
+            verbose=True,
+            silent=False,
+            procs=1,
+            jobs=[],
+            jobs_excluded=[],
+            tags=[],
+            tags_excluded=[],
+            phases=[],
+            phases_excluded=[],
+        ),
     )
 
     file_lists: FilePathListLookup = defaultdict(list)
@@ -420,32 +447,38 @@ def test_job_execute_with_raising_func() -> None:
     ]
     config_metadata: ConfigMetadata = ConfigMetadata(
         cfg_filepath=config_file_path,
-        phases=("dummy phase 1",),
-        options_config=tuple(),
-        file_filters={
-            # "dummy tag": {
-            #     "tag": "dummy tag",
-            #     "regex": ".*1.txt",  # should match just one file
-            # }
-        },
-        hook_manager=MagicMock(),
-        jobs=expected_jobs,
-        all_job_names=set(("dummy job label",)),
-        all_job_phases=set(("dummy phase 1",)),
-        all_job_tags=set(
-            (
-                "dummy tag 2",
-                "dummy tag 1",
-            )
-        ),
+        args=Namespace(verbose=False),
+    )
+    config_metadata.phases = ("dummy phase 1",)
+    config_metadata.options_config = tuple()
+    config_metadata.file_filters = {
+        # "dummy tag": {
+        #     "tag": "dummy tag",
+        #     "regex": ".*1.txt",  # should match just one file
+        # }
+    }
+    config_metadata.hook_manager = MagicMock()
+    config_metadata.jobs = expected_jobs
+    config_metadata.all_job_names = set(("dummy job label",))
+    config_metadata.all_job_phases = set(("dummy phase 1",))
+    config_metadata.all_job_tags = set(
+        (
+            "dummy tag 2",
+            "dummy tag 1",
+        )
     )
     config_metadata.set_cli_data(
-        args=Namespace(verbose=True, procs=1),
-        jobs_to_run=set((job_config["label"])),  # JobNames,
-        phases_to_run=set(),  # ignored JobPhases,
-        tags_to_run=set(),  # ignored JobTags,
-        tags_to_avoid=set(),  # ignored  JobTags,
-        options=InformativeDict({}),  # Options,
+        args=Namespace(
+            verbose=True,
+            silent=False,
+            procs=1,
+            jobs=[],
+            jobs_excluded=[],
+            tags=[],
+            tags_excluded=[],
+            phases=[],
+            phases_excluded=[],
+        ),
     )
 
     file_lists: FilePathListLookup = defaultdict(list)
@@ -491,33 +524,39 @@ def test_job_execute_time_recording_function() -> None:
         job_config,
     ]
     config_metadata: ConfigMetadata = ConfigMetadata(
-        cfg_filepath=config_file_path,
-        phases=("dummy phase 1",),
-        options_config=tuple(),
-        file_filters={
-            # "dummy tag": {
-            #     "tag": "dummy tag",
-            #     "regex": ".*1.txt",  # should match just one file
-            # }
-        },
-        hook_manager=MagicMock(),
-        jobs=expected_jobs,
-        all_job_names=set(("dummy job label",)),
-        all_job_phases=set(("dummy phase 1",)),
-        all_job_tags=set(
-            (
-                "dummy tag 2",
-                "dummy tag 1",
-            )
-        ),
+        cfg_filepath=config_file_path, args=Namespace(verbose=False)
     )
+    config_metadata.phases = ("dummy phase 1",)
+    config_metadata.options_config = tuple()
+    config_metadata.file_filters = {
+        # "dummy tag": {
+        #     "tag": "dummy tag",
+        #     "regex": ".*1.txt",  # should match just one file
+        # }
+    }
+    config_metadata.hook_manager = MagicMock()
+    config_metadata.jobs = expected_jobs
+    config_metadata.all_job_names = set(("dummy job label",))
+    config_metadata.all_job_phases = set(("dummy phase 1",))
+    config_metadata.all_job_tags = set(
+        (
+            "dummy tag 2",
+            "dummy tag 1",
+        )
+    )
+
     config_metadata.set_cli_data(
-        args=Namespace(verbose=False, procs=1),
-        jobs_to_run=set((job_config["label"])),  # JobNames,
-        phases_to_run=set(),  # ignored JobPhases,
-        tags_to_run=set(),  # ignored JobTags,
-        tags_to_avoid=set(),  # ignored  JobTags,
-        options=InformativeDict({}),  # Options,
+        args=Namespace(
+            verbose=True,
+            silent=True,
+            procs=1,
+            jobs=[],
+            jobs_excluded=[],
+            tags=[],
+            tags_excluded=[],
+            phases=[],
+            phases_excluded=[],
+        ),
     )
 
     file_lists: FilePathListLookup = defaultdict(list)
@@ -528,4 +567,8 @@ def test_job_execute_time_recording_function() -> None:
         config_metadata,
         file_lists,
     )
-    assert stdout == ""
+    assert stdout.splitlines() == [
+        "runem: START: 'reformat py'",
+        "runem: job: running: 'reformat py'",
+        "runem: job: DONE: 'reformat py': 0:00:00",
+    ]

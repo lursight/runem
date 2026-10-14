@@ -1,6 +1,7 @@
 import pathlib
 import sys
 import typing
+from dataclasses import dataclass
 
 from packaging.version import Version
 
@@ -51,28 +52,32 @@ def _search_up_multiple_dirs_for_file(
     return None
 
 
+@dataclass(frozen=True, slots=True)
+class CfgCandidate:
+    file: typing.Optional[pathlib.Path]
+    start_dirs: typing.Tuple[pathlib.Path, ...]
+
+
 def _find_config_file(
     config_filename: typing.Union[str, pathlib.Path],
-) -> typing.Tuple[typing.Optional[pathlib.Path], typing.Tuple[pathlib.Path, ...]]:
+) -> CfgCandidate:
     """Searches up from the cwd for the given config file-name."""
     start_dirs = (pathlib.Path(".").absolute(),)
     cfg_candidate: typing.Optional[pathlib.Path] = _search_up_multiple_dirs_for_file(
         start_dirs, config_filename
     )
-    return cfg_candidate, start_dirs
+    return CfgCandidate(file=cfg_candidate, start_dirs=start_dirs)
 
 
-def _find_project_cfg() -> pathlib.Path:
+def find_project_cfg() -> pathlib.Path:
     """Searches up from the cwd for the project .runem.yml config file."""
-    cfg_candidate: typing.Optional[pathlib.Path]
-    start_dirs: typing.Tuple[pathlib.Path, ...]
-    cfg_candidate, start_dirs = _find_config_file(config_filename=CFG_FILE_YAML)
+    cfg_candidate: CfgCandidate = _find_config_file(config_filename=CFG_FILE_YAML)
 
-    if cfg_candidate:
-        return cfg_candidate
+    if cfg_candidate.file is not None:
+        return cfg_candidate.file
 
     # error out and exit as we currently require the cfg file as it lists jobs.
-    error(f"Config not found! Looked from {start_dirs}")
+    error(f"Config not found! Looked from {cfg_candidate.start_dirs}")
     sys.exit(1)
 
 
@@ -86,10 +91,9 @@ def _find_local_configs() -> typing.List[pathlib.Path]:
     """
     local_configs: typing.List[pathlib.Path] = []
     for config_filename in (".runem.local.yml", ".runem.user.yml"):
-        cfg_candidate: typing.Optional[pathlib.Path]
-        cfg_candidate, _ = _find_config_file(config_filename)
-        if cfg_candidate:
-            local_configs.append(cfg_candidate)
+        cfg_candidate: CfgCandidate = _find_config_file(config_filename)
+        if cfg_candidate.file is not None:
+            local_configs.append(cfg_candidate.file)
 
     user_home_config: pathlib.Path = pathlib.Path("~/.runem.user.yml")
     if user_home_config.exists():
@@ -168,12 +172,12 @@ def load_and_parse_config(cfg_filepath: pathlib.Path) -> Config:
     return _load_and_parse_config_with_sources(cfg_filepath).as_config()
 
 
-def load_project_config() -> typing.Tuple[Config, pathlib.Path]:
+def load_project_config() -> Config:
     """Finds and loads the .runem.yml file for the current project."""
-    cfg_filepath: pathlib.Path = _find_project_cfg()
+    cfg_filepath: pathlib.Path = find_project_cfg()
     conformed_config: Config = load_and_parse_config(cfg_filepath)
 
-    return conformed_config, cfg_filepath
+    return conformed_config
 
 
 def load_user_configs() -> UserConfigMetadata:

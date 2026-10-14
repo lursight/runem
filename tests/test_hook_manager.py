@@ -10,7 +10,6 @@ import pytest
 
 from runem.config_metadata import ConfigMetadata
 from runem.hook_manager import HookManager
-from runem.informative_dict import InformativeDict
 from runem.types.hooks import HookName
 from runem.types.runem_config import HookConfig, Hooks, PhaseGroupedJobs
 
@@ -23,8 +22,7 @@ mock_hook_function: HookConfig = {
 @pytest.fixture(name="hook_man", autouse=True)
 def hook_manager_fixture() -> typing.Generator[HookManager, None, None]:
     """Fixture to clean hooks dictionary before each test."""
-    dummy_hooks: Hooks = defaultdict(list)
-    hook_manager: HookManager = HookManager(dummy_hooks, verbose=False)
+    hook_manager: HookManager = HookManager()
     yield hook_manager
 
 
@@ -71,9 +69,9 @@ def test_deregister_hook(verbosity: bool, hook_man: HookManager) -> None:
         assert stdout_lines == [""]
     else:
         assert stdout_lines == [
-            "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'test "
+            "runem: hooks: registered hook for 'on-exit', have 1: echo 'test "
             "hook command'",
-            "runem: hooks: deregistered hooks for 'HookName.ON_EXIT', have 0",
+            "runem: hooks: deregistered hooks for 'on-exit', have 0",
             "",
         ]
 
@@ -93,7 +91,14 @@ def _dummy_hook(**kwargs: typing.Any) -> None:
         False,
     ],
 )
-def test_invoke_hooks(do_hooks: bool, hook_man: HookManager) -> None:
+@pytest.mark.parametrize(
+    "verbose",
+    [
+        True,
+        False,
+    ],
+)
+def test_invoke_hooks(do_hooks: bool, verbose: bool, hook_man: HookManager) -> None:
     """Test invoking hook functions."""
     mock_hook_function_py_callable: HookConfig = {
         "addr": {"file": __file__, "function": "_dummy_hook"},
@@ -114,65 +119,85 @@ def test_invoke_hooks(do_hooks: bool, hook_man: HookManager) -> None:
     all_phase_names = ()
     config_metadata: ConfigMetadata = ConfigMetadata(
         cfg_filepath=pathlib.Path(__file__),
-        phases=all_phase_names,
-        options_config=tuple(),
-        file_filters={},
-        hook_manager=hook_man,
-        jobs=jobs_by_phase,
-        all_job_names=set(all_job_names),
-        all_job_phases=set(("dummy phase 1",)),
-        all_job_tags=set(),
+        args=Namespace(
+            verbose=verbose,
+            silent=False,
+        ),
     )
+    config_metadata.phases = all_phase_names
+    config_metadata.options_config = tuple()
+    config_metadata.file_filters = {}
+    config_metadata.hook_manager = hook_man
+    config_metadata.jobs = jobs_by_phase
+    config_metadata.all_job_names = set(all_job_names)
+    config_metadata.all_job_phases = set(("dummy phase 1",))
+    config_metadata.all_job_tags = set()
 
     config_metadata.set_cli_data(
-        args=Namespace(verbose=True, procs=1),
-        jobs_to_run=set(all_job_names),  # JobNames,
-        phases_to_run=set(all_phase_names),  # JobPhases,
-        tags_to_run=set(),  # ignored JobTags,
-        tags_to_avoid=set(),  # ignored  JobTags,
-        options=InformativeDict({}),  # Options,
+        args=Namespace(
+            verbose=verbose,
+            silent=False,
+            procs=1,
+            jobs=[],
+            jobs_excluded=[],
+            tags=[],
+            tags_excluded=[],
+            phases=[],
+            phases_excluded=[],
+        ),
     )
 
     # run the command and capture output
     with io.StringIO() as buf, redirect_stdout(buf):
-        hook_man.initialise_hooks(hooks, verbose=True)
+        hook_man.initialise_hooks(hooks, verbose=verbose)
         hook_man.invoke_hooks(HookName.ON_EXIT, config_metadata)
         run_command_stdout = buf.getvalue()
 
     run_command_stdout = run_command_stdout.replace(__file__, "<THIS_FILE>")
-    expected_stdout: typing.List[str] = [
-        "runem: hooks: invoking 0 hooks for 'HookName.ON_EXIT'",
-        "runem: hooks: done invoking 'HookName.ON_EXIT'",
-        "",
-    ]
-    if do_hooks:
-        expected_stdout = [
-            "runem: hooks: initialising 2 hooks",
-            "runem: hooks:   initialising 2 hooks for 'HookName.ON_EXIT'",
-            (
-                "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: "
-                "<THIS_FILE>._dummy_hook"
-            ),
-            (
-                "runem: hooks: registered hook for 'HookName.ON_EXIT', have 2: echo "
-                '"mock_hook_function_bash called aok"'
-            ),
-            "runem: hooks: invoking 2 hooks for 'HookName.ON_EXIT'",
-            "runem: START: 'HookName.ON_EXIT'",
-            "runem: job: running: 'HookName.ON_EXIT'",
-            "mock_hook_function_function called aok",
-            "runem: job: DONE: 'HookName.ON_EXIT': 0:00:00",
-            "runem: START: 'HookName.ON_EXIT'",
-            "runem: job: running: 'HookName.ON_EXIT'",
-            'runem: running: start: HookName.ON_EXIT: echo "mock_hook_function_bash '
-            'called aok"',
-            '| HookName.ON_EXIT: "mock_hook_function_bash called aok"',
-            'runem: running: done: HookName.ON_EXIT: echo "mock_hook_function_bash called '
-            'aok"',
-            "runem: job: DONE: 'HookName.ON_EXIT': 0:00:00",
-            "runem: hooks: done invoking 'HookName.ON_EXIT'",
-            "",
-        ]
+    expected_stdout: typing.List[str] = []
+    if not do_hooks:
+        if not verbose:
+            expected_stdout = [
+                "",
+            ]
+        else:
+            expected_stdout = [
+                "runem: hooks: invoking 0 hooks for 'on-exit'",
+                "runem: hooks: done invoking 'on-exit'",
+                "",
+            ]
+    else:
+        if not verbose:
+            expected_stdout = [
+                "mock_hook_function_function called aok",
+                "",
+            ]
+        else:
+            expected_stdout += [
+                "runem: hooks: adding 2 hooks",
+                "runem: hooks:   adding 2 hooks for 'on-exit'",
+                (
+                    "runem: hooks: registered hook for 'on-exit', have 1: "
+                    "<THIS_FILE>._dummy_hook"
+                ),
+                (
+                    "runem: hooks: registered hook for 'on-exit', have 2: echo "
+                    '"mock_hook_function_bash called aok"'
+                ),
+                "runem: hooks: invoking 2 hooks for 'on-exit'",
+                "runem: START: 'on-exit'",
+                "runem: job: running: 'on-exit'",
+                "mock_hook_function_function called aok",
+                "runem: job: DONE: 'on-exit': 0:00:00",
+                "runem: START: 'on-exit'",
+                "runem: job: running: 'on-exit'",
+                'runem: running: start: on-exit: echo "mock_hook_function_bash called aok"',
+                '| on-exit: "mock_hook_function_bash called aok"',
+                'runem: running: done: on-exit: echo "mock_hook_function_bash called aok"',
+                "runem: job: DONE: 'on-exit': 0:00:00",
+                "runem: hooks: done invoking 'on-exit'",
+                "",
+            ]
     assert run_command_stdout.split("\n") == expected_stdout
 
 

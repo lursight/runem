@@ -6,11 +6,9 @@ import sys
 import typing
 
 from runem.config_metadata import ConfigMetadata
-from runem.informative_dict import InformativeDict
 from runem.log import error, log
 from runem.runem_version import get_runem_version
 from runem.types.common import JobNames
-from runem.types.options import OptionsWritable
 from runem.types.runem_config import OptionConfig
 from runem.utils import printable_set
 
@@ -89,9 +87,7 @@ def error_on_log_logic(verbose: bool, silent: bool) -> None:
         sys.exit(1)
 
 
-def parse_args(  # pylint: disable=too-many-statements
-    config_metadata: ConfigMetadata, argv: typing.List[str]
-) -> ConfigMetadata:
+class RunemArgsParse:
     """Parses the args and defines the filter inputs.
 
     Generates args based upon the config, parsing the cli args and return the filters to
@@ -104,267 +100,307 @@ def parse_args(  # pylint: disable=too-many-statements
     asks this parser for candidates and exits early; normal command execution
     does not continue.
     """
-    parser = argparse.ArgumentParser(
-        add_help=False,
-        description="Runs the Lursight Lang test-suite",
-        formatter_class=_get_argparse_help_formatter(),
-    )
-    parser.add_argument(
-        "-H", "--help", action="help", help="show this help message and exit"
-    )
 
-    job_group = parser.add_argument_group("jobs")
-    all_job_names: JobNames = set(name for name in config_metadata.all_job_names)
-    jobs_arg = job_group.add_argument(
-        "--jobs",
-        dest="jobs",
-        nargs="+",
-        default=sorted(list(all_job_names)),
-        help=(
-            "List of job-names to run the given jobs. Other filters will modify this list. "
-            f"Defaults to {printable_set(all_job_names)}"
-        ),
-        required=False,
-    )
-    _set_argcomplete_completer(jobs_arg, all_job_names)
+    args: typing.Optional[argparse.Namespace]
+    _cfg_filepath: pathlib.Path
+    _parser: argparse.ArgumentParser
 
-    _set_argcomplete_completer(
-        job_group.add_argument(
-            "--not-jobs",
-            dest="jobs_excluded",
+    def __init__(self, cfg_filepath: pathlib.Path) -> None:
+        self.args = None
+        self._cfg_filepath = cfg_filepath
+        self._define_args_built_ins()
+
+    def parse_early(self, argv: typing.List[str]) -> None:
+        """Parse built-in args early.
+
+        Because we want to be able to show logging whilst parsing .runem.yml
+        config, we need to check the state of the logging-verbosity switches
+        here, manually, as well.
+        """
+        self.args = self._parse(
+            argv,
+            allow_unknown=True,  # do not do a full parse, just the built-ins
+        )
+
+    def parse_with_config(
+        self,
+        argv: typing.List[str],
+        config_metadata: ConfigMetadata,
+    ) -> None:
+        """Do the full arg-parsing and `--help` generation.
+
+        This couples ConfigMetadata to argparse.
+        """
+        self._define_args_from_config(config_metadata)
+        args: argparse.Namespace = self._parse(
+            argv,
+            allow_unknown=False,  # catch bad cli switches
+        )
+
+        if not _validate_filters(config_metadata, args):
+            sys.exit(1)
+        self.args = args
+
+    def _define_args_built_ins(self) -> None:
+        self._parser = argparse.ArgumentParser(
+            add_help=False,
+            description="Runs the Lursight Lang test-suite",
+            formatter_class=_get_argparse_help_formatter(),
+        )
+        self._parser.add_argument(
+            "-H", "--help", action="help", help="show this help message and exit"
+        )
+
+        self._parser.add_argument(
+            "--call-graphs",
+            dest="generate_call_graphs",
+            action=argparse.BooleanOptionalAction,
+            default=False,
+            required=False,
+        )
+
+        self._parser.add_argument(
+            "-f",
+            "--modified-files",
+            dest="check_modified_files",
+            help="only use files that have changed",
+            action=argparse.BooleanOptionalAction,
+            default=False,
+            required=False,
+        )
+
+        self._parser.add_argument(
+            "-h",
+            "--git-head-files",
+            dest="check_head_files",
+            help="fast run of files",
+            action=argparse.BooleanOptionalAction,
+            default=False,
+            required=False,
+        )
+        self._parser.add_argument(
+            "--always-files",
+            dest="always_files",
+            help=(
+                "list of paths/files to always check (overriding -f/-h), if the path "
+                "matches the filter regex and if file-paths exist"
+            ),
+            nargs="+",
+            default=None,
+            required=False,
+        )
+
+        self._parser.add_argument(
+            "--git-files-since-branch",
+            dest="git_since_branch",
+            help=(
+                "Get the list of paths/files changed between a branch, e.g., since "
+                "'origin/main'. Useful for checking files changed before pushing."
+            ),
+            default=None,  # Default to None if no branch is specified
+            required=False,  # Not required, users may not want to specify a branch
+            type=str,  # Accepts a string input representing the branch name
+        )
+
+        self._parser.add_argument(
+            "--procs",
+            "-j",
+            # "-n",
+            dest="procs",
+            default=-1,
+            help=(
+                "the number of concurrent test jobs to run, -1 runs all test jobs "
+                f"at the same time ({os.cpu_count()} cores available)"
+            ),
+            required=False,
+            type=int,
+        )
+
+        config_dir: pathlib.Path = _get_config_dir(self._cfg_filepath)
+        self._parser.add_argument(
+            "--root",
+            dest="root_dir",
+            default=config_dir,
+            help=(
+                "which dir to use as the base-dir for testing, "
+                f"defaults to directory containing the config '{config_dir}'"
+            ),
+            required=False,
+        )
+
+        self._parser.add_argument(
+            "--root-show",
+            dest="show_root_path_and_exit",
+            help="show the root-path of runem and exit",
+            action=argparse.BooleanOptionalAction,
+            default=False,
+            required=False,
+        )
+
+        self._parser.add_argument(
+            "--silent",
+            "-s",
+            dest="silent",
+            action=argparse.BooleanOptionalAction,
+            default=False,
+            help=("Whether to show warning messages or not. "),
+            required=False,
+        )
+
+        self._parser.add_argument(
+            "--spinner",
+            dest="show_spinner",
+            action=argparse.BooleanOptionalAction,
+            default=True,
+            help=(
+                "Whether to show the progress spinner or not. "
+                "Helps reduce log-spam in ci/cd."
+            ),
+            required=False,
+        )
+
+        self._parser.add_argument(
+            "--verbose",
+            dest="verbose",
+            help="runs runem in in verbose mode, and streams jobs stdout/stderr to console",
+            action=argparse.BooleanOptionalAction,
+            default=False,
+            required=False,
+        )
+
+        self._parser.add_argument(
+            "--version",
+            "-v",
+            dest="show_version_and_exit",
+            help="show the version of runem and exit",
+            action=argparse.BooleanOptionalAction,
+            default=False,
+            required=False,
+        )
+
+    def _define_args_from_config(  # pylint: disable=too-many-statements
+        self,
+        config_metadata: ConfigMetadata,
+    ) -> None:
+        """Parse the config to generate args in the --help and cli."""
+        job_group = self._parser.add_argument_group("jobs")
+        all_job_names: JobNames = set(name for name in config_metadata.all_job_names)
+        jobs_arg = job_group.add_argument(
+            "--jobs",
+            dest="jobs",
+            nargs="+",
+            default=sorted(list(all_job_names)),
+            help=(
+                "List of job-names to run the given jobs. Other filters will modify this list. "
+                f"Defaults to {printable_set(all_job_names)}"
+            ),
+            required=False,
+        )
+        _set_argcomplete_completer(jobs_arg, all_job_names)
+
+        _set_argcomplete_completer(
+            job_group.add_argument(
+                "--not-jobs",
+                dest="jobs_excluded",
+                nargs="+",
+                default=[],
+                help=(
+                    "List of job-names to NOT run. Defaults to empty. "
+                    f"Available options are: {printable_set((all_job_names))}"
+                ),
+                required=False,
+            ),
+            all_job_names,
+        )
+
+        phase_group = self._parser.add_argument_group("phases")
+        phases_arg = phase_group.add_argument(
+            "--phases",
+            dest="phases",
+            nargs="+",
+            default=config_metadata.all_job_phases,
+            help=(
+                "Run only the phases passed in, and can be used to "
+                "change the phase order. Phases are run in the order given. "
+                f"Defaults to {printable_set(config_metadata.all_job_phases)}. "
+            ),
+            required=False,
+        )
+        _set_argcomplete_completer(phases_arg, config_metadata.all_job_phases)
+
+        phases_excluded_arg = phase_group.add_argument(
+            "--not-phases",
+            dest="phases_excluded",
             nargs="+",
             default=[],
             help=(
-                "List of job-names to NOT run. Defaults to empty. "
-                f"Available options are: {printable_set((all_job_names))}"
+                "List of phases to NOT run. "
+                "This option does not change the phase run order. "
+                f"Options are '{sorted(config_metadata.all_job_phases)}'. "
             ),
             required=False,
-        ),
-        all_job_names,
-    )
+        )
+        _set_argcomplete_completer(phases_excluded_arg, config_metadata.all_job_phases)
 
-    phase_group = parser.add_argument_group("phases")
-    phases_arg = phase_group.add_argument(
-        "--phases",
-        dest="phases",
-        nargs="+",
-        default=config_metadata.all_job_phases,
-        help=(
-            "Run only the phases passed in, and can be used to "
-            "change the phase order. Phases are run in the order given. "
-            f"Defaults to {printable_set(config_metadata.all_job_phases)}. "
-        ),
-        required=False,
-    )
-    _set_argcomplete_completer(phases_arg, config_metadata.all_job_phases)
+        tag_group = self._parser.add_argument_group("tags")
+        tags_arg = tag_group.add_argument(
+            "--tags",
+            dest="tags",
+            nargs="+",
+            default=config_metadata.all_job_tags,
+            help=(
+                # TODO: clarify the logic by which we add/remove jobs based on tags
+                #       e.g. exclusive-in, union, x-or etc.
+                "Only run jobs with the given tags. "
+                f"Defaults to '{sorted(config_metadata.all_job_tags)}'."
+            ),
+            required=False,
+        )
+        _set_argcomplete_completer(tags_arg, config_metadata.all_job_tags)
 
-    phases_excluded_arg = phase_group.add_argument(
-        "--not-phases",
-        dest="phases_excluded",
-        nargs="+",
-        default=[],
-        help=(
-            "List of phases to NOT run. "
-            "This option does not change the phase run order. "
-            f"Options are '{sorted(config_metadata.all_job_phases)}'. "
-        ),
-        required=False,
-    )
-    _set_argcomplete_completer(phases_excluded_arg, config_metadata.all_job_phases)
+        tags_excluded_arg = tag_group.add_argument(
+            "--not-tags",
+            dest="tags_excluded",
+            nargs="+",
+            default=[],
+            help=(
+                "Removes one or more tags from the list of job tags to be run. "
+                f"Options are '{sorted(config_metadata.all_job_tags)}'."
+            ),
+            required=False,
+        )
+        _set_argcomplete_completer(tags_excluded_arg, config_metadata.all_job_tags)
 
-    tag_group = parser.add_argument_group("tags")
-    tags_arg = tag_group.add_argument(
-        "--tags",
-        dest="tags",
-        nargs="+",
-        default=config_metadata.all_job_tags,
-        help=(
-            # TODO: clarify the logic by which we add/remove jobs based on tags
-            #       e.g. exclusive-in, union, x-or etc.
-            "Only run jobs with the given tags. "
-            f"Defaults to '{sorted(config_metadata.all_job_tags)}'."
-        ),
-        required=False,
-    )
-    _set_argcomplete_completer(tags_arg, config_metadata.all_job_tags)
+        job_param_overrides_group = self._parser.add_argument_group(
+            "job-param overrides",  # help="overrides default test params on all matching jobs"
+        )
+        _define_option_args(config_metadata, job_param_overrides_group)
 
-    tags_excluded_arg = tag_group.add_argument(
-        "--not-tags",
-        dest="tags_excluded",
-        nargs="+",
-        default=[],
-        help=(
-            "Removes one or more tags from the list of job tags to be run. "
-            f"Options are '{sorted(config_metadata.all_job_tags)}'."
-        ),
-        required=False,
-    )
-    _set_argcomplete_completer(tags_excluded_arg, config_metadata.all_job_tags)
+        _enable_shell_completion(self._parser)
 
-    job_param_overrides_group = parser.add_argument_group(
-        "job-param overrides",  # help="overrides default test params on all matching jobs"
-    )
-    _define_option_args(config_metadata, job_param_overrides_group)
+    def _parse(
+        self,
+        argv: typing.List[str],
+        allow_unknown: bool,
+    ) -> argparse.Namespace:
+        args: argparse.Namespace
+        if allow_unknown:
+            args, _unknown = self._parser.parse_known_args(argv[1:])
+        else:
+            args = self._parser.parse_args(argv[1:])
 
-    parser.add_argument(
-        "--call-graphs",
-        dest="generate_call_graphs",
-        action=argparse.BooleanOptionalAction,
-        default=False,
-        required=False,
-    )
+        error_on_log_logic(args.verbose, args.silent)
 
-    parser.add_argument(
-        "-f",
-        "--modified-files",
-        dest="check_modified_files",
-        help="only use files that have changed",
-        action=argparse.BooleanOptionalAction,
-        default=False,
-        required=False,
-    )
+        if args.show_root_path_and_exit:
+            log(str(self._cfg_filepath.parent), prefix=False)
+            # cleanly exit
+            sys.exit(0)
 
-    parser.add_argument(
-        "-h",
-        "--git-head-files",
-        dest="check_head_files",
-        help="fast run of files",
-        action=argparse.BooleanOptionalAction,
-        default=False,
-        required=False,
-    )
-    parser.add_argument(
-        "--always-files",
-        dest="always_files",
-        help=(
-            "list of paths/files to always check (overriding -f/-h), if the path "
-            "matches the filter regex and if file-paths exist"
-        ),
-        nargs="+",
-        default=None,
-        required=False,
-    )
-
-    parser.add_argument(
-        "--git-files-since-branch",
-        dest="git_since_branch",
-        help=(
-            "Get the list of paths/files changed between a branch, e.g., since "
-            "'origin/main'. Useful for checking files changed before pushing."
-        ),
-        default=None,  # Default to None if no branch is specified
-        required=False,  # Not required, users may not want to specify a branch
-        type=str,  # Accepts a string input representing the branch name
-    )
-
-    parser.add_argument(
-        "--procs",
-        "-j",
-        # "-n",
-        dest="procs",
-        default=-1,
-        help=(
-            "the number of concurrent test jobs to run, -1 runs all test jobs at the same time "
-            f"({os.cpu_count()} cores available)"
-        ),
-        required=False,
-        type=int,
-    )
-
-    config_dir: pathlib.Path = _get_config_dir(config_metadata)
-    parser.add_argument(
-        "--root",
-        dest="root_dir",
-        default=config_dir,
-        help=(
-            "which dir to use as the base-dir for testing, "
-            f"defaults to directory containing the config '{config_dir}'"
-        ),
-        required=False,
-    )
-
-    parser.add_argument(
-        "--root-show",
-        dest="show_root_path_and_exit",
-        help="show the root-path of runem and exit",
-        action=argparse.BooleanOptionalAction,
-        default=False,
-        required=False,
-    )
-
-    parser.add_argument(
-        "--silent",
-        "-s",
-        dest="silent",
-        action=argparse.BooleanOptionalAction,
-        default=False,
-        help=("Whether to show warning messages or not. "),
-        required=False,
-    )
-
-    parser.add_argument(
-        "--spinner",
-        dest="show_spinner",
-        action=argparse.BooleanOptionalAction,
-        default=True,
-        help=(
-            "Whether to show the progress spinner or not. "
-            "Helps reduce log-spam in ci/cd."
-        ),
-        required=False,
-    )
-
-    parser.add_argument(
-        "--verbose",
-        dest="verbose",
-        help="runs runem in in verbose mode, and streams jobs stdout/stderr to console",
-        action=argparse.BooleanOptionalAction,
-        default=False,
-        required=False,
-    )
-
-    parser.add_argument(
-        "--version",
-        "-v",
-        dest="show_version_and_exit",
-        help="show the version of runem and exit",
-        action=argparse.BooleanOptionalAction,
-        default=False,
-        required=False,
-    )
-
-    _enable_shell_completion(parser)
-
-    args = parser.parse_args(argv[1:])
-
-    error_on_log_logic(args.verbose, args.silent)
-
-    if args.show_root_path_and_exit:
-        log(str(config_metadata.cfg_filepath.parent), prefix=False)
-        # cleanly exit
-        sys.exit(0)
-
-    if args.show_version_and_exit:
-        log(str(get_runem_version()), prefix=False)
-        # cleanly exit
-        sys.exit(0)
-
-    options: OptionsWritable = initialise_options(config_metadata, args)
-
-    if not _validate_filters(config_metadata, args):
-        sys.exit(1)
-
-    # apply the cli filters to produce the high-level requirements. These will be used
-    # to further filter the jobs.
-    jobs_to_run = set(args.jobs).difference(args.jobs_excluded)
-    tags_to_run = set(args.tags).difference(args.tags_excluded)
-    tags_to_avoid = set(args.tags_excluded)
-    phases_to_run = set(args.phases).difference(args.phases_excluded)
-
-    config_metadata.set_cli_data(
-        args, jobs_to_run, phases_to_run, tags_to_run, tags_to_avoid, options
-    )
-    return config_metadata
+        if args.show_version_and_exit:
+            log(str(get_runem_version()), prefix=False)
+            # cleanly exit
+            sys.exit(0)
+        return args
 
 
 def _enable_shell_completion(parser: argparse.ArgumentParser) -> None:
@@ -381,9 +417,9 @@ def _enable_shell_completion(parser: argparse.ArgumentParser) -> None:
     argcomplete_module.autocomplete(parser)
 
 
-def _get_config_dir(config_metadata: ConfigMetadata) -> pathlib.Path:
+def _get_config_dir(cfg_filepath: pathlib.Path) -> pathlib.Path:
     """A function to get the path, that we can mock in tests."""
-    return config_metadata.cfg_filepath.parent
+    return cfg_filepath.parent
 
 
 def _validate_filters(
@@ -433,26 +469,6 @@ def _validate_filters(
                 )
                 return False
     return True
-
-
-def initialise_options(
-    config_metadata: ConfigMetadata,
-    args: argparse.Namespace,
-) -> OptionsWritable:
-    """Initialises and returns the set of options to use for this run.
-
-    Returns the options dictionary
-    """
-    options: OptionsWritable = InformativeDict(
-        {option["name"]: option["default"] for option in config_metadata.options_config}
-    )
-    if config_metadata.options_config and args.overrides_on:  # pragma: no branch
-        for option_name in args.overrides_on:  # pragma: no branch
-            options[option_name] = True
-    if config_metadata.options_config and args.overrides_off:  # pragma: no branch
-        for option_name in args.overrides_off:
-            options[option_name] = False
-    return options
 
 
 def _define_option_args(

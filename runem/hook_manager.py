@@ -3,7 +3,6 @@ from collections import defaultdict
 
 from typing_extensions import Unpack
 
-from runem.config_metadata import ConfigMetadata
 from runem.job import Job
 from runem.job_execute import job_execute
 from runem.log import log
@@ -12,26 +11,27 @@ from runem.types.hooks import HookName
 from runem.types.runem_config import HookConfig, Hooks, HooksStore, JobConfig
 from runem.types.types_jobs import HookSpecificKwargs
 
+if typing.TYPE_CHECKING:
+    from runem.config_metadata import ConfigMetadata
+
 
 class HookManager:
     hooks_store: HooksStore
 
-    def __init__(self, hooks: Hooks, verbose: bool) -> None:
+    def __init__(self) -> None:
         self.hooks_store: HooksStore = defaultdict(list)
-        self.initialise_hooks(hooks, verbose)
 
     @staticmethod
     def is_valid_hook_name(hook_name: typing.Union[HookName, str]) -> bool:
         """Returns True/False depending on hook-name validity."""
+        if isinstance(hook_name, HookName):
+            # the type is a HookName
+            return True
         if isinstance(hook_name, str):
             try:
                 HookName(hook_name)  # lookup by value
-                return True
             except ValueError:
                 return False
-        # the type is a HookName
-        if not isinstance(hook_name, HookName):
-            return False
         return True
 
     def register_hook(
@@ -66,7 +66,7 @@ class HookManager:
     def invoke_hooks(
         self,
         hook_name: HookName,
-        config_metadata: ConfigMetadata,
+        config_metadata: "ConfigMetadata",
         **kwargs: Unpack[HookSpecificKwargs],
     ) -> None:
         """Invokes all functions registered to a specific hook."""
@@ -99,17 +99,29 @@ class HookManager:
         if config_metadata.args.verbose:
             log(f"hooks: done invoking '{hook_name}'")
 
-    def initialise_hooks(self, hooks: Hooks, verbose: bool) -> None:
-        """Initialised the hook with the configured data."""
+    def register_hook_list(
+        self,
+        hook_name: HookName,
+        hook_list: typing.List[HookConfig],
+        verbose: bool,
+    ) -> None:
+        if verbose:
+            log(f"hooks:\tadding {len(hook_list)} hooks for '{hook_name}'")
+        for hook in hook_list:
+            self.register_hook(hook_name, hook, verbose)
+
+    def register_hooks(self, hooks: Hooks, verbose: bool) -> None:
         if verbose:
             num_hooks: int = sum(len(hooks_list) for hooks_list in hooks.values())
             if num_hooks:
-                log(f"hooks: initialising {num_hooks} hooks")
+                log(f"hooks: adding {num_hooks} hooks")
         for hook_name in hooks:
-            hook: HookConfig
-            if verbose:
-                log(
-                    f"hooks:\tinitialising {len(hooks[hook_name])} hooks for '{hook_name}'"
-                )
-            for hook in hooks[hook_name]:
-                self.register_hook(hook_name, hook, verbose)
+            self.register_hook_list(
+                hook_name=hook_name,
+                hook_list=hooks[hook_name],
+                verbose=verbose,
+            )
+
+    def initialise_hooks(self, hooks: Hooks, verbose: bool) -> None:
+        """Initialised the hook with the configured data."""
+        self.register_hooks(hooks, verbose)
