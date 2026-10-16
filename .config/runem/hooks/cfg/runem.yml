@@ -1,0 +1,7 @@
+# Some dog-food checks
+- hook:
+    hook_name: on-config-loaded
+    command: echo "config loaded"
+- hook:
+    hook_name: on-job-add
+    command: echo "job verify"
