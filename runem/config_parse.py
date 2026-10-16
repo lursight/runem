@@ -41,6 +41,11 @@ class _ConfigMetadataCollector:
         self.config = config
 
     def add_job(self, job_name: JobName, phase: PhaseName, job: JobConfig) -> None:
+        self.config.invoke_hooks(
+            hook_name=HookName.CFG_VERIFY_JOB,
+            payload=job,
+        )
+
         self.config.all_job_names.add(job_name)
         self.config.all_job_phases.add(phase)
         job_tags: typing.Optional[JobTags] = Job.get_job_tags(job)
@@ -375,4 +380,8 @@ def load_config_metadata(
         verbose=args.verbose,
     )
 
+    config_collector.config.invoke_hooks(
+        hook_name=HookName.CFG_LOADED,
+        payload=config_collector.config,
+    )
     return config_collector.config
