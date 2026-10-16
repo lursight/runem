@@ -100,9 +100,6 @@ help: [Filter](https://lursight.github.io/runem/filtering/) `runem --help` is yo
 radar—instantly mapping out every available task:
 [Help & Job Discovery](https://lursight.github.io/runem/help/)
 
-Agents can use the structured MCP server instead of scraping help output:
-[Agent MCP Server](https://lursight.github.io/runem/agent_mcp/)
-
 ## Configuration File
 
 How and why to configure your projects `.runem.yml` file. How to scale up with
