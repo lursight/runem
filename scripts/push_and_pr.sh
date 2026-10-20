@@ -25,6 +25,7 @@ set -e
 
 AUTO_MERGE=true
 FORCE=""
+NO_VERIFY=""
 PR_TITLE=""
 PR_BODY=""
 
@@ -46,6 +47,10 @@ while [[ $# -gt 0 ]]; do
       PR_BODY="$2"
       shift 2
       ;;
+    --no-verify)
+      NO_VERIFY="--no-verify"
+      shift 1
+      ;;
     *)
       echo "Unknown option: $1" >&2
       echo "Usage: $0 [--auto-merge] [--title \"...\"] [--body \"...\"]" >&2
@@ -61,7 +66,7 @@ if [[ -z "$BRANCH" ]] || [[ "$BRANCH" == "HEAD" ]]; then
 fi
 
 echo "Pushing branch: $BRANCH"
-if ! git push $FORCE --set-upstream origin "$BRANCH"; then
+if ! git push $FORCE $NO_VERIFY --set-upstream origin "$BRANCH"; then
   echo "Push failed." >&2
   exit 1
 fi
@@ -71,6 +76,7 @@ if ! command -v gh &>/dev/null; then
   exit 0
 fi
 
+
 # Create PR; use branch name as title if not provided
 CREATE_ARGS=(pr create --head "$BRANCH")
 [[ -n "$PR_TITLE" ]] && CREATE_ARGS+=(--title "$PR_TITLE") || CREATE_ARGS+=(--title "$BRANCH")
@@ -78,6 +84,11 @@ CREATE_ARGS=(pr create --head "$BRANCH")
 
 if ! gh "${CREATE_ARGS[@]}"; then
   echo "PR creation failed (e.g. PR may already exist for this branch)." >&2
+  echo "${CREATE_ARGS[@]}" >&2
+fi
+
+if ! gh pr update-branch --rebase; then
+  echo "Update-branch --rebase failed. You may lack permission (maintainer/admin) or there's a rebase-conflict." >&2
   exit 1
 fi
 
@@ -89,7 +100,7 @@ else
 fi
 
 echo "Enabling auto-merge (requires maintainer role and repo auto-merge enabled)."
-if ! gh pr merge --auto --rebase; then
+if ! gh pr merge --auto; then
   echo "Auto-merge failed. You may lack permission (maintainer/admin) or the repo may not have auto-merge enabled." >&2
   exit 1
 fi
