@@ -7,13 +7,6 @@ and the override options. `--help` describes how to configure a specific run for
 `.runem.yml` setup, and does NOT just document `runem` itself; it documents _your_
 workflow.
 
-For coding agents and MCP clients, prefer the structured MCP server instead of scraping
-this help text. See [Agent MCP server](agent_mcp.md), or run:
-
-```bash
-runem --help-agents
-```
-
 ```bash
 $ python -m runem --help
 # or

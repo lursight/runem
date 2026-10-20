@@ -112,12 +112,6 @@ def parse_args(  # pylint: disable=too-many-statements
     parser.add_argument(
         "-H", "--help", action="help", help="show this help message and exit"
     )
-    parser.add_argument(
-        "--help-agents",
-        action="store_true",
-        help="show agent and MCP server usage guidance and exit",
-        required=False,
-    )
 
     job_group = parser.add_argument_group("jobs")
     all_job_names: JobNames = set(name for name in config_metadata.all_job_names)
