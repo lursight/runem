@@ -24,6 +24,7 @@ set -o pipefail
 set -e
 
 AUTO_MERGE=false
+FORCE=""
 PR_TITLE=""
 PR_BODY=""
 
@@ -31,6 +32,10 @@ while [[ $# -gt 0 ]]; do
   case $1 in
     --auto-merge)
       AUTO_MERGE=true
+      shift
+      ;;
+    --force)
+      FORCE="--force"
       shift
       ;;
     --title)
@@ -56,7 +61,7 @@ if [[ -z "$BRANCH" ]] || [[ "$BRANCH" == "HEAD" ]]; then
 fi
 
 echo "Pushing branch: $BRANCH"
-if ! git push -u origin "$BRANCH"; then
+if ! git push $FORCE --set-upstream origin "$BRANCH"; then
   echo "Push failed." >&2
   exit 1
 fi
