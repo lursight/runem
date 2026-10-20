@@ -96,6 +96,8 @@ class HookSpecificKwargs(typing.TypedDict, total=False):
      difficulty in dynamic programming.
     """
 
+    root_dir: pathlib.Path  # project root (where .runem.yml is); e.g. on-exit
+    run_success: bool  # whether the run completed without job failure; on-exit
     wall_clock_time_saved: timedelta  # only on `HookName.ON_EXIT`
 
 

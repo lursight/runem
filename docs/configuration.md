@@ -143,6 +143,15 @@ _Description:_ A simple command line to be run. Commands will be run by the syst
 exactly as they are written. Use `addr` or `module` for more complicated jobs. Commands
 are run in their associate `context`.
 
+You can use placeholders in the command string; runem replaces them before running:
+
+- **`{file_list}`** — space-separated, quoted list of files for the job's tags.
+- **`{option_name}`** — replaced with `--option_name` when that option is true,
+  otherwise empty (for options defined in `config.options`).
+- **`{runem_ctx}`** — replaced with a single shell-safe JSON object containing run
+  context: `root_dir` (project root path), and for hooks also `run_success` and
+  `wall_clock_time_saved` (seconds). Example: `command: echo {runem_ctx}`.
+
 _Examples_:
 
 ```yaml

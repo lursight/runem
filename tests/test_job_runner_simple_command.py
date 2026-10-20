@@ -1,7 +1,10 @@
 import io
+import json
 import typing
 from contextlib import redirect_stdout
+from datetime import timedelta
 from pathlib import Path
+from pprint import pprint
 from unittest.mock import ANY, Mock, patch
 
 from runem.config_metadata import ConfigMetadata
@@ -154,3 +157,72 @@ def test_job_runner_simple_command_with_option(mock_run_command: Mock) -> None:
         root_path=Path("."),
         verbose=True,
     )
+
+
+@patch(
+    "runem.job_runner_simple_command.run_command",
+)
+def test_job_runner_simple_command_with_runem_ctx(mock_run_command: Mock) -> None:
+    """Tests that {runem_ctx} is replaced with a shell-safe JSON blob of run context."""
+    job_config: JobConfig = {
+        "command": "echo {runem_ctx}",
+    }
+    config_metadata: ConfigMetadata = gen_dummy_config_metadata()
+    root = Path("/repo/root")
+    with io.StringIO() as buf, redirect_stdout(buf):
+        job_runner_simple_command(
+            config_metadata=config_metadata,
+            options=config_metadata.options,  # type: ignore
+            file_list=[],
+            job=job_config,
+            label=Job.get_job_name(job_config),
+            procs=config_metadata.args.procs,
+            root_path=root,
+            verbose=True,
+        )
+    mock_run_command.assert_called_once()
+    call_cmd = mock_run_command.call_args[1]["cmd"]
+    pprint(call_cmd)
+    assert call_cmd[0] == "echo"
+    # Second arg should be the quoted JSON (one token)
+    ctx_arg = call_cmd[1]
+    print(ctx_arg)
+    assert str(root) in ctx_arg
+    parsed = json.loads(ctx_arg.strip('"'))
+    assert parsed["root_dir"] == str(root)
+    assert "run_success" not in parsed
+    assert "wall_clock_time_saved" not in parsed
+
+
+@patch(
+    "runem.job_runner_simple_command.run_command",
+)
+def test_job_runner_simple_command_runem_ctx_with_hook_kwargs(
+    mock_run_command: Mock,
+) -> None:
+    """Tests {runem_ctx} includes run_success & wall_clock_time_saved."""
+    job_config: JobConfig = {
+        "command": "echo {runem_ctx}",
+    }
+    config_metadata: ConfigMetadata = gen_dummy_config_metadata()
+    root = Path("/repo/root")
+    with io.StringIO() as buf, redirect_stdout(buf):
+        job_runner_simple_command(
+            config_metadata=config_metadata,
+            options=config_metadata.options,  # type: ignore
+            file_list=[],
+            job=job_config,
+            label=Job.get_job_name(job_config),
+            procs=config_metadata.args.procs,
+            root_dir=root,
+            root_path=root,
+            run_success=True,
+            wall_clock_time_saved=timedelta(seconds=12.5),
+            verbose=True,
+        )
+    mock_run_command.assert_called_once()
+    call_cmd = mock_run_command.call_args[1]["cmd"]
+    parsed = json.loads(call_cmd[1].strip('"'))
+    assert parsed["root_dir"] == str(root)
+    assert parsed["run_success"] is True
+    assert parsed["wall_clock_time_saved"] == 12.5
