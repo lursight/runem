@@ -23,15 +23,15 @@
 set -o pipefail
 set -e
 
-AUTO_MERGE=false
+AUTO_MERGE=true
 FORCE=""
 PR_TITLE=""
 PR_BODY=""
 
 while [[ $# -gt 0 ]]; do
   case $1 in
-    --auto-merge)
-      AUTO_MERGE=true
+    --no-auto-merge)
+      AUTO_MERGE=false
       shift
       ;;
     --force)
@@ -82,11 +82,14 @@ if ! gh "${CREATE_ARGS[@]}"; then
 fi
 
 if [[ "$AUTO_MERGE" != "true" ]]; then
+  echo "'--auto-merge' not set, will not auto-merge PR"
   exit 0
+else
+  echo "'--no-auto-merge' not set, *WILL* auto-merge PR"
 fi
 
 echo "Enabling auto-merge (requires maintainer role and repo auto-merge enabled)."
-if ! gh pr merge --auto --squash; then
+if ! gh pr merge --auto --rebase; then
   echo "Auto-merge failed. You may lack permission (maintainer/admin) or the repo may not have auto-merge enabled." >&2
   exit 1
 fi
