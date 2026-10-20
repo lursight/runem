@@ -25,6 +25,7 @@ set -e
 
 AUTO_MERGE=true
 FORCE=""
+NO_VERIFY=""
 PR_TITLE=""
 PR_BODY=""
 
@@ -46,6 +47,10 @@ while [[ $# -gt 0 ]]; do
       PR_BODY="$2"
       shift 2
       ;;
+    --no-verify)
+      NO_VERIFY="--no-verify"
+      shift 1
+      ;;
     *)
       echo "Unknown option: $1" >&2
       echo "Usage: $0 [--auto-merge] [--title \"...\"] [--body \"...\"]" >&2
@@ -61,7 +66,7 @@ if [[ -z "$BRANCH" ]] || [[ "$BRANCH" == "HEAD" ]]; then
 fi
 
 echo "Pushing branch: $BRANCH"
-if ! git push $FORCE --set-upstream origin "$BRANCH"; then
+if ! git push $FORCE $NO_VERIFY --set-upstream origin "$BRANCH"; then
   echo "Push failed." >&2
   exit 1
 fi
