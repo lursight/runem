@@ -21,10 +21,9 @@ classifiers = [
 ]
 
 dependencies = [
-  # `packaging` is probably not needed after moving to pyproject.toml
+  # For get_runem_version(), which uses PEP 440-compliant Version object
   "packaging>=22.0",
-
-  # For yml passingg and validation
+  # For yml parsing and validation
   "PyYAML>=5.0.0",
   "jsonschema>=4.22",
 
