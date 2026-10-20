@@ -82,6 +82,7 @@ if ! gh "${CREATE_ARGS[@]}"; then
 fi
 
 if [[ "$AUTO_MERGE" != "true" ]]; then
+  echo "'--auto-merge' not set, will not auto-merge PR"
   exit 0
 fi
 
