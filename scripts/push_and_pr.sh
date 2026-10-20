@@ -84,7 +84,7 @@ CREATE_ARGS=(pr create --head "$BRANCH")
 
 if ! gh "${CREATE_ARGS[@]}"; then
   echo "PR creation failed (e.g. PR may already exist for this branch)." >&2
-  exit 1
+  echo "${CREATE_ARGS[@]}" >&2
 fi
 
 if ! gh pr update-branch --rebase; then
