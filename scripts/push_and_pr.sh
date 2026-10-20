@@ -76,6 +76,7 @@ if ! command -v gh &>/dev/null; then
   exit 0
 fi
 
+
 # Create PR; use branch name as title if not provided
 CREATE_ARGS=(pr create --head "$BRANCH")
 [[ -n "$PR_TITLE" ]] && CREATE_ARGS+=(--title "$PR_TITLE") || CREATE_ARGS+=(--title "$BRANCH")
@@ -83,6 +84,11 @@ CREATE_ARGS=(pr create --head "$BRANCH")
 
 if ! gh "${CREATE_ARGS[@]}"; then
   echo "PR creation failed (e.g. PR may already exist for this branch)." >&2
+  exit 1
+fi
+
+if ! gh pr update-branch --rebase; then
+  echo "Update-branch --rebase failed. You may lack permission (maintainer/admin) or there's a rebase-conflict." >&2
   exit 1
 fi
 
@@ -94,7 +100,7 @@ else
 fi
 
 echo "Enabling auto-merge (requires maintainer role and repo auto-merge enabled)."
-if ! gh pr merge --auto --rebase; then
+if ! gh pr merge --auto; then
   echo "Auto-merge failed. You may lack permission (maintainer/admin) or the repo may not have auto-merge enabled." >&2
   exit 1
 fi
