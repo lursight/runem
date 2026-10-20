@@ -121,7 +121,7 @@ def _conform_global_config_types(
     return all_config, global_config
 
 
-def load_and_parse_config_with_sources(cfg_filepath: pathlib.Path) -> LoadedConfig:
+def _load_and_parse_config_with_sources(cfg_filepath: pathlib.Path) -> LoadedConfig:
     """Load a config while retaining the source that declared each node."""
     loaded_config = load_config_with_sources(cfg_filepath)
     validate_imported_config_conflicts(loaded_config)
@@ -165,7 +165,7 @@ def load_and_parse_config_with_sources(cfg_filepath: pathlib.Path) -> LoadedConf
 
 def load_and_parse_config(cfg_filepath: pathlib.Path) -> Config:
     """Load a project or user config using the historical public representation."""
-    return load_and_parse_config_with_sources(cfg_filepath).as_config()
+    return _load_and_parse_config_with_sources(cfg_filepath).as_config()
 
 
 def load_project_config() -> typing.Tuple[Config, pathlib.Path]:

@@ -6,7 +6,7 @@ import typing
 
 import pytest
 
-from runem.config import load_and_parse_config, load_and_parse_config_with_sources
+from runem.config import _load_and_parse_config_with_sources, load_and_parse_config
 from runem.config_parse import load_config_metadata
 from runem.config_sources import MAX_CONFIG_IMPORT_DEPTH, ConfigImportError
 from runem.types.hooks import HookName
@@ -41,7 +41,7 @@ def test_nested_imports_expand_from_root_in_source_order(
         "- job:\n    command: nested\n    label: nested\n"
     )
 
-    loaded = load_and_parse_config_with_sources(root)
+    loaded = _load_and_parse_config_with_sources(root)
 
     assert [_job(node)["label"] for node in loaded.as_config()] == [
         "first",

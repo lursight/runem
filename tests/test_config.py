@@ -9,7 +9,7 @@ import pytest
 
 from runem.config import (
     _find_local_configs,
-    load_and_parse_config_with_sources,
+    _load_and_parse_config_with_sources,
     load_project_config,
     load_user_configs,
 )
@@ -158,7 +158,7 @@ def test_load_config_with_sources_preserves_public_config(
     config_path = tmp_path / ".runem.yml"
     config_path.write_text("- job:\n    command: test\n    label: test\n")
 
-    loaded = load_and_parse_config_with_sources(config_path)
+    loaded = _load_and_parse_config_with_sources(config_path)
 
     assert loaded.as_config() == [{"job": {"command": "test", "label": "test"}}]
     assert loaded.entries[0].source.path == config_path.resolve()

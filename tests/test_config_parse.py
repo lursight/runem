@@ -11,10 +11,10 @@ import pytest
 from runem.config_metadata import ConfigMetadata
 from runem.config_parse import (
     _parse_global_config,
+    _parse_hook_config,
     _parse_job,
+    _parse_job_config,
     load_config_metadata,
-    parse_hook_config,
-    parse_job_config,
 )
 from runem.types.common import JobNames, JobPhases, JobTags, OrderedPhases
 from runem.types.errors import FunctionNotFound, SystemExitBad
@@ -54,7 +54,7 @@ def test_parse_job_config() -> None:
     job_names: JobNames = set()
     phases: JobPhases = set()
     phase_order: OrderedPhases = ()
-    parse_job_config(
+    _parse_job_config(
         cfg_filepath=pathlib.Path(__file__),
         job=job_config,
         in_out_tags=tags,
@@ -104,7 +104,7 @@ def test_parse_job_config_handles_multiple_cwd() -> None:
     job_names: JobNames = set()
     phases: JobPhases = set()
     phase_order: OrderedPhases = ()
-    parse_job_config(
+    _parse_job_config(
         cfg_filepath=pathlib.Path(__file__),
         job=job_config,
         in_out_tags=tags,
@@ -165,7 +165,7 @@ def test_parse_job_config_throws_on_dupe_name() -> None:
     phase_order: OrderedPhases = ()
 
     # first call should be fine
-    parse_job_config(
+    _parse_job_config(
         cfg_filepath=pathlib.Path(__file__),
         job=job_config,
         in_out_tags=tags,
@@ -178,7 +178,7 @@ def test_parse_job_config_throws_on_dupe_name() -> None:
 
     # second call should error
     with pytest.raises(SystemExit):
-        parse_job_config(
+        _parse_job_config(
             cfg_filepath=pathlib.Path(__file__),
             job=job_config,
             in_out_tags=tags,
@@ -214,7 +214,7 @@ def test_parse_job_config_throws_on_missing_key() -> None:
     phases: JobPhases = set()
     phase_order: OrderedPhases = ()
     with pytest.raises(ValueError) as err_info:
-        parse_job_config(
+        _parse_job_config(
             cfg_filepath=pathlib.Path(__file__),
             job=job_config,
             in_out_tags=tags,
@@ -819,7 +819,7 @@ def test_parse_hook_config_with_valid_config() -> None:
         "hook_name": HookName("on-exit"),
     }
     # should execute without raising
-    parse_hook_config(hook, cfg_filepath)
+    _parse_hook_config(hook, cfg_filepath)
 
 
 def test_parse_hook_config_with_in_valid_hook_name() -> None:
@@ -829,7 +829,7 @@ def test_parse_hook_config_with_in_valid_hook_name() -> None:
         "hook_name": "bad-hook-name",  # type: ignore
     }
     with pytest.raises(ValueError):
-        parse_hook_config(hook, cfg_filepath)
+        _parse_hook_config(hook, cfg_filepath)
 
 
 def test_parse_hook_config_with_missing_hook_name() -> None:
@@ -839,7 +839,7 @@ def test_parse_hook_config_with_missing_hook_name() -> None:
         # "hook_name": HookName("on-exit"),
     }
     with pytest.raises(ValueError):
-        parse_hook_config(hook, cfg_filepath)
+        _parse_hook_config(hook, cfg_filepath)
 
 
 def test_parse_hook_config_with_missing_command() -> None:
@@ -849,7 +849,7 @@ def test_parse_hook_config_with_missing_command() -> None:
         "hook_name": HookName("on-exit"),
     }
     with pytest.raises(ValueError):
-        parse_hook_config(hook, cfg_filepath)
+        _parse_hook_config(hook, cfg_filepath)
 
 
 def test_parse_hook_config_with_bad_function_address() -> None:
@@ -863,7 +863,7 @@ def test_parse_hook_config_with_bad_function_address() -> None:
         "hook_name": HookName("on-exit"),
     }
     with pytest.raises(SystemExitBad):
-        parse_hook_config(hook, cfg_filepath)
+        _parse_hook_config(hook, cfg_filepath)
 
 
 @pytest.mark.parametrize(
@@ -880,4 +880,4 @@ def test_parse_hook_config_with_bad_hook_name_types(hook_type: typing.Any) -> No
         "hook_name": hook_type,
     }
     with pytest.raises(ValueError):
-        parse_hook_config(hook, cfg_filepath)
+        _parse_hook_config(hook, cfg_filepath)

@@ -83,7 +83,7 @@ def _parse_global_config(
     return phases, options, file_filters
 
 
-def parse_hook_config(
+def _parse_hook_config(
     hook: HookConfig,
     cfg_filepath: pathlib.Path,
 ) -> None:
@@ -160,7 +160,7 @@ def _parse_job(  # noqa: C901
         in_out_tags.update(job_tags)
 
 
-def parse_job_config(
+def _parse_job_config(
     cfg_filepath: pathlib.Path,
     job: JobConfig,
     in_out_tags: JobTags,
@@ -237,7 +237,7 @@ def parse_job_config(
         ) from err
 
 
-def parse_config(  # noqa: C901
+def _parse_config(  # noqa: C901
     config: Config,
     cfg_filepath: pathlib.Path,
     silent: bool = False,
@@ -296,7 +296,7 @@ def parse_config(  # noqa: C901
         if isinstance_hooks:
             hook_entry: HookSerialisedConfig = entry  # type: ignore  # see above
             hook: HookConfig = hook_entry["hook"]
-            parse_hook_config(hook, cfg_filepath)
+            _parse_hook_config(hook, cfg_filepath)
 
             # if we get here we have validated the hook, add it to the hooks list
             hook_name: HookName = hook["hook_name"]
@@ -324,7 +324,7 @@ def parse_config(  # noqa: C901
 
         job_entry: JobSerialisedConfig = entry  # type: ignore  # see above
         job: JobConfig = job_entry["job"]
-        parse_job_config(
+        _parse_job_config(
             cfg_filepath,
             job,
             in_out_tags=tags,
@@ -387,7 +387,7 @@ def _load_user_hooks_from_config(
         _,
         _,
         _,
-    ) = parse_config(user_config, cfg_filepath, silent, hooks_only=True)
+    ) = _parse_config(user_config, cfg_filepath, silent, hooks_only=True)
     return hooks
 
 
@@ -415,7 +415,7 @@ def load_config_metadata(
         job_names,
         job_phases,
         tags,
-    ) = parse_config(config, cfg_filepath, silent)
+    ) = _parse_config(config, cfg_filepath, silent)
 
     user_config: Config
     user_config_path: pathlib.Path
