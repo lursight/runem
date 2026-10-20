@@ -87,7 +87,7 @@ if [[ "$AUTO_MERGE" != "true" ]]; then
 fi
 
 echo "Enabling auto-merge (requires maintainer role and repo auto-merge enabled)."
-if ! gh pr merge --auto; then
+if ! gh pr merge --auto --rebase; then
   echo "Auto-merge failed. You may lack permission (maintainer/admin) or the repo may not have auto-merge enabled." >&2
   exit 1
 fi
