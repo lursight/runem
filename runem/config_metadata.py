@@ -78,7 +78,14 @@ class ConfigMetadata:
         hook_name: HookName,
         **kwargs: typing.Unpack[HookSpecificKwargs],
     ) -> None:
-        self.hook_manager.invoke_hooks(hook_name, self, **kwargs)
+        root_dir = self.cfg_filepath.parent
+        assert "root_dir" not in kwargs, "we auto-add 'root_dir' to hooks"
+        kwargs["root_dir"] = root_dir
+        self.hook_manager.invoke_hooks(
+            hook_name,
+            self,
+            **kwargs,
+        )
 
     def default_phase(self) -> PhaseName:
         return self.phases[0]  # default to the first phase

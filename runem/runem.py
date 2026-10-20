@@ -383,10 +383,8 @@ def timed_main(argv: typing.List[str]) -> None:
         )
     )
 
-    root_dir = config_metadata.cfg_filepath.parent
     config_metadata.invoke_hooks(
         hook_name=HookName.ON_EXIT,
-        root_dir=root_dir,
         run_success=failure_exception is None,
         wall_clock_time_saved=wall_clock_time_saved,
     )
