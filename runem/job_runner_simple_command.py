@@ -74,6 +74,26 @@ def _placeholder_file_list(
     return command_string
 
 
+def _placeholder_metadata(
+    command_string: str,
+    metadata: HookArgs.HookData,
+) -> str:
+    if "{metadata}" in command_string:
+        command_string = command_string.replace(
+            "{metadata}",
+            shlex.quote(json.dumps(metadata, separators=(",", ":"))),
+        )
+    for name, value in metadata.items():
+        # For now, just pass `--option-name`, `--check` or similar to the
+        # command line. At some point we will want this to be cleverer, but
+        # this will do for now.
+        meta_search: str = f"{{{name}}}"
+        if meta_search in command_string:
+            replacement = f"{value}"
+            command_string = command_string.replace(meta_search, replacement)
+    return command_string
+
+
 def _resolve_placeholders(
     command_string: str,
     **kwargs: Unpack[JobArgs],
@@ -95,6 +115,9 @@ def _resolve_placeholders(
 
     if "file_list" in kwargs:
         command_string = _placeholder_file_list(command_string, **kwargs)
+
+    if metadata is not None:
+        command_string = _placeholder_metadata(command_string, metadata)
 
     config_metadata: "ConfigMetadata" = kwargs["config_metadata"]
     options: OptionsWritable = config_metadata.options
