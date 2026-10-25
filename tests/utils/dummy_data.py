@@ -7,12 +7,15 @@ from datetime import timedelta
 from typing_extensions import Unpack
 
 from runem.config_metadata import ConfigMetadata
+from runem.hook.hook_name import HookName
 from runem.informative_dict import ReadOnlyInformativeDict
-from runem.job import Job
+from runem.job.job import Job
+from runem.job.job_args import JobArgs
+from runem.job.job_return import JobReturn
+from runem.report.metrics.job_run_timing import JobTiming
 from runem.runem import (
     MainReturnType,
 )
-from runem.types.hooks import HookName
 from runem.types.runem_config import (
     Config,
     GlobalSerialisedConfig,
@@ -21,7 +24,6 @@ from runem.types.runem_config import (
     JobSerialisedConfig,
     UserConfigMetadata,
 )
-from runem.types.types_jobs import JobKwargs, JobReturn, JobTiming
 from tests.intentional_test_error import IntentionalTestError
 from tests.utils.gen_dummy_config_metadata import gen_dummy_config_metadata
 
@@ -35,7 +37,7 @@ def do_nothing_record_sub_job_time(
 
 
 def dummy_job_print_dummy_job(
-    **kwargs: Unpack[JobKwargs],
+    **kwargs: Unpack[JobArgs],
 ) -> None:  # pragma: no cover
     """A simple job-fn that just prints 'dummy job' to stdout."""
     print("dummy job")
@@ -224,7 +226,7 @@ DUMMY_CONFIG_METADATA: ConfigMetadata = gen_dummy_config_metadata()
 
 TESTS_ROOT_PATH: pathlib.Path = pathlib.Path(__file__).parent  # <checkout>/tests
 
-DUMMY_JOB_K_ARGS: JobKwargs = {
+DUMMY_JOB_K_ARGS: JobArgs = {
     "config_metadata": DUMMY_CONFIG_METADATA,
     "file_list": [
         __file__,

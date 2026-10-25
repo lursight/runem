@@ -1,9 +1,9 @@
 import pathlib
 import typing
 
+from runem.hook.hook_name import HookName
 from runem.types.common import JobName, JobTags, OrderedPhases, PhaseName
 from runem.types.filters import TagFileFilter
-from runem.types.hooks import HookName
 
 
 class OptionConfig(typing.TypedDict, total=False):
@@ -173,7 +173,7 @@ ConfigDocumentNode = typing.Union[ConfigNodes, ImportSerialisedConfig]
 ConfigDocument = typing.List[ConfigDocumentNode]
 
 UserConfigMetadata = typing.List[typing.Tuple[Config, pathlib.Path]]
-Hooks = typing.DefaultDict[HookName, typing.List[HookConfig]]
+Hooks = typing.DefaultDict["HookName", typing.List[HookConfig]]
 # A dictionary to hold hooks, with hook names as keys
-HooksStore = typing.Dict[HookName, typing.List[HookConfig]]
+HooksStore = typing.Dict["HookName", typing.List[HookConfig]]
 PhaseGroupedJobs = typing.DefaultDict[PhaseName, Jobs]

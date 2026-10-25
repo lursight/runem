@@ -9,7 +9,7 @@ import typing
 from argparse import Namespace
 from collections import defaultdict
 from contextlib import redirect_stdout
-from pprint import pprint
+from pprint import pformat, pprint
 from unittest import mock
 from unittest.mock import MagicMock, Mock, patch
 
@@ -117,7 +117,6 @@ def test_runem_basic_with_config(
         runem_stdout: typing.List[str] = sanitise_reports_footer(buf.getvalue())
         assert [] == _strip_reports_footer(runem_stdout)
 
-    pprint(runem_stdout)
     assert runem_stdout == [
         "runem: reports:",
         "runem (total wall-clock)  [<float>]",
@@ -127,7 +126,7 @@ def test_runem_basic_with_config(
         "runem: DONE: runem took: <float>, saving you <float>, without runem you "
         "would have waited <float>",
         "",
-    ]
+    ], pformat(runem_stdout)
     load_config_metadata_mock.assert_called_once()
 
 

@@ -9,19 +9,21 @@ from typing import Any
 import pytest
 from typing_extensions import Unpack
 
+from runem.job.job_args import JobArgs
+from runem.job.job_function import JobFunction, job_function
 from runem.job_runner_module_func_path import (
     _load_python_function_from_dotted_path,
     get_job_wrapper_py_module_dot_path,
 )
 from runem.types.errors import FunctionNotFound
 from runem.types.runem_config import JobWrapper
-from runem.types.types_jobs import JobFunction, JobKwargs
 from tests.utils.dummy_data import DUMMY_JOB_K_ARGS
 
 DOT_PATH_THIS_FILE = "tests.test_job_runner_module_func_path"
 
 
-def dummy_job_function_no_params(**kwargs: Unpack[JobKwargs]) -> None:
+@job_function
+def dummy_job_function_no_params(**kwargs: Unpack[JobArgs]) -> None:
     """A simple callable used for positive-path testing."""
     print("dummy job function no params")
 
@@ -36,7 +38,7 @@ def test_load_function_success() -> None:
         module_func_path=f"{DOT_PATH_THIS_FILE}.dummy_job_function_no_params",
     )
     assert callable(func)
-    assert func is dummy_job_function_no_params  # type: ignore[comparison-overlap]
+    assert func is dummy_job_function_no_params
 
     with io.StringIO() as buf, redirect_stdout(buf):
         func(**DUMMY_JOB_K_ARGS)
@@ -57,7 +59,7 @@ def test_get_job_wrapper_success() -> None:
         job_wrapper=job_wrapper,
         cfg_filepath=Path(__file__),
     )
-    assert func is dummy_job_function_no_params  # type: ignore[comparison-overlap]
+    assert func is dummy_job_function_no_params
 
     with io.StringIO() as buf, redirect_stdout(buf):
         func(**DUMMY_JOB_K_ARGS)

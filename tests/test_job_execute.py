@@ -45,7 +45,9 @@ def _job_execute_and_capture_stdout(
     ret_err: typing.Optional[BaseException] = None
     with io.StringIO() as buf, redirect_stdout(buf):
         try:
-            job_execute(job_config, running_jobs, {}, config_metadata, file_lists)
+            job_execute(
+                job_config, running_jobs, {}, config_metadata, file_lists, metadata=None
+            )
         except BaseException as err:  # pylint: disable=broad-exception-caught
             # capture the error and return it
             ret_err = err

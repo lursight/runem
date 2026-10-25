@@ -1,4 +1,5 @@
 """Behaviour tests for local config imports."""
+# pylint: disable=protected-access
 
 import os
 import pathlib
@@ -10,7 +11,7 @@ import pytest
 from runem.config import _load_and_parse_config_with_sources, load_and_parse_config
 from runem.config_parse import load_config_metadata
 from runem.config_sources import MAX_CONFIG_IMPORT_DEPTH, ConfigImportError
-from runem.types.hooks import HookName
+from runem.hook.hook_name import HookName
 from runem.types.runem_config import ConfigNodes
 
 
@@ -266,7 +267,7 @@ def test_imported_python_job_and_hook_resolve_from_declaring_file(
 
     assert _mapping(_job(config[1])["addr"])["file"] == "config/jobs.py"
     assert (
-        metadata.hook_manager.hooks_store[HookName.ON_EXIT][0]["addr"]["file"]
+        metadata.hook_manager._hooks_store[HookName.ON_EXIT][0]["addr"]["file"]
         == "config/jobs.py"
     )
 

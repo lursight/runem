@@ -4,11 +4,20 @@ import typing
 
 from typing_extensions import Unpack
 
+from runem import (
+    FilePathList,
+    JobArgs,
+    JobName,
+    JobReturnData,
+    Options,
+    RunCommandUnhandledError,
+    job_function,
+    run_command,
+)
 from runem.log import log
-from runem.run_command import RunCommandUnhandledError, run_command
-from runem.types import FilePathList, JobKwargs, JobName, JobReturnData, Options
 
 
+@job_function
 def _job_py_code_ruff_reformat(
     **kwargs: typing.Any,
 ) -> None:
@@ -40,6 +49,7 @@ def _job_py_code_ruff_reformat(
     run_command(cmd=ruff_format_cmd, **kwargs)
 
 
+@job_function
 def _job_py_ruff_lint(
     **kwargs: typing.Any,
 ) -> None:
@@ -71,9 +81,8 @@ def _job_py_ruff_lint(
     run_command(cmd=ruff_lint_cmd, **kwargs)
 
 
-def _job_py_code_reformat_deprecated(
-    **kwargs: Unpack[JobKwargs],
-) -> None:
+@job_function
+def _job_py_code_reformat_deprecated(**kwargs: Unpack[JobArgs]) -> None:
     """Runs python formatting code in serial order as one influences the other."""
     label: JobName = kwargs["label"]
     options: Options = kwargs["options"]
@@ -142,9 +151,8 @@ def _job_py_code_reformat_deprecated(
         )
 
 
-def _job_py_pylint(
-    **kwargs: Unpack[JobKwargs],
-) -> None:
+@job_function
+def _job_py_pylint(**kwargs: Unpack[JobArgs]) -> None:
     python_files: FilePathList = kwargs["file_list"]
     root_path: pathlib.Path = kwargs["root_path"]
 
@@ -164,9 +172,8 @@ def _job_py_pylint(
     run_command(cmd=pylint_cmd, **kwargs)
 
 
-def _job_py_flake8(
-    **kwargs: Unpack[JobKwargs],
-) -> None:
+@job_function
+def _job_py_flake8(**kwargs: Unpack[JobArgs]) -> None:
     python_files: FilePathList = kwargs["file_list"]
     root_path: pathlib.Path = kwargs["root_path"]
     flake8_rc = root_path / ".flake8"
@@ -182,9 +189,8 @@ def _job_py_flake8(
     run_command(cmd=flake8_cmd, **kwargs)
 
 
-def _job_py_mypy(
-    **kwargs: Unpack[JobKwargs],
-) -> None:
+@job_function
+def _job_py_mypy(**kwargs: Unpack[JobArgs]) -> None:
     python_files: FilePathList = kwargs["file_list"]
     mypy_cmd = ["python3", "-m", "mypy", *python_files]
     output = run_command(cmd=mypy_cmd, **kwargs)
@@ -201,8 +207,9 @@ def _delete_old_coverage_reports(root_path: pathlib.Path) -> None:
         old_coverage_report.unlink()
 
 
+@job_function
 def _job_py_pytest(  # noqa: C901 # pylint: disable=too-many-branches,too-many-statements
-    **kwargs: Unpack[JobKwargs],
+    **kwargs: Unpack[JobArgs],
 ) -> JobReturnData:
     label: JobName = kwargs["label"]
     options: Options = kwargs["options"]
@@ -331,9 +338,8 @@ def _job_py_pytest(  # noqa: C901 # pylint: disable=too-many-branches,too-many-s
     return reports
 
 
-def _install_python_requirements(
-    **kwargs: Unpack[JobKwargs],
-) -> None:
+@job_function
+def _install_python_requirements(**kwargs: Unpack[JobArgs]) -> None:
     options: Options = kwargs["options"]
     if not (options["install-deps"]):
         # not enabled

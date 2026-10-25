@@ -8,7 +8,12 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-import runem.run_command
+from runem.run_command import (
+    RunCommandBadExitCode,
+    RunCommandUnhandledError,
+    parse_stdout,
+    run_command,
+)
 
 
 class MockPopen:
@@ -63,12 +68,12 @@ def test_parse_stdout(stdout: str, expected: str) -> None:
 
     NOTE: we assume non-bytes strings here.
     """
-    assert expected == runem.run_command.parse_stdout(stdout, "Prefix: ")
+    assert expected == parse_stdout(stdout, "Prefix: ")
 
 
 @patch("runem.run_command.Popen", autospec=True, return_value=MockPopen())
 def test_run_command_basic_call(mock_popen: Mock) -> None:
-    """Test normal operation of the run_command.
+    """Test normal operation of the
 
     That is, that we can run a successful command and set the run-context for it
     """
@@ -80,7 +85,7 @@ def test_run_command_basic_call(mock_popen: Mock) -> None:
 
     # capture any prints the run_command() does, should be none in verbose=False mode
     with io.StringIO() as buf, redirect_stdout(buf):
-        output = runem.run_command.run_command(
+        output = run_command(
             cmd=["ls"],
             label="test command",
             verbose=False,
@@ -103,9 +108,7 @@ def test_run_command_basic_call_verbose(mock_popen: Mock) -> None:
     """Test that we get extra output when the verbose flag is set."""
     # capture any prints the run_command() does, should be informative in verbose=True mode
     with io.StringIO() as buf, redirect_stdout(buf):
-        raw_output = runem.run_command.run_command(
-            cmd=["ls"], label="test command", verbose=True
-        )
+        raw_output = run_command(cmd=["ls"], label="test command", verbose=True)
         run_command_stdout = buf.getvalue()
     assert raw_output == "test output\ntest stderr"
 
@@ -130,10 +133,8 @@ def test_run_command_basic_call_non_zero_exit_code(mock_popen: Mock) -> None:
     """Mimic non-zero exit code."""
     # capture any prints the run_command() does, should be informative in verbose=True mode
     with io.StringIO() as buf, redirect_stdout(buf):
-        with pytest.raises(runem.run_command.RunCommandBadExitCode):
-            runem.run_command.run_command(
-                cmd=["ls"], label="test command", verbose=False
-            )
+        with pytest.raises(RunCommandBadExitCode):
+            run_command(cmd=["ls"], label="test command", verbose=False)
 
         run_command_stdout = buf.getvalue()
 
@@ -151,10 +152,8 @@ def test_run_command_handles_throwing_command(mock_popen: Mock) -> None:
     """Mimic non-zero exit code."""
     # capture any prints the run_command() does, should be informative in verbose=True mode
     with io.StringIO() as buf, redirect_stdout(buf):
-        with pytest.raises(runem.run_command.RunCommandUnhandledError):
-            runem.run_command.run_command(
-                cmd=["ls"], label="test command", verbose=False
-            )
+        with pytest.raises(RunCommandUnhandledError):
+            run_command(cmd=["ls"], label="test command", verbose=False)
 
         run_command_stdout = buf.getvalue()
 
@@ -170,7 +169,7 @@ def test_run_command_ignore_fails_skips_failures_for_non_zero_exit_code(
     """Mimic non-zero exit code, but ensure we do NOT raise when ignore_fails=True."""
     # capture any prints the run_command() does, should be informative in verbose=True mode
     with io.StringIO() as buf, redirect_stdout(buf):
-        output = runem.run_command.run_command(
+        output = run_command(
             cmd=["ls"],
             label="test command",
             verbose=False,
@@ -200,7 +199,7 @@ def test_run_command_ignore_fails_skips_no_side_effects_on_success(
     """Mimic non-zero exit code, but ensure we do NOT raise when ignore_fails=True."""
     # capture any prints the run_command() does, should be informative in verbose=True mode
     with io.StringIO() as buf, redirect_stdout(buf):
-        output = runem.run_command.run_command(
+        output = run_command(
             cmd=["ls"],
             label="test command",
             verbose=False,
@@ -230,7 +229,7 @@ def test_run_command_ignore_fails_skips_no_side_effects_on_success_with_valid_ex
     """Mimic non-zero exit code, but ensure we do NOT raise when ignore_fails=True."""
     # capture any prints the run_command() does, should be informative in verbose=True mode
     with io.StringIO() as buf, redirect_stdout(buf):
-        output = runem.run_command.run_command(
+        output = run_command(
             cmd=["ls"],
             label="test command",
             verbose=False,
@@ -259,7 +258,7 @@ def test_run_command_basic_call_non_standard_exit_ok_code(mock_popen: Mock) -> N
     """Tests the feature that handles non-standard exit codes."""
     # capture any prints the run_command() does, should be informative in verbose=True mode
     with io.StringIO() as buf, redirect_stdout(buf):
-        output = runem.run_command.run_command(
+        output = run_command(
             cmd=["ls"],
             label="test command",
             verbose=False,
@@ -286,7 +285,7 @@ def test_run_command_basic_call_non_standard_exit_ok_code_verbose(
     """Tests we handle non-standard exit codes & log out extra relevant information."""
     # capture any prints the run_command() does, should be informative in verbose=True mode
     with io.StringIO() as buf, redirect_stdout(buf):
-        output = runem.run_command.run_command(
+        output = run_command(
             cmd=["ls"],
             label="test command",
             verbose=True,  # we expect the out to change with verbose AND valid_exit_ids
@@ -311,7 +310,7 @@ def test_run_command_with_env(mock_popen: Mock) -> None:
     """Tests that the env is passed to the subprocess."""
     # capture any prints the run_command() does, should be none in verbose=False mode
     with io.StringIO() as buf, redirect_stdout(buf):
-        output = runem.run_command.run_command(
+        output = run_command(
             cmd=["ls"],
             label="test command",
             verbose=False,
@@ -335,7 +334,7 @@ def test_run_command_with_env_verbose(mock_popen: Mock) -> None:
     """Tests that the env is handled and logged out in verbose mode."""
     # capture any prints the run_command() does, should be none in verbose=False mode
     with io.StringIO() as buf, redirect_stdout(buf):
-        output = runem.run_command.run_command(
+        output = run_command(
             cmd=["ls"],
             label="test command",
             verbose=True,
@@ -371,8 +370,8 @@ def test_run_command_with_env_on_error(mock_popen: Mock) -> None:
     """Tests that the env is passed to the subprocess and prints on error."""
     # capture any prints the run_command() does, should be none in verbose=False mode
     with io.StringIO() as buf, redirect_stdout(buf):
-        with pytest.raises(runem.run_command.RunCommandBadExitCode) as err_info:
-            runem.run_command.run_command(
+        with pytest.raises(RunCommandBadExitCode) as err_info:
+            run_command(
                 cmd=["ls"],
                 label="test command",
                 verbose=False,
@@ -398,7 +397,7 @@ def test_run_command_basic_call_verbose_with_cwd(mock_popen: Mock) -> None:
     """Test that we get extra output when the verbose flag is set."""
     # capture any prints the run_command() does, should be informative in verbose=True mode
     with io.StringIO() as buf, redirect_stdout(buf):
-        raw_output = runem.run_command.run_command(
+        raw_output = run_command(
             cmd=["ls"],
             label="test command",
             verbose=True,

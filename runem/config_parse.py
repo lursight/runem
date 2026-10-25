@@ -6,8 +6,9 @@ import typing
 from collections.abc import Iterable
 
 from runem.config_metadata import ConfigMetadata
-from runem.hook_manager import HookManager
-from runem.job import Job
+from runem.hook.hook_manager import HookManager
+from runem.hook.hook_name import HookName
+from runem.job.job import Job
 from runem.job_wrapper import get_job_wrapper
 from runem.log import error, warn
 from runem.types.common import (
@@ -18,7 +19,6 @@ from runem.types.common import (
 )
 from runem.types.errors import FunctionNotFound, SystemExitBad
 from runem.types.filters import TagFileFilter, TagFileFilters
-from runem.types.hooks import HookName
 from runem.types.runem_config import (
     Config,
     ConfigNodes,
@@ -41,9 +41,10 @@ class _ConfigMetadataCollector:
         self.config = config
 
     def add_job(self, job_name: JobName, phase: PhaseName, job: JobConfig) -> None:
-        self.config.invoke_hooks(
-            hook_name=HookName.CFG_VERIFY_JOB,
-            payload=job,
+        self.config.hook_manager.invoke_on_job_add(
+            metadata={
+                "job": job,
+            },
         )
 
         self.config.all_job_names.add(job_name)
@@ -380,8 +381,9 @@ def load_config_metadata(
         verbose=args.verbose,
     )
 
-    config_collector.config.invoke_hooks(
-        hook_name=HookName.CFG_LOADED,
-        payload=config_collector.config,
+    config_collector.config.hook_manager.invoke_on_config_loaded(
+        metadata={
+            "config": config_collector.config,
+        },
     )
     return config_collector.config

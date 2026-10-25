@@ -35,6 +35,7 @@
     "inplace", // switch for doc-formatter
     "inspectable", // "you can inspect X"
     "isort", // python module
+    "jsonable", // can be converted to native json without additional work
     "keepends", // python kwarg for `splitlines`
     "kwargs", // key-word args shorthand
     "linters", // collection of linting tools

@@ -5,8 +5,13 @@ import typing
 
 from typing_extensions import Unpack
 
-from runem.run_command import run_command
-from runem.types import FilePathList, JobKwargs, Options
+from runem import (
+    FilePathList,
+    JobArgs,
+    Options,
+    job_function,
+    run_command,
+)
 
 MARKDOWN_IGNORE_LIST: typing.Tuple[str, ...] = ("HISTORY.md",)
 
@@ -20,7 +25,8 @@ def _get_markdown_files(file_list: FilePathList) -> FilePathList:
     ]
 
 
-def _job_markdown_lint(**kwargs: Unpack[JobKwargs]) -> None:
+@job_function
+def _job_markdown_lint(**kwargs: Unpack[JobArgs]) -> None:
     """Lint the selected Markdown files without modifying them."""
     markdown_files = _get_markdown_files(kwargs["file_list"])
     if not markdown_files:
@@ -35,7 +41,8 @@ def _job_markdown_lint(**kwargs: Unpack[JobKwargs]) -> None:
     run_command(cmd=markdownlint_cmd, **kwargs)
 
 
-def _job_markdown_prettier(**kwargs: Unpack[JobKwargs]) -> None:
+@job_function
+def _job_markdown_prettier(**kwargs: Unpack[JobArgs]) -> None:
     """Format Markdown, or check formatting when runem is in check mode."""
     markdown_files = _get_markdown_files(kwargs["file_list"])
     if not markdown_files:

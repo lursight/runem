@@ -9,7 +9,7 @@ import yaml
 from typing_extensions import TypeGuard
 
 from runem.config_validate import validate_runem_file
-from runem.job import Job
+from runem.job.job import Job
 from runem.types.runem_config import (
     Config,
     ConfigDocument,

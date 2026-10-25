@@ -48,22 +48,21 @@ from runem.config import (
 from runem.config_metadata import ConfigMetadata
 from runem.config_parse import load_config_metadata
 from runem.files import find_files
+from runem.job.job_return import JobReturn
 from runem.job_execute import job_execute
 from runem.job_filter import filter_jobs
 from runem.log import error, log, warn
-from runem.report import report_on_run
+from runem.report.metrics.job_run_timing import JobTiming
+from runem.report.report_on_run import report_on_run
+from runem.report.runem_metrics import (
+    JobRunMetadata,
+    JobRunMetadatasByPhase,
+)
 from runem.run_command import RunemJobError
 from runem.types.common import OrderedPhases, PhaseName
 from runem.types.errors import SystemExitBad
 from runem.types.filters import FilePathListLookup
-from runem.types.hooks import HookName
 from runem.types.runem_config import Config, Jobs, PhaseGroupedJobs
-from runem.types.types_jobs import (
-    JobReturn,
-    JobRunMetadata,
-    JobRunMetadatasByPhase,
-    JobTiming,
-)
 from runem.utils import printable_set_coloured
 
 
@@ -186,6 +185,7 @@ def _process_jobs(
                         repeat(completed_jobs),
                         repeat(config_metadata),
                         repeat(file_lists),
+                        repeat(None),  # <- metadata
                     ),
                 )
         except RunemJobError as err:  # pylint: disable=broad-exception-caught
@@ -383,10 +383,11 @@ def timed_main(argv: typing.List[str]) -> None:
         )
     )
 
-    config_metadata.invoke_hooks(
-        hook_name=HookName.ON_EXIT,
-        run_success=failure_exception is None,
-        wall_clock_time_saved=wall_clock_time_saved,
+    config_metadata.hook_manager.invoke_on_exit(
+        metadata={
+            "run_success": failure_exception is None,
+            "wall_clock_time_saved": wall_clock_time_saved,
+        }
     )
 
     if failure_exception is not None:

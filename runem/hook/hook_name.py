@@ -14,4 +14,4 @@ class HookName(enum.StrEnum):
     # at exit
     ON_EXIT = "on-exit"
     CFG_LOADED = "on-config-loaded"
-    CFG_VERIFY_JOB = "on-verify-job"
+    CFG_JOB_ADD = "on-job-add"

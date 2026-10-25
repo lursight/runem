@@ -5,15 +5,15 @@ from pathlib import Path
 
 from typing_extensions import Unpack
 
+from runem.job.job_args import JobArgs
 from runem.run_command import RunCommandUnhandledError
-from runem.types import JobKwargs
 from runem.types.options import Options
 
 # cspell:disable-next-line
 NO_COMMIT_PHRASES = ["NO COMMIT", "NOCOMMIT"]  # *enforcing* the rule
 
 
-def _job_check_branch_commit_messages(**kwargs: Unpack[JobKwargs]) -> None:
+def _job_check_branch_commit_messages(**kwargs: Unpack[JobArgs]) -> None:
     """Validate commit-messages since tracking-branch.
 
     Raises RunCommandUnhandledError so runem reports this job as failed.

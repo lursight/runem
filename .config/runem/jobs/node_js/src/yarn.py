@@ -2,12 +2,17 @@ import pathlib
 
 from typing_extensions import Unpack
 
-from runem.run_command import run_command
-from runem.types import JobKwargs, Options
+from runem import (
+    JobArgs,
+    Options,
+    job_function,
+    run_command,
+)
 
 
+@job_function
 def _job_yarn_deps(
-    **kwargs: Unpack[JobKwargs],
+    **kwargs: Unpack[JobArgs],
 ) -> None:
     """Installs the yarn deps."""
     options: Options = kwargs["options"]
@@ -27,8 +32,9 @@ def _job_yarn_deps(
     run_command(cmd=install_cmd, **kwargs)
 
 
+@job_function
 def _job_prettier(
-    **kwargs: Unpack[JobKwargs],
+    **kwargs: Unpack[JobArgs],
 ) -> None:
     """Runs prettifier on files, including json and maybe yml file.
 

@@ -332,11 +332,12 @@ def _runem_function(**kwargs) -> None:
 
 ```py
 from typing_extensions import Unpack  # for python 3.9 back-compat
-from runem.types import JobKwargs
+from runem.job.job_function import job_function, JobArgs
 
 
+@job_function
 def _runem_function(
-    **kwargs: Unpack[JobKwargs],
+    **kwargs: Unpack[JobArgs]
 ) -> None:
     """Typed runem func with inspectable context kwargs."""
     pass

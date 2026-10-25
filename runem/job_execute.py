@@ -5,26 +5,22 @@ import uuid
 from datetime import timedelta
 from timeit import default_timer as timer
 
-from typing_extensions import Unpack
-
+from runem.hook.hook_args import HookArgs
 from runem.informative_dict import ReadOnlyInformativeDict
-from runem.job import Job
+from runem.job.job import Job
+from runem.job.job_args import JobArgs
+from runem.job.job_function import JobFunction
+from runem.job.job_return import (
+    JobReturn,
+)
 from runem.job_wrapper import get_job_wrapper
 from runem.log import error, log, warn
+from runem.report.metrics.job_run_timing import JobTiming
+from runem.report.metrics.timing import TimingEntries, TimingEntry
 from runem.run_command import RunemJobError
 from runem.types.common import FilePathList, JobTags
 from runem.types.filters import FilePathListLookup
 from runem.types.runem_config import JobConfig, JobContextConfig, JobCwd
-from runem.types.types_jobs import (
-    AllKwargs,
-    HookSpecificKwargs,
-    JobFunction,
-    JobKwargs,
-    JobReturn,
-    JobTiming,
-    TimingEntries,
-    TimingEntry,
-)
 
 if typing.TYPE_CHECKING:
     from runem.config_metadata import ConfigMetadata
@@ -69,7 +65,7 @@ def job_execute_inner(
     job_config: JobConfig,
     config_metadata: "ConfigMetadata",
     file_lists: FilePathListLookup,
-    **kwargs: Unpack[HookSpecificKwargs],
+    metadata: HookArgs.HookData | None,
 ) -> typing.Tuple[JobTiming, JobReturn]:
     """Wrapper for running a job inside a sub-process.
 
@@ -116,7 +112,7 @@ def job_execute_inner(
     reports: JobReturn
     try:
         # Define the common args for all jobs and hooks.
-        job_k_args: JobKwargs = {
+        job_k_args: JobArgs = {
             "config_metadata": config_metadata,
             "file_list": file_list,
             "job": job_config,
@@ -126,16 +122,16 @@ def job_execute_inner(
             "record_sub_job_time": _record_sub_job_time,
             "root_path": root_path,
             "verbose": config_metadata.args.verbose,
-        }
-        # Merge in the hook-specific kwargs (if any) for situations where we are
-        # calling hooks.
-        all_k_args: AllKwargs = {
-            **job_k_args,
-            **kwargs,
+            "metadata": None,  # <- conform with JobArgs type, for now.
         }
 
+        # We ignore the type-error for now, as this dispatch function requires
+        # typing encoded into the call-side or possibly a generic `function`
+        # type and branching.
+        job_k_args["metadata"] = metadata  # type: ignore
+
         assert isinstance(function, JobFunction)
-        reports = function(**all_k_args)
+        reports = function(**job_k_args)
     except BaseException:  # pylint: disable=broad-exception-caught
         # log that we hit an error on this job and re-raise
         log(prefix=False)
@@ -157,7 +153,7 @@ def job_execute(
     completed_jobs: typing.Dict[str, str],
     config_metadata: "ConfigMetadata",
     file_lists: FilePathListLookup,
-    **kwargs: Unpack[HookSpecificKwargs],
+    metadata: HookArgs.HookData | None,
 ) -> typing.Tuple[JobTiming, JobReturn]:
     """Thin-wrapper around job_execute_inner needed for mocking in tests.
 
@@ -170,7 +166,7 @@ def job_execute(
             job_config,
             config_metadata,
             file_lists,
-            **kwargs,
+            metadata,
         )
     except RunemJobError as err:
         # The exception crosses a multiprocessing boundary. Attach the job

@@ -3,7 +3,7 @@ from collections import defaultdict
 
 import pytest
 
-from runem.job import BadWhenConfigLocation, Job, NoJobName
+from runem.job.job import BadWhenConfigLocation, Job, NoJobName
 from runem.types.common import FilePathList, JobTags
 from runem.types.filters import FilePathListLookup
 from runem.types.runem_config import JobConfig

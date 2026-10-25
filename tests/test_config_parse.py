@@ -19,9 +19,9 @@ from runem.config_parse import (
     _parse_job_config,
     load_config_metadata,
 )
+from runem.hook.hook_name import HookName
 from runem.types.common import OrderedPhases
 from runem.types.errors import FunctionNotFound, SystemExitBad
-from runem.types.hooks import HookName
 from runem.types.runem_config import (
     Config,
     GlobalConfig,
@@ -463,7 +463,7 @@ def test_load_config_metadata_hooks() -> None:
         ],
         Namespace(verbose=False, silent=False),
     )
-    assert result.hook_manager.hooks_store == {
+    assert result.hook_manager._hooks_store == {
         HookName.ON_EXIT: [
             user_hook_config_1["hook"],
             user_hook_config_2["hook"],

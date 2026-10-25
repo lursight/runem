@@ -1,9 +1,9 @@
 import pathlib
 from unittest.mock import ANY, Mock, patch
 
+from runem.job.job_function import JobFunction
 from runem.job_wrapper import get_job_wrapper
 from runem.types.runem_config import JobConfig
-from runem.types.types_jobs import JobFunction
 
 # use a string as a ad type to test call
 DUMMY_FUNCTION: JobFunction = "intentionally bad type"  # type: ignore[assignment]

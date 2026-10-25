@@ -2,9 +2,11 @@ import importlib
 import os
 import pathlib
 
+from runem.job.job_function import JobFunction
 from runem.types.errors import FunctionNotFound
 from runem.types.runem_config import JobWrapper
-from runem.types.types_jobs import JobFunction
+
+# pylint: disable=protected-access
 
 
 def _load_python_function_from_dotted_path(
