@@ -2,6 +2,7 @@ import json
 import shlex
 import typing
 from datetime import timedelta
+from pathlib import Path
 
 from typing_extensions import Unpack
 
@@ -25,6 +26,54 @@ def _validate_simple_command(command_string: str) -> typing.List[str]:
     return split_command
 
 
+def _placeholder_ctx(
+    command_string: str,
+    metadata: HookArgs.HookData | None,
+    root_path: Path,
+) -> str:
+    """Replace {runem_ctx} th a shell-safe JSON blob of run context
+
+    Args:
+        command_string: the job's command string
+        metadata: the job invocation metadata if any
+        root_path: the main project root-path
+
+    Returns:
+        Returns the modified command_string
+    """
+    context: typing.Dict[str, typing.Union[str, bool, float]] = {
+        "root_path": str(root_path),
+    }
+    if metadata is not None:
+        run_success = metadata.get("run_success")
+        if isinstance(run_success, bool):
+            context["run_success"] = run_success
+        delta = metadata.get("wall_clock_time_saved")
+        if isinstance(delta, timedelta):
+            context["wall_clock_time_saved"] = delta.total_seconds()
+    command_string = command_string.replace(
+        RUNEM_CTX_PLACEHOLDER,
+        shlex.quote(json.dumps(context, separators=(",", ":"))),
+    )
+    return command_string
+
+
+def _placeholder_file_list(
+    command_string: str,
+    **kwargs: Unpack[JobArgs],
+) -> str:
+    if "{file_list}" in command_string:
+        job_kwargs: JobArgs = kwargs
+        file_list: FilePathList = job_kwargs["file_list"]
+        file_list_with_quotes: typing.List[str] = [
+            f'"{str(file_path)}"' for file_path in file_list
+        ]
+        command_string = command_string.replace(
+            "{file_list}", " ".join(file_list_with_quotes)
+        )
+    return command_string
+
+
 def _resolve_placeholders(
     command_string: str,
     **kwargs: Unpack[JobArgs],
@@ -38,35 +87,14 @@ def _resolve_placeholders(
     Returns:
         The command_string with all `{<var>}` placeholders replaced.
     """
-    # Replace {runem_ctx} with a shell-safe JSON blob of run context (root_path, etc.).
+    root_path: Path = kwargs["root_path"]
+    metadata: HookArgs.HookData | None = kwargs.get("metadata")
+
     if RUNEM_CTX_PLACEHOLDER in command_string:
-        root_path = kwargs["root_path"]
-        context: typing.Dict[str, typing.Union[str, bool, float]] = {
-            "root_path": str(root_path),
-        }
-        metadata: HookArgs.HookData | None = kwargs.get("metadata")
-        if metadata is not None:
-            run_success = metadata.get("run_success")
-            if isinstance(run_success, bool):
-                context["run_success"] = run_success
-            delta = metadata.get("wall_clock_time_saved")
-            if isinstance(delta, timedelta):
-                context["wall_clock_time_saved"] = delta.total_seconds()
-        command_string = command_string.replace(
-            RUNEM_CTX_PLACEHOLDER,
-            shlex.quote(json.dumps(context, separators=(",", ":"))),
-        )
+        command_string = _placeholder_ctx(command_string, metadata, root_path)
 
     if "file_list" in kwargs:
-        if "{file_list}" in command_string:
-            job_kwargs: JobArgs = kwargs
-            file_list: FilePathList = job_kwargs["file_list"]
-            file_list_with_quotes: typing.List[str] = [
-                f'"{str(file_path)}"' for file_path in file_list
-            ]
-            command_string = command_string.replace(
-                "{file_list}", " ".join(file_list_with_quotes)
-            )
+        command_string = _placeholder_file_list(command_string, **kwargs)
 
     config_metadata: "ConfigMetadata" = kwargs["config_metadata"]
     options: OptionsWritable = config_metadata.options
@@ -74,7 +102,7 @@ def _resolve_placeholders(
         # For now, just pass `--option-name`, `--check` or similar to the
         # command line. At some point we will want this to be cleverer, but
         # this will do for now.
-        option_search = f"{{{name}}}"
+        option_search: str = f"{{{name}}}"
         if option_search in command_string:
             replacement = ""
             if value:
