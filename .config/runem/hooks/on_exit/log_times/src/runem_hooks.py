@@ -1,5 +1,4 @@
 import pathlib
-from datetime import timedelta
 
 from typing_extensions import Unpack
 
@@ -15,10 +14,11 @@ def _on_exit_hook(
     assert "metadata" in kwargs
     metadata: HookArgs.OnExit = kwargs["metadata"]
     assert metadata is not None
-    assert "wall_clock_time_saved" in metadata
-    wall_clock_time_saved: timedelta = metadata["wall_clock_time_saved"]
+    assert "wall_clock_time_saved_s" in metadata
+    wall_clock_time_saved_s: float = metadata["wall_clock_time_saved_s"]
+    # Prefer explicit hook context (root_dir) when provided; else root_path from job kwargs.
     root_path: pathlib.Path = kwargs["root_path"]
     assert (root_path / ".runem.yml").exists()
     times_log: pathlib.Path = root_path / ".times.log"
     with times_log.open("a", encoding="utf-8") as file:
-        file.write(f"{str(wall_clock_time_saved.total_seconds())}\n")
+        file.write(f"{str(wall_clock_time_saved_s)}\n")

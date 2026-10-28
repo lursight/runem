@@ -2,9 +2,8 @@ import io
 import json
 import typing
 from contextlib import redirect_stdout
-from datetime import timedelta
 from pathlib import Path
-from pprint import pprint
+from pprint import pformat, pprint
 from unittest.mock import ANY, Mock, patch
 
 import pytest
@@ -108,13 +107,16 @@ def test_job_runner_simple_command_with_file_list(mock_run_command: Mock) -> Non
             "options": config_metadata.options,  # type: ignore
             "procs": config_metadata.args.procs,
             "root_path": Path("."),
-            "verbose": True,  # config_metadata.args.verbose,
+            "verbose": False,  # config_metadata.args.verbose,
         }
         ret: None = job_runner_simple_command(**kwargs)
         run_command_stdout = buf.getvalue()
 
     assert ret is None
-    assert run_command_stdout.split("\n") == [""]
+    assert run_command_stdout.split("\n") == [
+        "",
+    ]
+
     mock_run_command.assert_called_once_with(
         cmd=[
             "echo",
@@ -124,14 +126,14 @@ def test_job_runner_simple_command_with_file_list(mock_run_command: Mock) -> Non
             '"file with spaces"',
             '"some option after files"',
         ],
-        config_metadata=ANY,
         file_list=file_list,
         job=job_config,
         label=test_cmd_string,
+        config_metadata=ANY,
         options=ANY,
         procs=1,
         root_path=Path("."),
-        verbose=True,
+        verbose=False,
     )
 
 
@@ -285,7 +287,7 @@ def test_job_runner_simple_command_runem_ctx_with_hook_kwargs(
         metadata: HookArgs.OnExit = {
             # "root_path":root,
             "run_success": True,
-            "wall_clock_time_saved": timedelta(seconds=12.5),
+            "wall_clock_time_saved_s": 12.5,
         }
         job_runner_simple_command(
             config_metadata=config_metadata,
@@ -301,9 +303,12 @@ def test_job_runner_simple_command_runem_ctx_with_hook_kwargs(
     mock_run_command.assert_called_once()
     call_cmd = mock_run_command.call_args[1]["cmd"]
     parsed = json.loads(call_cmd[1].strip('"'))
+    assert sorted(list(parsed.keys())) == sorted(
+        ["root_path", "run_success", "wall_clock_time_saved_s"]
+    ), pformat(parsed)
     assert parsed["root_path"] == str(root)
     assert parsed["run_success"] is True
-    assert parsed["wall_clock_time_saved"] == 12.5
+    assert parsed["wall_clock_time_saved_s"] == 12.5
 
 
 @patch(
@@ -340,4 +345,83 @@ def test_job_runner_simple_command_runem_ctx_with_invalid_hook_kwargs(
     assert "bad key" not in parsed, "expected only 'specific' keys to be let through"
     assert "another bad key" not in parsed, (
         "expected only 'specific' keys to be let through"
+    )
+
+
+@patch(
+    "runem.job_runner_simple_command.run_command",
+)
+def test_job_runner_simple_command_runem_ctx_whole_metadata(
+    mock_run_command: Mock,
+) -> None:
+    """Tests {runem_ctx} includes run_success & wall_clock_time_saved."""
+    job_config: JobConfig = {
+        "command": "echo {metadata}",
+    }
+    config_metadata: ConfigMetadata = gen_dummy_config_metadata()
+    root = Path("/repo/root")
+    with io.StringIO() as buf, redirect_stdout(buf):
+        metadata: HookArgs.OnExit = {
+            "run_success": True,
+            "wall_clock_time_saved_s": 12.5,
+        }
+        job_runner_simple_command(
+            config_metadata=config_metadata,
+            options=config_metadata.options,  # type: ignore
+            file_list=[],
+            job=job_config,
+            label=Job.get_job_name(job_config),
+            procs=config_metadata.args.procs,
+            root_path=root,
+            verbose=True,
+            metadata=metadata,  # type: ignore  # FIXME
+        )
+    mock_run_command.assert_called_once()
+    call_cmd = mock_run_command.call_args[1]["cmd"]
+    parsed = json.loads(call_cmd[1].strip('"'))
+    assert sorted(list(parsed.keys())) == sorted(
+        ["run_success", "wall_clock_time_saved_s"]
+    ), pformat(parsed)
+    assert parsed["run_success"] is True
+    assert parsed["wall_clock_time_saved_s"] == 12.5
+
+
+@patch(
+    "runem.job_runner_simple_command.run_command",
+)
+def test_job_runner_simple_command_runem_ctx_metadata_item(
+    mock_run_command: Mock,
+) -> None:
+    """Tests {runem_ctx} includes run_success & wall_clock_time_saved."""
+    job_config: JobConfig = {
+        "command": (
+            "echo \"run_success was '{run_success}', "
+            "wall_clock_time_saved_s was '{wall_clock_time_saved_s}'\""
+        ),
+    }
+    config_metadata: ConfigMetadata = gen_dummy_config_metadata()
+    root = Path("/repo/root")
+    with io.StringIO() as buf, redirect_stdout(buf):
+        metadata: HookArgs.OnExit = {
+            # "root_path":root,
+            "run_success": True,
+            "wall_clock_time_saved_s": 12.5,
+        }
+        job_runner_simple_command(
+            config_metadata=config_metadata,
+            options=config_metadata.options,  # type: ignore
+            file_list=[],
+            job=job_config,
+            label=Job.get_job_name(job_config),
+            procs=config_metadata.args.procs,
+            root_path=root,
+            verbose=True,
+            metadata=metadata,  # type: ignore  # FIXME
+        )
+    mock_run_command.assert_called_once()
+    call_cmd = mock_run_command.call_args[1]["cmd"]
+    actual_call_str: str = call_cmd[1]
+    assert (
+        actual_call_str
+        == "\"run_success was 'True', wall_clock_time_saved_s was '12.5'\""
     )

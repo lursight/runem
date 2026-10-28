@@ -386,7 +386,7 @@ def timed_main(argv: typing.List[str]) -> None:
     config_metadata.hook_manager.invoke_on_exit(
         metadata={
             "run_success": failure_exception is None,
-            "wall_clock_time_saved": wall_clock_time_saved,
+            "wall_clock_time_saved_s": wall_clock_time_saved.total_seconds(),
         }
     )
 

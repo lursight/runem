@@ -1,9 +1,8 @@
 import typing
-from datetime import timedelta
 from typing import TypedDict
 
 if typing.TYPE_CHECKING:
-    from runem.config_metadata import ConfigMetadata
+    from runem.config_metadata import ConfigMetadataJsonable
     from runem.types.runem_config import JobConfig
 
 
@@ -21,7 +20,7 @@ class HookInvokeArgs:
         """
 
         run_success: bool  # whether the run completed without job failure; on-exit
-        wall_clock_time_saved: timedelta  # only on `HookName.ON_EXIT`
+        wall_clock_time_saved_s: float  # only on `HookName.ON_EXIT`
 
     class OnCfgLoaded(TypedDict, total=True):
         """Context information for on-config-loaded hooks.
@@ -30,7 +29,7 @@ class HookInvokeArgs:
             - the full, loaded config
         """
 
-        config: "ConfigMetadata"
+        config: "ConfigMetadataJsonable"
 
     class OnJobAdd(TypedDict, total=True):
         """Context information for newly added jobs.

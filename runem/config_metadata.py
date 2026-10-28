@@ -19,6 +19,9 @@ if typing.TYPE_CHECKING:
     from runem.types.runem_config import OptionConfigs, PhaseGroupedJobs
 
 
+ConfigMetadataJsonable = dict[str, typing.Any]
+
+
 class ConfigMetadata:
     """Full metadata about what can and should be run."""
 
@@ -67,6 +70,24 @@ class ConfigMetadata:
         self.phases_to_run = set()  # will be defined after cli arg parsing
         self.tags_to_run = set()  # will be defined after cli arg parsing
         self.tags_to_avoid = set()  # will be defined after cli arg parsing
+
+    def as_dict(self) -> ConfigMetadataJsonable:
+        return {
+            "phases": self.phases,
+            "options_config": self.options_config,
+            "file_filters": self.file_filters,
+            # "hook_manager": self.hook_manager,
+            "jobs": self.jobs,
+            "all_job_names": list(self.all_job_names),
+            "all_job_phases": list(self.all_job_phases),
+            "all_job_tags": list(self.all_job_tags),
+            "options": self.options,
+            # "args": self.args,
+            "jobs_to_run": list(self.jobs_to_run),
+            "phases_to_run": list(self.phases_to_run),
+            "tags_to_run": list(self.tags_to_run),
+            "tags_to_avoid": list(self.tags_to_avoid),
+        }
 
     def set_cli_data(
         self,

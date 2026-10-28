@@ -337,7 +337,7 @@ def _expand_source(
 def load_config_with_sources(config_path: pathlib.Path) -> LoadedConfig:
     """Load and expand one local config graph with source context."""
     root_source = ConfigSource.root(config_path)
-    return _expand_source(root_source.path.parent, root_source)
+    return _expand_source(root_path=root_source.path.parent, source=root_source)
 
 
 def validate_imported_config_conflicts(loaded_config: LoadedConfig) -> None:

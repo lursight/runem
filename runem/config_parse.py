@@ -383,7 +383,7 @@ def load_config_metadata(
 
     config_collector.config.hook_manager.invoke_on_config_loaded(
         metadata={
-            "config": config_collector.config,
+            "config": config_collector.config.as_dict(),
         },
     )
     return config_collector.config

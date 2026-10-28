@@ -150,7 +150,7 @@ You can use placeholders in the command string; runem replaces them before runni
   otherwise empty (for options defined in `config.options`).
 - **`{runem_ctx}`** — replaced with a single shell-safe JSON object containing run
   context: `root_path` (project root path), and for hooks also `run_success` and
-  `wall_clock_time_saved` (seconds). Example: `command: echo {runem_ctx}`.
+  `wall_clock_time_saved_s` (seconds). Example: `command: echo {runem_ctx}`.
 
 _Examples_:
 

@@ -1,7 +1,6 @@
 import json
 import shlex
 import typing
-from datetime import timedelta
 from pathlib import Path
 
 from typing_extensions import Unpack
@@ -41,6 +40,9 @@ def _placeholder_ctx(
     Returns:
         Returns the modified command_string
     """
+    assert RUNEM_CTX_PLACEHOLDER in command_string
+
+    # Always add the `root_path` context
     context: typing.Dict[str, typing.Union[str, bool, float]] = {
         "root_path": str(root_path),
     }
@@ -48,9 +50,10 @@ def _placeholder_ctx(
         run_success = metadata.get("run_success")
         if isinstance(run_success, bool):
             context["run_success"] = run_success
-        delta = metadata.get("wall_clock_time_saved")
-        if isinstance(delta, timedelta):
-            context["wall_clock_time_saved"] = delta.total_seconds()
+        if "wall_clock_time_saved_s" in metadata:
+            wall_clock_time_saved_s = metadata.get("wall_clock_time_saved_s")
+            assert isinstance(wall_clock_time_saved_s, float)
+            context["wall_clock_time_saved_s"] = wall_clock_time_saved_s
     command_string = command_string.replace(
         RUNEM_CTX_PLACEHOLDER,
         shlex.quote(json.dumps(context, separators=(",", ":"))),
@@ -107,10 +110,10 @@ def _resolve_placeholders(
     Returns:
         The command_string with all `{<var>}` placeholders replaced.
     """
-    root_path: Path = kwargs["root_path"]
     metadata: HookArgs.HookData | None = kwargs.get("metadata")
 
     if RUNEM_CTX_PLACEHOLDER in command_string:
+        root_path: Path = kwargs["root_path"]
         command_string = _placeholder_ctx(command_string, metadata, root_path)
 
     if "file_list" in kwargs:
