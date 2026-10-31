@@ -20,7 +20,7 @@ usage: runem.py [-h] [--jobs JOBS [JOBS ...]] [--not-jobs JOBS_EXCLUDED [JOBS_EX
                 [--generate-call-graphs] [--no-generate-call-graphs] [--install-deps] [--no-install-deps] [--isort] [--no-isort]
                 [--unit-test] [--no-unit-test]
                 [--call-graphs | --no-call-graphs]
-                [--procs PROCS] [--root ROOT_DIR] [--verbose | --no-verbose | -v]
+                [--procs PROCS] [--root ROOT_PATH] [--verbose | --no-verbose | -v]
 
 Runs the Lursight Lang test-suite
 
@@ -29,7 +29,7 @@ options:
   --call-graphs, --no-call-graphs
   --procs PROCS, -j PROCS
                         the number of concurrent test jobs to run, -1 runs all test jobs at the same time (8 cores available)
-  --root ROOT_DIR       which dir to use as the base-dir for testing, defaults to checkout root
+  --root ROOT_PATH       which dir to use as the base-dir for testing, defaults to checkout root
   --verbose, --no-verbose, -v
 
 jobs:

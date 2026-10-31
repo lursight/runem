@@ -219,7 +219,7 @@ class RunemArgsParse:
         config_dir: pathlib.Path = _get_config_dir(self._cfg_filepath)
         self._parser.add_argument(
             "--root",
-            dest="root_dir",
+            dest="root_path",
             default=config_dir,
             help=(
                 "which dir to use as the base-dir for testing, "

@@ -17,7 +17,6 @@ def _on_exit_hook(
     assert metadata is not None
     assert "wall_clock_time_saved" in metadata
     wall_clock_time_saved: timedelta = metadata["wall_clock_time_saved"]
-    # Prefer explicit hook context (root_dir) when provided; else root_path from job kwargs.
     root_path: pathlib.Path = kwargs["root_path"]
     assert (root_path / ".runem.yml").exists()
     times_log: pathlib.Path = root_path / ".times.log"

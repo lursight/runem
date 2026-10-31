@@ -101,7 +101,7 @@ class LoadedConfig:
 
 
 def _resolve_import_path(
-    root_dir: pathlib.Path,
+    root_path: pathlib.Path,
     source: ConfigSource,
     requested_path: pathlib.Path,
 ) -> pathlib.Path:
@@ -119,9 +119,9 @@ def _resolve_import_path(
             requested_path=requested_path,
         )
 
-    resolved_path = (root_dir / import_path).resolve()
+    resolved_path = (root_path / import_path).resolve()
     try:
-        resolved_path.relative_to(root_dir)
+        resolved_path.relative_to(root_path)
     except ValueError as err:
         raise ConfigImportError(
             code="import_outside_root",
@@ -206,7 +206,7 @@ def _callable_wrapper(node: ConfigNodes) -> typing.Optional[JobWrapper]:
 
 
 def _create_imported_source(
-    root_dir: pathlib.Path,
+    root_path: pathlib.Path,
     source: ConfigSource,
     requested_path: pathlib.Path,
 ) -> ConfigSource:
@@ -223,7 +223,7 @@ def _create_imported_source(
             requested_path=requested_path,
         )
 
-    imported_path = _resolve_import_path(root_dir, source, requested_path)
+    imported_path = _resolve_import_path(root_path, source, requested_path)
     imported_chain = (*source.import_chain, imported_path)
     if imported_path in source.import_chain:
         raise ConfigImportError(
@@ -237,7 +237,7 @@ def _create_imported_source(
 
 
 def _normalise_imported_address(
-    root_dir: pathlib.Path,
+    root_path: pathlib.Path,
     entry: ConfigEntry,
 ) -> ConfigEntry:
     """Rebase an imported file-addressed callable to the root config directory."""
@@ -262,10 +262,10 @@ def _normalise_imported_address(
             import_chain=entry.source.import_chain,
             requested_path=requested_path,
         )
-    address_path = root_dir / requested_path
+    address_path = root_path / requested_path
     canonical_path = address_path.resolve()
     try:
-        root_relative_path = canonical_path.relative_to(root_dir)
+        root_relative_path = canonical_path.relative_to(root_path)
     except ValueError as err:
         raise ConfigImportError(
             code="address_outside_root",
@@ -299,7 +299,7 @@ def _normalise_imported_address(
 
 
 def _expand_source(
-    root_dir: pathlib.Path,
+    root_path: pathlib.Path,
     source: ConfigSource,
 ) -> LoadedConfig:
     """Expand one source and all of its imports depth-first."""
@@ -309,14 +309,14 @@ def _expand_source(
     for node in _load_yaml_config(source):
         if _is_config_node(node):
             entry = ConfigEntry(node=node, source=source)
-            entries.append(_normalise_imported_address(root_dir, entry))
+            entries.append(_normalise_imported_address(root_path, entry))
             continue
 
         if not _is_import_node(node):
             raise AssertionError("Validated config node has no recognised type")
         requested_path = pathlib.Path(node["import"])
-        imported_source = _create_imported_source(root_dir, source, requested_path)
-        imported_config = _expand_source(root_dir, imported_source)
+        imported_source = _create_imported_source(root_path, source, requested_path)
+        imported_config = _expand_source(root_path, imported_source)
         entries.extend(imported_config.entries)
         all_sources.extend(imported_config.all_sources)
         import_edges.append(

@@ -38,11 +38,11 @@ def _resolve_placeholders(
     Returns:
         The command_string with all `{<var>}` placeholders replaced.
     """
-    # Replace {runem_ctx} with a shell-safe JSON blob of run context (root_dir, etc.).
+    # Replace {runem_ctx} with a shell-safe JSON blob of run context (root_path, etc.).
     if RUNEM_CTX_PLACEHOLDER in command_string:
         root_path = kwargs["root_path"]
         context: typing.Dict[str, typing.Union[str, bool, float]] = {
-            "root_dir": str(root_path),
+            "root_path": str(root_path),
         }
         metadata: HookArgs.HookData | None = kwargs.get("metadata")
         if metadata is not None:

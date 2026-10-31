@@ -532,7 +532,7 @@ def _remove_first_line_and_split_along_whitespace(
 
 
 def _conform_help_output(help_output: typing.List[str]) -> str:
-    # we have to remove the run-dir for root_dir from the output
+    # we have to remove the run-dir for root_path from the output
     runem_stdout_str: str = (
         "\n".join(help_output)
         .replace(str(pathlib.Path(__file__).parent), DIR_REPLACEMENT_DIR)

@@ -1,4 +1,4 @@
-usage: -c [-H] [--call-graphs | --no-call-graphs] [-f | --modified-files | --no-modified-files] [-h | --git-head-files | --no-git-head-files] [--always-files ALWAYS_FILES [ALWAYS_FILES ...]] [--git-files-since-branch GIT_SINCE_BRANCH] [--procs PROCS] [--root ROOT_DIR] [--root-show | --no-root-show] [--silent | --no-silent | -s] [--spinner | --no-spinner] [--verbose | --no-verbose] [--version | --no-version | -v]
+usage: -c [-H] [--call-graphs | --no-call-graphs] [-f | --modified-files | --no-modified-files] [-h | --git-head-files | --no-git-head-files] [--always-files ALWAYS_FILES [ALWAYS_FILES ...]] [--git-files-since-branch GIT_SINCE_BRANCH] [--procs PROCS] [--root ROOT_PATH] [--root-show | --no-root-show] [--silent | --no-silent | -s] [--spinner | --no-spinner] [--verbose | --no-verbose] [--version | --no-version | -v]
 
 Runs the Lursight Lang test-suite
 
@@ -14,7 +14,7 @@ Runs the Lursight Lang test-suite
   --git-files-since-branch GIT_SINCE_BRANCH
                         Get the list of paths/files changed between a branch, e.g., since 'origin/main'. Useful for checking files changed before pushing.
   --procs, -j PROCS     the number of concurrent test jobs to run, -1 runs all test jobs at the same time ([TEST_REPLACED_CORES] cores available)
-  --root ROOT_DIR       which dir to use as the base-dir for testing, defaults to directory containing the config '[TEST_REPLACED_DIR]'
+  --root ROOT_PATH       which dir to use as the base-dir for testing, defaults to directory containing the config '[TEST_REPLACED_DIR]'
   --root-show, --no-root-show
                         show the root-path of runem and exit
   --silent, --no-silent, -s

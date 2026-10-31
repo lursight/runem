@@ -264,7 +264,7 @@ def test_job_runner_simple_command_with_runem_ctx(mock_run_command: Mock) -> Non
     print(ctx_arg)
     assert str(root) in ctx_arg
     parsed = json.loads(ctx_arg.strip('"'))
-    assert parsed["root_dir"] == str(root)
+    assert parsed["root_path"] == str(root)
     assert "run_success" not in parsed
     assert "wall_clock_time_saved" not in parsed
 
@@ -283,7 +283,7 @@ def test_job_runner_simple_command_runem_ctx_with_hook_kwargs(
     root = Path("/repo/root")
     with io.StringIO() as buf, redirect_stdout(buf):
         metadata: HookArgs.OnExit = {
-            # "root_dir":root,
+            # "root_path":root,
             "run_success": True,
             "wall_clock_time_saved": timedelta(seconds=12.5),
         }
@@ -301,7 +301,7 @@ def test_job_runner_simple_command_runem_ctx_with_hook_kwargs(
     mock_run_command.assert_called_once()
     call_cmd = mock_run_command.call_args[1]["cmd"]
     parsed = json.loads(call_cmd[1].strip('"'))
-    assert parsed["root_dir"] == str(root)
+    assert parsed["root_path"] == str(root)
     assert parsed["run_success"] is True
     assert parsed["wall_clock_time_saved"] == 12.5
 
