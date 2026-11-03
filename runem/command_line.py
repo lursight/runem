@@ -166,9 +166,23 @@ class RunemArgsParse:
             formatter_class=_get_argparse_help_formatter(),
         )
 
-        # define the `--help` args first
-        self._help_args_group = self._parser.add_argument_group("help")
-        inbuilt_args = self._parser.add_argument_group("runem inbuilt")
+        # define the `--help` args group first
+        # NOTE: this will be added to in the 2nd phase, causing an
+        #       print-help-and-exit action (argparse's default `help` action)
+        self._help_args_group = self._parser.add_argument_group(
+            title="help and ux",
+            description="Options that give access to information on project specifics",
+        )
+
+        # Define runem's inbuilt args
+        inbuilt_args = self._parser.add_argument_group(
+            title="runem inbuilt",
+            description=(
+                "Options to control runem itself, "
+                "global file filters, config locations, "
+                "resources to use"
+            ),
+        )
 
         inbuilt_args.add_argument(
             "--call-graphs",
@@ -311,16 +325,23 @@ class RunemArgsParse:
         self._help_args_group.add_argument(
             "-H", "--help", action="help", help="show this help message and exit"
         )
-        job_group = self._parser.add_argument_group("jobs")
+
         all_job_names: JobNames = set(name for name in config_metadata.all_job_names)
+        job_group = self._parser.add_argument_group(
+            title="jobs",
+            description=(
+                "Job-name filters to run a specific set of jobs, or exclude jobs."
+                f"Job-names are: {printable_set(all_job_names)}"
+            ),
+        )
         jobs_arg = job_group.add_argument(
             "--jobs",
             dest="jobs",
             nargs="+",
             default=sorted(list(all_job_names)),
             help=(
-                "List of job-names to run the given jobs. Other filters will modify this list. "
-                f"Defaults to {printable_set(all_job_names)}"
+                "Run only specified jobs; defaults to all job-names. "
+                "NOTE: Other filters will modify this list. "
             ),
             required=False,
         )
@@ -332,25 +353,27 @@ class RunemArgsParse:
                 dest="jobs_excluded",
                 nargs="+",
                 default=[],
-                help=(
-                    "List of job-names to NOT run. Defaults to empty. "
-                    f"Available options are: {printable_set((all_job_names))}"
-                ),
+                help="Excluded specific job-name(s) from running. Defaults to empty. ",
                 required=False,
             ),
             all_job_names,
         )
 
-        phase_group = self._parser.add_argument_group("phases")
+        phase_group = self._parser.add_argument_group(
+            title="phases",
+            description=(
+                "Control which phases are run and in which order. "
+                f"Phases are: {printable_set(config_metadata.all_job_phases)}. "
+            ),
+        )
         phases_arg = phase_group.add_argument(
             "--phases",
             dest="phases",
             nargs="+",
             default=config_metadata.all_job_phases,
             help=(
-                "Run only the phases passed in, and can be used to "
-                "change the phase order. Phases are run in the order given. "
-                f"Defaults to {printable_set(config_metadata.all_job_phases)}. "
+                "Run only the given phases; can be used to "
+                "change the phase order. Phases are run in the order given."
             ),
             required=False,
         )
@@ -363,14 +386,19 @@ class RunemArgsParse:
             default=[],
             help=(
                 "List of phases to NOT run. "
-                "This option does not change the phase run order. "
-                f"Options are '{sorted(config_metadata.all_job_phases)}'. "
+                "This option does not change the phase run order."
             ),
             required=False,
         )
         _set_argcomplete_completer(phases_excluded_arg, config_metadata.all_job_phases)
 
-        tag_group = self._parser.add_argument_group("tags")
+        tag_group = self._parser.add_argument_group(
+            title="tags",
+            description=(
+                "Control job-selection via tags."
+                f"Available tags are: '{sorted(config_metadata.all_job_tags)}'."
+            ),
+        )
         tags_arg = tag_group.add_argument(
             "--tags",
             dest="tags",
@@ -380,7 +408,6 @@ class RunemArgsParse:
                 # TODO: clarify the logic by which we add/remove jobs based on tags
                 #       e.g. exclusive-in, union, x-or etc.
                 "Only run jobs with the given tags. "
-                f"Defaults to '{sorted(config_metadata.all_job_tags)}'."
             ),
             required=False,
         )
@@ -391,16 +418,17 @@ class RunemArgsParse:
             dest="tags_excluded",
             nargs="+",
             default=[],
-            help=(
-                "Removes one or more tags from the list of job tags to be run. "
-                f"Options are '{sorted(config_metadata.all_job_tags)}'."
-            ),
+            help=("Removes one or more tags from the list of job tags to be run. "),
             required=False,
         )
         _set_argcomplete_completer(tags_excluded_arg, config_metadata.all_job_tags)
 
         job_param_overrides_group = self._parser.add_argument_group(
-            "job-param overrides",  # help="overrides default test params on all matching jobs"
+            title="Config options",
+            description=(
+                "Config exposed option-overrides. "
+                "Boolean overrides. Prefix any option with --no- to disable it."
+            ),
         )
         _define_option_args(config_metadata, job_param_overrides_group)
 
@@ -521,19 +549,13 @@ def _define_option_args(
             aliases.append(_alias_to_switch(option["alias"]))
             aliases_no.append(_alias_to_switch(option["alias"], negatise=True))
 
-        desc: typing.Optional[str] = None
-        desc_for_off: typing.Optional[str] = None
-        if "desc" in option:
-            desc = option["desc"]
-            desc_for_off = f"turn off {desc}"
-
         job_param_overrides_group.add_argument(
             f"--{switch_name}",
             *aliases,
             dest="overrides_on",
             action="append_const",
             const=option["name"],
-            help=desc,
+            help=f"{option.get('desc', '')} (default: {option['default']})",
             required=False,
         )
         job_param_overrides_group.add_argument(
@@ -542,7 +564,7 @@ def _define_option_args(
             dest="overrides_off",
             action="append_const",
             const=option["name"],
-            help=desc_for_off,
+            help=argparse.SUPPRESS,
             required=False,
         )
 
