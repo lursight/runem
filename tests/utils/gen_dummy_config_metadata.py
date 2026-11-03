@@ -10,26 +10,34 @@ from runem.informative_dict import InformativeDict
 def gen_dummy_config_metadata() -> ConfigMetadata:
     config_metadata: ConfigMetadata = ConfigMetadata(
         cfg_filepath=pathlib.Path(__file__),
-        phases=("dummy phase 1",),
-        options_config=tuple(),
-        file_filters={
-            "dummy tag": {
-                "tag": "dummy tag",
-                "regex": ".*1.txt",  # should match just one file
-            }
-        },
-        hook_manager=MagicMock(),
-        jobs=defaultdict(list),
-        all_job_names=set(),
-        all_job_phases=set(),
-        all_job_tags=set(),
+        args=Namespace(verbose=False),
     )
     config_metadata.set_cli_data(
-        args=Namespace(verbose=False, procs=1),
-        jobs_to_run=set(),  # JobNames,
-        phases_to_run=set(),  # JobPhases,
-        tags_to_run=set(),  # ignored JobTags,
-        tags_to_avoid=set(),  # ignored  JobTags,
-        options=InformativeDict({"option_on": True, "option_off": False}),  # Options,
+        args=Namespace(
+            verbose=False,
+            procs=1,
+            jobs=[],
+            jobs_excluded=[],
+            tags=[],
+            tags_excluded=[],
+            phases=[],
+            phases_excluded=[],
+        ),
     )
+    config_metadata.phases = ("dummy phase 1",)
+    config_metadata.options_config = tuple()
+    config_metadata.file_filters = {
+        "dummy tag": {
+            "tag": "dummy tag",
+            "regex": ".*1.txt",  # should match just one file
+        }
+    }
+    config_metadata.options = InformativeDict(
+        {"option_on": True, "option_off": False}
+    )  # Options
+    config_metadata.hook_manager = MagicMock()
+    config_metadata.jobs = defaultdict(list)
+    config_metadata.all_job_names = set()
+    config_metadata.all_job_phases = set()
+    config_metadata.all_job_tags = set()
     return config_metadata

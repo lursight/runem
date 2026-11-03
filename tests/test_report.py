@@ -3,15 +3,15 @@ import typing
 from contextlib import redirect_stdout
 from datetime import timedelta
 
-from runem.report import _print_reports_by_phase, report_on_run
-from runem.types.common import OrderedPhases
-from runem.types.types_jobs import (
-    JobReturn,
+from runem.job.job_return import JobReturn
+from runem.report.metrics.job_run_timing import JobTiming
+from runem.report.report_on_run import _print_reports_by_phase, report_on_run
+from runem.report.runem_metrics import (
     JobRunMetadata,
     JobRunMetadatasByPhase,
     JobRunReportByPhase,
-    JobTiming,
 )
+from runem.types.common import OrderedPhases
 from tests.sanitise_reports_footer import sanitise_reports_footer
 
 

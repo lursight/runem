@@ -149,8 +149,8 @@ You can use placeholders in the command string; runem replaces them before runni
 - **`{option_name}`** — replaced with `--option_name` when that option is true,
   otherwise empty (for options defined in `config.options`).
 - **`{runem_ctx}`** — replaced with a single shell-safe JSON object containing run
-  context: `root_dir` (project root path), and for hooks also `run_success` and
-  `wall_clock_time_saved` (seconds). Example: `command: echo {runem_ctx}`.
+  context: `root_path` (project root path), and for hooks also `run_success` and
+  `wall_clock_time_saved_s` (seconds). Example: `command: echo {runem_ctx}`.
 
 _Examples_:
 
@@ -332,11 +332,12 @@ def _runem_function(**kwargs) -> None:
 
 ```py
 from typing_extensions import Unpack  # for python 3.9 back-compat
-from runem.types import JobKwargs
+from runem.job.job_function import job_function, JobArgs
 
 
+@job_function
 def _runem_function(
-    **kwargs: Unpack[JobKwargs],
+    **kwargs: Unpack[JobArgs]
 ) -> None:
     """Typed runem func with inspectable context kwargs."""
     pass

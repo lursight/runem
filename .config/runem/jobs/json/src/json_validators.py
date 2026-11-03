@@ -2,12 +2,12 @@ import pathlib
 
 from typing_extensions import Unpack
 
-from runem.run_command import run_command
-from runem.types import FilePathList, JobKwargs
+from runem import FilePathList, JobArgs, job_function, run_command
 
 
+@job_function
 def _json_validate(
-    **kwargs: Unpack[JobKwargs],
+    **kwargs: Unpack[JobArgs],
 ) -> None:
     label = kwargs["label"]
     json_files: FilePathList = kwargs["file_list"]

@@ -20,6 +20,7 @@ We do:
   you
 """
 
+import argparse
 import contextlib
 import multiprocessing
 import os
@@ -38,60 +39,31 @@ from rich.status import Status
 from rich.text import Text
 
 from runem.blocking_print import RICH_CONSOLE
-from runem.command_line import error_on_log_logic, parse_args
-from runem.config import load_project_config, load_user_configs
+from runem.command_line import RunemArgsParse
+from runem.config import (
+    find_project_cfg,
+    load_project_config,
+    load_user_configs,
+)
 from runem.config_metadata import ConfigMetadata
 from runem.config_parse import load_config_metadata
 from runem.files import find_files
+from runem.job.job_return import JobReturn
 from runem.job_execute import job_execute
 from runem.job_filter import filter_jobs
 from runem.log import error, log, warn
-from runem.report import report_on_run
+from runem.report.metrics.job_run_timing import JobTiming
+from runem.report.report_on_run import report_on_run
+from runem.report.runem_metrics import (
+    JobRunMetadata,
+    JobRunMetadatasByPhase,
+)
 from runem.run_command import RunemJobError
 from runem.types.common import OrderedPhases, PhaseName
 from runem.types.errors import SystemExitBad
 from runem.types.filters import FilePathListLookup
-from runem.types.hooks import HookName
 from runem.types.runem_config import Config, Jobs, PhaseGroupedJobs
-from runem.types.types_jobs import (
-    JobReturn,
-    JobRunMetadata,
-    JobRunMetadatasByPhase,
-    JobTiming,
-)
 from runem.utils import printable_set_coloured
-
-
-def _determine_run_parameters(argv: typing.List[str]) -> ConfigMetadata:
-    """Loads config, parsing cli input and produces the run config.
-
-    This is where the power of run'em resides. We match a declarative config with useful
-    command-line switches to make choosing which jobs to run fast and intuitive.
-
-    Return a ConfigMetadata object with all the required information.
-    """
-    # Because we want to be able to show logging whilst parsing .runem.yml config, we
-    # need to check the state of the logging-verbosity switches here, manually, as well.
-    verbose = "--verbose" in argv
-    silent = ("--silent" in argv) or ("-s" in argv)
-    error_on_log_logic(verbose, silent)
-
-    config: Config
-    cfg_filepath: pathlib.Path
-    config, cfg_filepath = load_project_config()
-    user_configs: typing.List[typing.Tuple[Config, pathlib.Path]] = load_user_configs()
-    config_metadata: ConfigMetadata = load_config_metadata(
-        config, cfg_filepath, user_configs, silent, verbose=("--verbose" in argv)
-    )
-
-    # Now we parse the cli arguments extending them with information from the
-    # .runem.yml config.
-    config_metadata = parse_args(config_metadata, argv)
-
-    if config_metadata.args.verbose:
-        log(f"loaded config from {cfg_filepath}")
-
-    return config_metadata
 
 
 def _update_progress(
@@ -213,6 +185,7 @@ def _process_jobs(
                         repeat(completed_jobs),
                         repeat(config_metadata),
                         repeat(file_lists),
+                        repeat(None),  # <- metadata
                     ),
                 )
         except RunemJobError as err:  # pylint: disable=broad-exception-caught
@@ -277,12 +250,58 @@ MainReturnType = typing.Tuple[
 ]
 
 
+def _load_config_for_run(argv: typing.List[str]) -> ConfigMetadata:
+    """High level run-prep orchestration
+
+    This function orchestrates:
+        - project loading
+        - user-config loading
+        - populating args with config-specs
+        - filtering the run-read config/graph
+        - returns filtered run-ready config.
+
+    This is where the power of run'em resides. We match a declarative config with useful
+    command-line switches to make choosing which jobs to run fast and intuitive.
+
+    Args:
+        argv: command line argv
+
+    Returns:
+            ConfigMetadata object with all the required information.
+    """
+    cfg_filepath: pathlib.Path = find_project_cfg()
+    # Args-parsing and config are tightly coupled.
+    args_parse = RunemArgsParse(cfg_filepath)
+
+    # Early-parse argv for built-ins and controls we will apply during
+    # config-parsing
+    args_parse.parse_early(argv)
+    assert args_parse.args is not None
+    args: argparse.Namespace = args_parse.args
+
+    if args.verbose:
+        log(f"loaded config from {cfg_filepath}")
+
+    # Load the config
+    config: Config = load_project_config()
+    user_configs: typing.List[typing.Tuple[Config, pathlib.Path]] = load_user_configs()
+    config_metadata: ConfigMetadata = load_config_metadata(
+        config,
+        cfg_filepath,
+        user_configs,
+        args,
+    )
+    args_parse.parse_with_config(argv, config_metadata)
+    config_metadata.set_cli_data(args_parse.args)
+    return config_metadata
+
+
 def _main(
     argv: typing.List[str],
 ) -> MainReturnType:
     start = timer()
 
-    config_metadata: ConfigMetadata = _determine_run_parameters(argv)
+    config_metadata: ConfigMetadata = _load_config_for_run(argv)
 
     # first anchor the cwd to the config-file, so that git ls-files works
     os.chdir(config_metadata.cfg_filepath.parent)
@@ -364,13 +383,11 @@ def timed_main(argv: typing.List[str]) -> None:
         )
     )
 
-    root_dir = config_metadata.cfg_filepath.parent
-    config_metadata.hook_manager.invoke_hooks(
-        hook_name=HookName.ON_EXIT,
-        config_metadata=config_metadata,
-        root_dir=root_dir,
-        run_success=failure_exception is None,
-        wall_clock_time_saved=wall_clock_time_saved,
+    config_metadata.hook_manager.invoke_on_exit(
+        metadata={
+            "run_success": failure_exception is None,
+            "wall_clock_time_saved_s": wall_clock_time_saved.total_seconds(),
+        }
     )
 
     if failure_exception is not None:

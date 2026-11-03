@@ -1,7 +1,7 @@
 import enum
 
 
-class HookName(enum.Enum):
+class HookName(enum.StrEnum):
     """List supported hooks.
 
     Todo:
@@ -13,3 +13,5 @@ class HookName(enum.Enum):
 
     # at exit
     ON_EXIT = "on-exit"
+    CFG_LOADED = "on-config-loaded"
+    CFG_JOB_ADD = "on-job-add"

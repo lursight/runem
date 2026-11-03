@@ -1,8 +1,9 @@
 import typing
 
-from runem.types.common import FilePathList, JobTags
-from runem.types.filters import FilePathListLookup
-from runem.types.runem_config import JobConfig, JobWhen
+if typing.TYPE_CHECKING:
+    from runem.types.common import FilePathList, JobTags
+    from runem.types.filters import FilePathListLookup
+    from runem.types.runem_config import JobConfig, JobWhen
 
 
 class NoJobName(ValueError):
@@ -24,7 +25,7 @@ class Job:
     """
 
     @staticmethod
-    def get_job_tags(job: JobConfig) -> typing.Optional[JobTags]:
+    def get_job_tags(job: "JobConfig") -> typing.Optional["JobTags"]:
         """Returns the tags for this job or None if the tags key is missing.
 
         In practice None means:
@@ -48,14 +49,14 @@ class Job:
             return None
 
         # have valid tags, coerce them to be a set-type and return
-        when: JobWhen = job.get("when", {})
-        job_tags: JobTags = when["tags"]
+        when: "JobWhen" = job.get("when", {})
+        job_tags: "JobTags" = when["tags"]
         return set(job_tags)
 
     @staticmethod
     def get_job_files(
-        file_lists: FilePathListLookup, job_tags: typing.Optional[JobTags]
-    ) -> FilePathList:
+        file_lists: "FilePathListLookup", job_tags: typing.Optional["JobTags"]
+    ) -> "FilePathList":
         """Return the list of files for the job-associated tags.
 
         TODO: support no files-groups being defined i.e. switch to all files
@@ -78,7 +79,7 @@ class Job:
             # use whatever tags are in the config, even if empty
             assert job_tags  # for mypy
             tags_for_files = job_tags
-        file_list: FilePathList = []
+        file_list: "FilePathList" = []
         for tag in tags_for_files:
             if tag in file_lists:
                 file_list.extend(file_lists[tag])

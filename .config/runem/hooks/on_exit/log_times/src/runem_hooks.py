@@ -1,20 +1,24 @@
 import pathlib
-from datetime import timedelta
 
 from typing_extensions import Unpack
 
-from runem.types import HookKwargs
+from runem.hook.hook_args import HookArgs
+from runem.hook.specs.on_exit import ArgsOnExit, on_exit_hook
 
 
+@on_exit_hook
 def _on_exit_hook(
-    **kwargs: Unpack[HookKwargs],
+    **kwargs: Unpack[ArgsOnExit],
 ) -> None:
     """A noddy hook: logs wall-clock time saved to .times.log in project root."""
-    assert "wall_clock_time_saved" in kwargs
-    wall_clock_time_saved: timedelta = kwargs["wall_clock_time_saved"]
+    assert "metadata" in kwargs
+    metadata: HookArgs.OnExit = kwargs["metadata"]
+    assert metadata is not None
+    assert "wall_clock_time_saved_s" in metadata
+    wall_clock_time_saved_s: float = metadata["wall_clock_time_saved_s"]
     # Prefer explicit hook context (root_dir) when provided; else root_path from job kwargs.
-    root_dir: pathlib.Path = kwargs.get("root_dir") or kwargs["root_path"]
-    assert (root_dir / ".runem.yml").exists()
-    times_log: pathlib.Path = root_dir / ".times.log"
+    root_path: pathlib.Path = kwargs["root_path"]
+    assert (root_path / ".runem.yml").exists()
+    times_log: pathlib.Path = root_path / ".times.log"
     with times_log.open("a", encoding="utf-8") as file:
-        file.write(f"{str(wall_clock_time_saved.total_seconds())}\n")
+        file.write(f"{str(wall_clock_time_saved_s)}\n")

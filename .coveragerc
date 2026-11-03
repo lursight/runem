@@ -60,6 +60,9 @@ exclude_lines =
     # stop coverage being reported)
     if os.environ.get("LANG_CALLGRAPHS", "False") == "True":
 
+    # typechecking
+    if typing.TYPE_CHECKING:
+
 ignore_errors = True
 
 [html]

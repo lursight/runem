@@ -3,18 +3,17 @@ import typing
 from collections import defaultdict
 from datetime import timedelta
 
+from runem.job.job_return import JobReturn
 from runem.log import log
-from runem.types.common import OrderedPhases, PhaseName
-from runem.types.types_jobs import (
-    JobReturn,
+from runem.report.metrics.job_run_timing import JobTiming
+from runem.report.metrics.timing import TimingEntries
+from runem.report.report_url import ReportUrlInfo, ReportUrls
+from runem.report.runem_metrics import (
     JobRunMetadatasByPhase,
     JobRunReportByPhase,
     JobRunTimesByPhase,
-    JobTiming,
-    ReportUrlInfo,
-    ReportUrls,
-    TimingEntries,
 )
+from runem.types.common import OrderedPhases, PhaseName
 
 try:
     import termplotlib

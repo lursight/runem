@@ -9,7 +9,6 @@ from unittest.mock import MagicMock, Mock, patch
 import pytest
 
 from runem.config_metadata import ConfigMetadata
-from runem.informative_dict import InformativeDict
 from runem.job_filter import _get_jobs_matching, _should_filter_out_by_tags, filter_jobs
 from runem.types.common import JobTags
 from runem.types.runem_config import JobConfig, PhaseGroupedJobs
@@ -42,27 +41,44 @@ def test_runem_job_filters_work_with_no_tags(verbosity: bool) -> None:
     ]
     config_metadata: ConfigMetadata = ConfigMetadata(
         cfg_filepath=config_file_path,
-        phases=("dummy phase 1",),
-        options_config=tuple(),
-        file_filters={
-            # "dummy tag": {
-            #     "tag": "dummy tag",
-            #     "regex": ".*1.txt",  # should match just one file
-            # }
-        },
-        hook_manager=MagicMock(),
-        jobs=expected_jobs,
-        all_job_names=set(("dummy job label",)),
-        all_job_phases=set(("dummy phase 1",)),
-        all_job_tags=set(),
+        args=Namespace(
+            verbose=verbosity,
+            silent=False,
+            procs=1,
+            jobs=[],
+            jobs_excluded=[],
+            tags=[],
+            tags_excluded=[],
+            phases=[],
+            phases_excluded=[],
+        ),
     )
+    config_metadata.phases = ("dummy phase 1",)
+    config_metadata.options_config = tuple()
+    config_metadata.file_filters = {
+        # "dummy tag": {
+        #     "tag": "dummy tag",
+        #     "regex": ".*1.txt",  # should match just one file
+        # }
+    }
+    config_metadata.hook_manager = MagicMock()
+    config_metadata.jobs = expected_jobs
+    config_metadata.all_job_names = set(("dummy job label",))
+    config_metadata.all_job_phases = set(("dummy phase 1",))
+    config_metadata.all_job_tags = set()
+
     config_metadata.set_cli_data(
-        args=Namespace(verbose=verbosity, procs=1),
-        jobs_to_run=set(("dummy job label",)),  # JobNames,
-        phases_to_run=set(),  # ignored JobPhases,
-        tags_to_run=set(),  # ignored JobTags,
-        tags_to_avoid=set(),  # ignored  JobTags,
-        options=InformativeDict({}),  # Options,
+        args=Namespace(
+            verbose=verbosity,
+            silent=False,
+            procs=1,
+            jobs=[],
+            jobs_excluded=[],
+            tags=[],
+            tags_excluded=[],
+            phases=[],
+            phases_excluded=[],
+        ),
     )
     with io.StringIO() as buf, redirect_stdout(buf):
         filter_jobs(config_metadata)

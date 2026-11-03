@@ -1,3 +1,4 @@
+- import: .config/runem/hooks/cfg/runem.yml
 - import: .config/runem/hooks/on_exit/log_times/runem.yml
 - import: .config/runem/jobs/dog_food/runem.yml
 - import: .config/runem/jobs/git/runem.yml

@@ -9,8 +9,7 @@ import typing
 from argparse import Namespace
 from collections import defaultdict
 from contextlib import redirect_stdout
-from datetime import timedelta
-from pprint import pprint
+from pprint import pformat, pprint
 from unittest import mock
 from unittest.mock import MagicMock, Mock, patch
 
@@ -18,7 +17,6 @@ from unittest.mock import MagicMock, Mock, patch
 import pytest
 
 from runem.config_metadata import ConfigMetadata
-from runem.informative_dict import InformativeDict
 from runem.runem import (
     _main,
     _process_jobs,
@@ -28,17 +26,13 @@ from runem.runem import (
 )
 from runem.types.errors import SystemExitBad
 from runem.types.filters import FilePathListLookup
-from runem.types.hooks import HookName
 from runem.types.runem_config import (
     Config,
     GlobalSerialisedConfig,
-    HookSerialisedConfig,
     JobConfig,
     Jobs,
     PhaseGroupedJobs,
-    UserConfigMetadata,
 )
-from runem.types.types_jobs import JobReturn, JobTiming
 from tests.intentional_test_error import IntentionalTestError
 from tests.sanitise_reports_footer import sanitise_reports_footer
 from tests.utils.dummy_data import (
@@ -46,6 +40,8 @@ from tests.utils.dummy_data import (
     DUMMY_JOB_S_CONFIG_4_MODULE,
     DUMMY_JOB_S_CONFIG_MINIMAL_COMMAND,
     DUMMY_MAIN_RETURN,
+    MOCK_JOB_EXECUTE_INNER_RET,
+    MOCK_USER_CONFIGS_METADATA,
 )
 
 DIR_REPLACEMENT_DIR: str = "[TEST_REPLACED_DIR]"
@@ -85,13 +81,20 @@ def test_runem_basic() -> None:
     return_value=[],
 )
 @patch(
+    "runem.runem.find_project_cfg",
+    return_value=pathlib.Path(__file__).parent / ".runem.yml",
+)
+@patch(
     "runem.runem.load_project_config",
 )
 @patch(
     "runem.runem.find_files",
 )
 def test_runem_basic_with_config(
-    find_files_mock: Mock, load_config_mock: Mock, load_config_metadata_mock: Mock
+    find_files_mock: Mock,
+    load_project_config_mock: Mock,
+    find_project_cfg_mock: Mock,
+    load_config_metadata_mock: Mock,
 ) -> None:
     global_config: GlobalSerialisedConfig = {
         "config": {
@@ -106,7 +109,7 @@ def test_runem_basic_with_config(
     ]
     minimal_file_lists = defaultdict(list)
     minimal_file_lists["mock phase"].append(pathlib.Path("/test") / "dummy" / "path")
-    load_config_mock.return_value = (empty_config, pathlib.Path())
+    load_project_config_mock.return_value = empty_config
     find_files_mock.return_value = minimal_file_lists
     with io.StringIO() as buf, redirect_stdout(buf):
         # with pytest.raises(SystemExit):
@@ -114,7 +117,6 @@ def test_runem_basic_with_config(
         runem_stdout: typing.List[str] = sanitise_reports_footer(buf.getvalue())
         assert [] == _strip_reports_footer(runem_stdout)
 
-    pprint(runem_stdout)
     assert runem_stdout == [
         "runem: reports:",
         "runem (total wall-clock)  [<float>]",
@@ -124,13 +126,17 @@ def test_runem_basic_with_config(
         "runem: DONE: runem took: <float>, saving you <float>, without runem you "
         "would have waited <float>",
         "",
-    ]
+    ], pformat(runem_stdout)
     load_config_metadata_mock.assert_called_once()
 
 
 @patch(
     "runem.runem.load_user_configs",
     return_value=[],
+)
+@patch(
+    "runem.runem.find_project_cfg",
+    return_value=pathlib.Path(__file__).parent / ".runem.yml",
 )
 @patch(
     "runem.runem.load_project_config",
@@ -140,7 +146,8 @@ def test_runem_basic_with_config(
 )
 def test_runem_basic_with_config_no_options(
     find_files_mock: Mock,
-    load_config_mock: Mock,
+    load_project_config_mock: Mock,
+    find_project_cfg_mock: Mock,
     load_config_metadata_mock: Mock,
 ) -> None:
     global_config: GlobalSerialisedConfig = {
@@ -155,7 +162,7 @@ def test_runem_basic_with_config_no_options(
     ]
     minimal_file_lists = defaultdict(list)
     minimal_file_lists["mock phase"].append(pathlib.Path("/test") / "dummy" / "path")
-    load_config_mock.return_value = (empty_config, pathlib.Path())
+    load_project_config_mock.return_value = empty_config
     find_files_mock.return_value = minimal_file_lists
     with io.StringIO() as buf, redirect_stdout(buf):
         # with pytest.raises(SystemExit):
@@ -173,41 +180,13 @@ def test_runem_basic_with_config_no_options(
         ]
 
 
-MOCK_JOB_EXECUTE_INNER_RET: typing.Tuple[JobTiming, JobReturn] = (
-    {"job": ("mocked job run", timedelta(0)), "commands": []},
-    None,
-)
-
-MOCK_USER_LOCAL_HOOK: HookSerialisedConfig = {
-    "hook": {
-        "command": "echo 'mock user local hook'",
-        "hook_name": HookName.ON_EXIT,
-    }
-}
-
-MOCK_USER_HOME_DIR_HOOK: HookSerialisedConfig = {
-    "hook": {
-        "command": "echo 'mock user home-dir hook'",
-        "hook_name": HookName.ON_EXIT,
-    }
-}
-
-MOCK_USER_LOCAL_CONFIG: Config = [
-    MOCK_USER_LOCAL_HOOK,
-]
-MOCK_USER_HOME_DIR_CONFIG: Config = [
-    MOCK_USER_HOME_DIR_HOOK,
-]
-
-MOCK_USER_CONFIGS_METADATA: UserConfigMetadata = [
-    (MOCK_USER_LOCAL_CONFIG, pathlib.Path("local-user-config.yml")),
-    (MOCK_USER_HOME_DIR_CONFIG, pathlib.Path("local-user-home-dir-config.yml")),
-]
-
-
 @patch(
     "runem.runem.load_user_configs",
     return_value=MOCK_USER_CONFIGS_METADATA,
+)
+@patch(
+    "runem.runem.find_project_cfg",
+    return_value=pathlib.Path(__file__).parent / ".runem.yml",
 )
 @patch(
     "runem.runem.load_project_config",
@@ -224,6 +203,7 @@ def _run_full_config_runem(
     job_execute_inner_mock: Mock,
     find_files_mock: Mock,
     load_project_config_mock: Mock,
+    find_project_cfg_mock: Mock,
     load_user_configs_metadata_mock: Mock,
     runem_cli_switches: typing.List[str],
     add_verbose_switch: bool = True,
@@ -231,7 +211,12 @@ def _run_full_config_runem(
     inject_job_minimal_command: bool = True,
     inject_job_module_config: bool = False,
 ) -> typing.Tuple[typing.List[str], typing.Optional[BaseException]]:
-    """A wrapper around running runem e2e tests.
+    """Runs an e2e instance with the provided config.
+
+    This test-wrapper:
+        - mocks config-loading (yml reading)
+        - runs config parsing
+        - dummy-runs (e2e) runem with that config
 
     'runem_cli_switches' should be the runem args, and NOT include the executable at
     index 0.
@@ -253,8 +238,7 @@ def _run_full_config_runem(
 
     minimal_file_lists = defaultdict(list)
     minimal_file_lists["mock phase"].append(pathlib.Path("/test") / "dummy" / "path")
-    mocked_config_path = pathlib.Path(__file__).parent / ".runem.yml"
-    load_project_config_mock.return_value = (full_config, mocked_config_path)
+    load_project_config_mock.return_value = full_config
     find_files_mock.return_value = minimal_file_lists
     error_raised: typing.Optional[BaseException] = None
     argv: typing.List[str] = [
@@ -276,7 +260,7 @@ def _run_full_config_runem(
     # normalise the output
     runem_stdout_lines: typing.List[str] = replace_max_cores(
         # replace the config path as it's different on different systems
-        runem_stdout.replace(str(mocked_config_path), "[CONFIG PATH]")
+        runem_stdout.replace(str(find_project_cfg_mock.return_value), "[CONFIG PATH]")
     ).split("\n")
     # job_execute_inner_mock.assert_called()
     got_to_reports: typing.Optional[int] = None
@@ -360,25 +344,11 @@ def test_runem_with_full_config(verbosity: bool, silent: bool) -> None:
             ]
     else:
         assert runem_stdout == [
+            "runem: loaded config from [CONFIG PATH]",
             (
                 "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
                 "'dummy phase 1'"
             ),
-            "runem: hooks: loading user hooks from 'local-user-config.yml'",
-            "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
-            "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
-            "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
-            "runem: hooks: initialising 2 hooks",
-            "runem: hooks:   initialising 2 hooks for 'HookName.ON_EXIT'",
-            (
-                "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
-                "user local hook'"
-            ),
-            (
-                "runem: hooks: registered hook for 'HookName.ON_EXIT', have 2: echo 'mock "
-                "user home-dir hook'"
-            ),
-            "runem: loaded config from [CONFIG PATH]",
             "runem: found 1 batches, 1 'mock phase' files, ",
             (
                 "runem: filtering for tags 'dummy tag 1', 'dummy tag 2', "
@@ -417,25 +387,11 @@ def test_runem_with_full_config_verbose() -> None:
         raise error_raised  # re-raise the error that shouldn't have been raised
 
     assert runem_stdout == [
+        "runem: loaded config from [CONFIG PATH]",
         (
             "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
             "'dummy phase 1'"
         ),
-        "runem: hooks: loading user hooks from 'local-user-config.yml'",
-        "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
-        "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
-        "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
-        "runem: hooks: initialising 2 hooks",
-        "runem: hooks:   initialising 2 hooks for 'HookName.ON_EXIT'",
-        (
-            "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
-            "user local hook'"
-        ),
-        (
-            "runem: hooks: registered hook for 'HookName.ON_EXIT', have 2: echo 'mock "
-            "user home-dir hook'"
-        ),
-        "runem: loaded config from [CONFIG PATH]",
         "runem: found 1 batches, 1 'mock phase' files, ",
         (
             "runem: filtering for tags 'dummy tag 1', 'dummy tag 2', "
@@ -476,25 +432,11 @@ def test_runem_with_single_phase() -> None:
         raise error_raised  # re-raise the error that shouldn't have been raised
 
     assert runem_stdout == [
+        "runem: loaded config from [CONFIG PATH]",
         (
             "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
             "'dummy phase 1'"
         ),
-        "runem: hooks: loading user hooks from 'local-user-config.yml'",
-        "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
-        "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
-        "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
-        "runem: hooks: initialising 2 hooks",
-        "runem: hooks:   initialising 2 hooks for 'HookName.ON_EXIT'",
-        (
-            "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
-            "user local hook'"
-        ),
-        (
-            "runem: hooks: registered hook for 'HookName.ON_EXIT', have 2: echo 'mock "
-            "user home-dir hook'"
-        ),
-        "runem: loaded config from [CONFIG PATH]",
         "runem: found 1 batches, 1 'mock phase' files, ",
         (
             "runem: filtering for tags 'dummy tag 1', 'dummy tag 2', "
@@ -527,25 +469,11 @@ def test_runem_with_single_phase_verbose() -> None:
         raise error_raised  # re-raise the error that shouldn't have been raised
 
     assert runem_stdout == [
+        "runem: loaded config from [CONFIG PATH]",
         (
             "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
             "'dummy phase 1'"
         ),
-        "runem: hooks: loading user hooks from 'local-user-config.yml'",
-        "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
-        "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
-        "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
-        "runem: hooks: initialising 2 hooks",
-        "runem: hooks:   initialising 2 hooks for 'HookName.ON_EXIT'",
-        (
-            "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
-            "user local hook'"
-        ),
-        (
-            "runem: hooks: registered hook for 'HookName.ON_EXIT', have 2: echo 'mock "
-            "user home-dir hook'"
-        ),
-        "runem: loaded config from [CONFIG PATH]",
         "runem: found 1 batches, 1 'mock phase' files, ",
         (
             "runem: filtering for tags 'dummy tag 1', 'dummy tag 2', "
@@ -575,19 +503,20 @@ def _remove_first_line_and_split_along_whitespace(
     To conform it we replace all whitespace with a single new-line and then split it
     into a list of strings
     """
-    lines: typing.List[str] = input_string.split("\n")
+    lines: typing.List[str] = input_string.splitlines()
 
     # remove the usage line as it is something like one of the following,
     # depending on whether we're running in xdist(threaded) or single-threaded
     # contexts:
     # usage: __main__.py [-h] [--jobs JOBS [JOBS ...]]
     # usage: -c [-h] [--jobs JOBS [JOBS ...]]
-    index_of_usage_lines: typing.Tuple[int, ...] = (1, 9)
     usage_line: typing.Optional[str] = None
-    for index_of_usage_line in index_of_usage_lines:  # pragma: no cover
-        usage_line_candidate: str = lines[index_of_usage_line]
-        if "usage:" in usage_line_candidate:
-            usage_line = usage_line_candidate
+    line_cands = lines[0:9]
+    index_of_usage_line = 0
+    for idx, line in enumerate(line_cands):
+        if "usage:" in line:  # pragma: no branch
+            usage_line = line
+            index_of_usage_line = idx
             break
     if usage_line is None:  # pragma: no cover
         pprint(lines)
@@ -603,7 +532,7 @@ def _remove_first_line_and_split_along_whitespace(
 
 
 def _conform_help_output(help_output: typing.List[str]) -> str:
-    # we have to remove the run-dir for root_dir from the output
+    # we have to remove the run-dir for root_path from the output
     runem_stdout_str: str = (
         "\n".join(help_output)
         .replace(str(pathlib.Path(__file__).parent), DIR_REPLACEMENT_DIR)
@@ -719,20 +648,6 @@ def test_runem_version(switch_to_test: str, verbosity: bool) -> None:
     ).absolute()
 
     expected_version_output: typing.List[str] = [version_file.read_text().strip(), ""]
-    if verbosity:
-        expected_version_output = [
-            "runem: hooks: loading user hooks from 'local-user-config.yml'",
-            "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
-            "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
-            "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
-            "runem: hooks: initialising 2 hooks",
-            "runem: hooks:   initialising 2 hooks for 'HookName.ON_EXIT'",
-            "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
-            "user local hook'",
-            "runem: hooks: registered hook for 'HookName.ON_EXIT', have 2: echo 'mock "
-            "user home-dir hook'",
-        ] + expected_version_output
-
     assert runem_stdout == expected_version_output
 
 
@@ -787,23 +702,10 @@ def test_runem_bad_validate_switch_jobs(switch_to_test: str) -> None:
     assert error_raised is not None
     assert isinstance(error_raised, SystemExit)
     assert runem_stdout == [
+        "runem: loaded config from [CONFIG PATH]",
         (
             "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
             "'dummy phase 1'"
-        ),
-        "runem: hooks: loading user hooks from 'local-user-config.yml'",
-        "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
-        "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
-        "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
-        "runem: hooks: initialising 2 hooks",
-        "runem: hooks:   initialising 2 hooks for 'HookName.ON_EXIT'",
-        (
-            "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
-            "user local hook'"
-        ),
-        (
-            "runem: hooks: registered hook for 'HookName.ON_EXIT', have 2: echo 'mock "
-            "user home-dir hook'"
         ),
         (
             "runem: ERROR: invalid job-name 'non existent job name' for "
@@ -838,23 +740,10 @@ def test_runem_bad_validate_switch_tags(switch_to_test: str) -> None:
     assert error_raised is not None
     assert isinstance(error_raised, SystemExit)
     assert runem_stdout == [
+        "runem: loaded config from [CONFIG PATH]",
         (
             "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
             "'dummy phase 1'"
-        ),
-        "runem: hooks: loading user hooks from 'local-user-config.yml'",
-        "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
-        "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
-        "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
-        "runem: hooks: initialising 2 hooks",
-        "runem: hooks:   initialising 2 hooks for 'HookName.ON_EXIT'",
-        (
-            "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
-            "user local hook'"
-        ),
-        (
-            "runem: hooks: registered hook for 'HookName.ON_EXIT', have 2: echo 'mock "
-            "user home-dir hook'"
         ),
         (
             f"runem: ERROR: invalid tag 'non existent tag' for {switch_to_test}, "
@@ -884,25 +773,11 @@ def test_runem_bad_validate_tag_exclude() -> None:
     )
     assert error_raised is None
     assert runem_stdout == [
+        "runem: loaded config from [CONFIG PATH]",
         (
             "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
             "'dummy phase 1'"
         ),
-        "runem: hooks: loading user hooks from 'local-user-config.yml'",
-        "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
-        "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
-        "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
-        "runem: hooks: initialising 2 hooks",
-        "runem: hooks:   initialising 2 hooks for 'HookName.ON_EXIT'",
-        (
-            "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
-            "user local hook'"
-        ),
-        (
-            "runem: hooks: registered hook for 'HookName.ON_EXIT', have 2: echo 'mock "
-            "user home-dir hook'"
-        ),
-        "runem: loaded config from [CONFIG PATH]",
         "runem: found 1 batches, 1 'mock phase' files, ",
         (
             "runem: filtering for tags 'dummy tag 1', excluding jobs with tags 'tag "
@@ -953,23 +828,10 @@ def test_runem_bad_validate_switch_phases(switch_to_test: str) -> None:
     assert error_raised is not None
     assert isinstance(error_raised, SystemExit)
     assert runem_stdout == [
+        "runem: loaded config from [CONFIG PATH]",
         (
             "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
             "'dummy phase 1'"
-        ),
-        "runem: hooks: loading user hooks from 'local-user-config.yml'",
-        "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
-        "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
-        "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
-        "runem: hooks: initialising 2 hooks",
-        "runem: hooks:   initialising 2 hooks for 'HookName.ON_EXIT'",
-        (
-            "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
-            "user local hook'"
-        ),
-        (
-            "runem: hooks: registered hook for 'HookName.ON_EXIT', have 2: echo 'mock "
-            "user home-dir hook'"
         ),
         f"runem: ERROR: invalid phase 'non existent phase' for {switch_to_test}, "
         "choose from one of 'dummy phase 1', 'dummy phase 2'",
@@ -1005,25 +867,11 @@ def test_runem_job_filters_work(verbosity: bool) -> None:
 
     if verbosity:
         assert runem_stdout == [
+            "runem: loaded config from [CONFIG PATH]",
             (
                 "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
                 "'dummy phase 1'"
             ),
-            "runem: hooks: loading user hooks from 'local-user-config.yml'",
-            "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
-            "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
-            "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
-            "runem: hooks: initialising 2 hooks",
-            "runem: hooks:   initialising 2 hooks for 'HookName.ON_EXIT'",
-            (
-                "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
-                "user local hook'"
-            ),
-            (
-                "runem: hooks: registered hook for 'HookName.ON_EXIT', have 2: echo 'mock "
-                "user home-dir hook'"
-            ),
-            "runem: loaded config from [CONFIG PATH]",
             "runem: found 1 batches, 1 'mock phase' files, ",
             (
                 "runem: filtering for tags 'dummy tag 1', 'dummy tag 2', "
@@ -1056,25 +904,11 @@ def test_runem_job_filters_work(verbosity: bool) -> None:
         ]
     else:
         assert runem_stdout == [
+            "runem: loaded config from [CONFIG PATH]",
             (
                 "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
                 "'dummy phase 1'"
             ),
-            "runem: hooks: loading user hooks from 'local-user-config.yml'",
-            "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
-            "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
-            "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
-            "runem: hooks: initialising 2 hooks",
-            "runem: hooks:   initialising 2 hooks for 'HookName.ON_EXIT'",
-            (
-                "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
-                "user local hook'"
-            ),
-            (
-                "runem: hooks: registered hook for 'HookName.ON_EXIT', have 2: echo 'mock "
-                "user home-dir hook'"
-            ),
-            "runem: loaded config from [CONFIG PATH]",
             "runem: found 1 batches, 1 'mock phase' files, ",
             (
                 "runem: filtering for tags 'dummy tag 1', 'dummy tag 2', "
@@ -1135,25 +969,11 @@ def test_runem_tag_filters_work(verbosity: bool) -> None:
 
     if verbosity:
         assert runem_stdout == [
+            "runem: loaded config from [CONFIG PATH]",
             (
                 "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
                 "'dummy phase 1'"
             ),
-            "runem: hooks: loading user hooks from 'local-user-config.yml'",
-            "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
-            "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
-            "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
-            "runem: hooks: initialising 2 hooks",
-            "runem: hooks:   initialising 2 hooks for 'HookName.ON_EXIT'",
-            (
-                "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
-                "user local hook'"
-            ),
-            (
-                "runem: hooks: registered hook for 'HookName.ON_EXIT', have 2: echo 'mock "
-                "user home-dir hook'"
-            ),
-            "runem: loaded config from [CONFIG PATH]",
             "runem: found 1 batches, 1 'mock phase' files, ",
             "runem: filtering for tags 'tag only on job 1'",
             "runem: will run 2 jobs for phase 'dummy phase 1'",
@@ -1175,25 +995,11 @@ def test_runem_tag_filters_work(verbosity: bool) -> None:
         ]
     else:
         assert runem_stdout == [
+            "runem: loaded config from [CONFIG PATH]",
             (
                 "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
                 "'dummy phase 1'"
             ),
-            "runem: hooks: loading user hooks from 'local-user-config.yml'",
-            "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
-            "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
-            "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
-            "runem: hooks: initialising 2 hooks",
-            "runem: hooks:   initialising 2 hooks for 'HookName.ON_EXIT'",
-            (
-                "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
-                "user local hook'"
-            ),
-            (
-                "runem: hooks: registered hook for 'HookName.ON_EXIT', have 2: echo 'mock "
-                "user home-dir hook'"
-            ),
-            "runem: loaded config from [CONFIG PATH]",
             "runem: found 1 batches, 1 'mock phase' files, ",
             "runem: filtering for tags 'tag only on job 1'",
             "runem: will run 2 jobs for phase 'dummy phase 1'",
@@ -1255,25 +1061,11 @@ def test_runem_tag_out_filters_work(verbosity: bool, one_liner: bool) -> None:
         if verbosity:
             # one-liner + verbosity
             assert runem_stdout == [
+                "runem: loaded config from [CONFIG PATH]",
                 (
                     "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
                     "'dummy phase 1'"
                 ),
-                "runem: hooks: loading user hooks from 'local-user-config.yml'",
-                "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
-                "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
-                "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
-                "runem: hooks: initialising 2 hooks",
-                "runem: hooks:   initialising 2 hooks for 'HookName.ON_EXIT'",
-                (
-                    "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
-                    "user local hook'"
-                ),
-                (
-                    "runem: hooks: registered hook for 'HookName.ON_EXIT', have 2: echo 'mock "
-                    "user home-dir hook'"
-                ),
-                "runem: loaded config from [CONFIG PATH]",
                 "runem: found 1 batches, 1 'mock phase' files, ",
                 (
                     "runem: filtering for tags 'dummy tag 1', 'dummy tag 2', "
@@ -1301,25 +1093,11 @@ def test_runem_tag_out_filters_work(verbosity: bool, one_liner: bool) -> None:
         else:
             # one-liner + no-verbosity
             assert runem_stdout == [
+                "runem: loaded config from [CONFIG PATH]",
                 (
                     "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
                     "'dummy phase 1'"
                 ),
-                "runem: hooks: loading user hooks from 'local-user-config.yml'",
-                "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
-                "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
-                "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
-                "runem: hooks: initialising 2 hooks",
-                "runem: hooks:   initialising 2 hooks for 'HookName.ON_EXIT'",
-                (
-                    "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
-                    "user local hook'"
-                ),
-                (
-                    "runem: hooks: registered hook for 'HookName.ON_EXIT', have 2: echo 'mock "
-                    "user home-dir hook'"
-                ),
-                "runem: loaded config from [CONFIG PATH]",
                 "runem: found 1 batches, 1 'mock phase' files, ",
                 (
                     "runem: filtering for tags 'dummy tag 1', 'dummy tag 2', "
@@ -1348,20 +1126,6 @@ def test_runem_tag_out_filters_work(verbosity: bool, one_liner: bool) -> None:
         if verbosity:
             # no-one-liner + verbosity
             assert runem_stdout == [
-                "runem: hooks: loading user hooks from 'local-user-config.yml'",
-                "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
-                "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
-                "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
-                "runem: hooks: initialising 2 hooks",
-                "runem: hooks:   initialising 2 hooks for 'HookName.ON_EXIT'",
-                (
-                    "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
-                    "user local hook'"
-                ),
-                (
-                    "runem: hooks: registered hook for 'HookName.ON_EXIT', have 2: echo 'mock "
-                    "user home-dir hook'"
-                ),
                 "runem: loaded config from [CONFIG PATH]",
                 "runem: found 1 batches, 1 'mock phase' files, ",
                 (
@@ -1387,20 +1151,6 @@ def test_runem_tag_out_filters_work(verbosity: bool, one_liner: bool) -> None:
         else:
             # no-one-liner + no-verbosity
             assert runem_stdout == [
-                "runem: hooks: loading user hooks from 'local-user-config.yml'",
-                "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
-                "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
-                "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
-                "runem: hooks: initialising 2 hooks",
-                "runem: hooks:   initialising 2 hooks for 'HookName.ON_EXIT'",
-                (
-                    "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
-                    "user local hook'"
-                ),
-                (
-                    "runem: hooks: registered hook for 'HookName.ON_EXIT', have 2: echo 'mock "
-                    "user home-dir hook'"
-                ),
                 "runem: loaded config from [CONFIG PATH]",
                 "runem: found 1 batches, 1 'mock phase' files, ",
                 (
@@ -1461,20 +1211,6 @@ def test_runem_tag_out_filters_work_all_tags(verbosity: bool) -> None:
 
     if verbosity:
         assert runem_stdout == [
-            "runem: hooks: loading user hooks from 'local-user-config.yml'",
-            "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
-            "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
-            "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
-            "runem: hooks: initialising 2 hooks",
-            "runem: hooks:   initialising 2 hooks for 'HookName.ON_EXIT'",
-            (
-                "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
-                "user local hook'"
-            ),
-            (
-                "runem: hooks: registered hook for 'HookName.ON_EXIT', have 2: echo 'mock "
-                "user home-dir hook'"
-            ),
             "runem: loaded config from [CONFIG PATH]",
             "runem: found 1 batches, 1 'mock phase' files, ",
             (
@@ -1539,25 +1275,11 @@ def test_runem_phase_filters_work(verbosity: bool) -> None:
 
     if verbosity:
         assert runem_stdout == [
+            "runem: loaded config from [CONFIG PATH]",
             (
                 "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
                 "'dummy phase 1'"
             ),
-            "runem: hooks: loading user hooks from 'local-user-config.yml'",
-            "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
-            "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
-            "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
-            "runem: hooks: initialising 2 hooks",
-            "runem: hooks:   initialising 2 hooks for 'HookName.ON_EXIT'",
-            (
-                "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
-                "user local hook'"
-            ),
-            (
-                "runem: hooks: registered hook for 'HookName.ON_EXIT', have 2: echo 'mock "
-                "user home-dir hook'"
-            ),
-            "runem: loaded config from [CONFIG PATH]",
             "runem: found 1 batches, 1 'mock phase' files, ",
             (
                 "runem: filtering for tags 'dummy tag 1', 'dummy tag 2', 'tag only on job 1', "
@@ -1574,25 +1296,11 @@ def test_runem_phase_filters_work(verbosity: bool) -> None:
         ]
     else:
         assert runem_stdout == [
+            "runem: loaded config from [CONFIG PATH]",
             (
                 "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
                 "'dummy phase 1'"
             ),
-            "runem: hooks: loading user hooks from 'local-user-config.yml'",
-            "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
-            "runem: hooks: loading user hooks from 'local-user-home-dir-config.yml'",
-            "runem: hooks:   added 1 user hooks for 'HookName.ON_EXIT'",
-            "runem: hooks: initialising 2 hooks",
-            "runem: hooks:   initialising 2 hooks for 'HookName.ON_EXIT'",
-            (
-                "runem: hooks: registered hook for 'HookName.ON_EXIT', have 1: echo 'mock "
-                "user local hook'"
-            ),
-            (
-                "runem: hooks: registered hook for 'HookName.ON_EXIT', have 2: echo 'mock "
-                "user home-dir hook'"
-            ),
-            "runem: loaded config from [CONFIG PATH]",
             "runem: found 1 batches, 1 'mock phase' files, ",
             (
                 "runem: filtering for tags 'dummy tag 1', 'dummy tag 2', "
@@ -1822,36 +1530,38 @@ def test_process_jobs_by_phase_early_exits_with_exceptions(
     )
     config_metadata: ConfigMetadata = ConfigMetadata(
         cfg_filepath=pathlib.Path(__file__),
-        phases=all_phase_names,
-        options_config=tuple(),
-        file_filters={
-            # "dummy tag": {
-            #     "tag": "dummy tag",
-            #     "regex": ".*1.txt",  # should match just one file
-            # }
-        },
-        hook_manager=MagicMock(),
-        jobs=jobs_by_phase,
-        all_job_names=set(all_job_names),
-        all_job_phases=set(("dummy phase 1",)),
-        all_job_tags=set(
-            (
-                "dummy tag 2",
-                "dummy tag 1",
-            )
-        ),
-        # global_config,
-        # job_phase_2_not_executed,
-        # job_phase_1_raises,
+        args=Namespace(verbose=False),
+    )
+    config_metadata.phases = all_phase_names
+    config_metadata.options_config = tuple()
+    config_metadata.file_filters = {
+        # "dummy tag": {
+        #     "tag": "dummy tag",
+        #     "regex": ".*1.txt",  # should match just one file
+        # }
+    }
+    config_metadata.hook_manager = MagicMock()
+    config_metadata.jobs = jobs_by_phase
+    config_metadata.all_job_names = set(all_job_names)
+    config_metadata.all_job_phases = set(("dummy phase 1",))
+    config_metadata.all_job_tags = set(
+        (
+            "dummy tag 2",
+            "dummy tag 1",
+        )
     )
 
     config_metadata.set_cli_data(
-        args=Namespace(verbose=verbosity, procs=1),
-        jobs_to_run=set(all_job_names),  # JobNames,
-        phases_to_run=set(all_phase_names),  # JobPhases,
-        tags_to_run=set(),  # ignored JobTags,
-        tags_to_avoid=set(),  # ignored  JobTags,
-        options=InformativeDict({}),  # Options,
+        args=Namespace(
+            verbose=verbosity,
+            procs=1,
+            jobs=[],
+            jobs_excluded=[],
+            tags=[],
+            tags_excluded=[],
+            phases=[],
+            phases_excluded=[],
+        ),
     )
 
     file_lists: FilePathListLookup = defaultdict(list)
@@ -1935,36 +1645,41 @@ def test_process_jobs_early_exits_with_exceptions(
     )
     config_metadata: ConfigMetadata = ConfigMetadata(
         cfg_filepath=pathlib.Path(__file__),
-        phases=all_phase_names,
-        options_config=tuple(),
-        file_filters={
-            # "dummy tag": {
-            #     "tag": "dummy tag",
-            #     "regex": ".*1.txt",  # should match just one file
-            # }
-        },
-        hook_manager=MagicMock(),
-        jobs=jobs_by_phase,
-        all_job_names=set(all_job_names),
-        all_job_phases=set(("dummy phase 1",)),
-        all_job_tags=set(
-            (
-                "dummy tag 2",
-                "dummy tag 1",
-            )
-        ),
-        # global_config,
-        # job_phase_2_not_executed,
-        # job_phase_1_raises,
+        args=Namespace(verbose=False),
     )
+    config_metadata.phases = all_phase_names
+    config_metadata.options_config = tuple()
+    config_metadata.file_filters = {
+        # "dummy tag": {
+        #     "tag": "dummy tag",
+        #     "regex": ".*1.txt",  # should match just one file
+        # }
+    }
+    config_metadata.hook_manager = MagicMock()
+    config_metadata.jobs = jobs_by_phase
+    config_metadata.all_job_names = set(all_job_names)
+    config_metadata.all_job_phases = set(("dummy phase 1",))
+    config_metadata.all_job_tags = set(
+        (
+            "dummy tag 2",
+            "dummy tag 1",
+        )
+    )
+    # global_config,
+    # job_phase_2_not_executed,
+    # job_phase_1_raises,
 
     config_metadata.set_cli_data(
-        args=Namespace(verbose=True, procs=1),
-        jobs_to_run=set(all_job_names),  # JobNames,
-        phases_to_run=set(all_phase_names),  # JobPhases,
-        tags_to_run=set(),  # ignored JobTags,
-        tags_to_avoid=set(),  # ignored  JobTags,
-        options=InformativeDict({}),  # Options,
+        args=Namespace(
+            verbose=True,
+            procs=1,
+            jobs=[],
+            jobs_excluded=[],
+            tags=[],
+            tags_excluded=[],
+            phases=[],
+            phases_excluded=[],
+        ),
     )
 
     file_lists: FilePathListLookup = defaultdict(list)
@@ -1988,24 +1703,24 @@ def test_process_jobs_early_exits_with_exceptions(
     ]
 
 
-@patch("runem.runem._determine_run_parameters")
+@patch("runem.runem._load_config_for_run")
 @patch(
     "runem.runem.find_files", return_value=[]
 )  # testing when find_files returns empty
 def test_main_handles_no_files(
-    mock_find_files: MagicMock, mock__determine_run_parameters: MagicMock
+    mock_find_files: MagicMock, mock_load_config_for_run: MagicMock
 ) -> None:
     class MockCfg:
         def __init__(self) -> None:
             self.cfg_filepath = pathlib.Path(__file__)
 
-    mock__determine_run_parameters.return_value = MockCfg()
+    mock_load_config_for_run.return_value = MockCfg()
     with io.StringIO() as buf, redirect_stdout(buf):
         _main([])
         runem_stdout = buf.getvalue().split("\n")
 
-    mock_find_files.assert_called_once_with(mock__determine_run_parameters.return_value)
-    mock__determine_run_parameters.assert_called_once_with([])
+    mock_find_files.assert_called_once_with(mock_load_config_for_run.return_value)
+    mock_load_config_for_run.assert_called_once_with([])
     assert runem_stdout == [
         "runem: WARNING: no files found",
         "",

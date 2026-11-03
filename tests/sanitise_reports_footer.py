@@ -1,7 +1,7 @@
 import re
 import typing
 
-from runem.report import replace_bar_graph_characters
+from runem.report.report_on_run import replace_bar_graph_characters
 
 
 def sanitise_reports_footer(stdout: str) -> typing.List[str]:
