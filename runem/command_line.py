@@ -142,16 +142,35 @@ class RunemArgsParse:
         self.args = args
 
     def _define_args_built_ins(self) -> None:
+        """Defines the built-in runem args.
+
+        These are the args that control runem, not those generated from the
+        loaded project's config.
+
+        We need to do have 2 phases of args loading, so this is called twice.
+              1st pass: Specifies and populates the inbuilt-args used to
+                        control how and where the config is loaded.
+              2nd pass: Defines the config-specific runem control like:
+                            - jobs
+                            - tags
+                            - filters
+                            - options
+
+         NOTE: A secondary consideration is we need to stop argparse's `help`
+              action exiting early with *only* the help text for the inbuilt
+              args.
+        """
         self._parser = argparse.ArgumentParser(
             add_help=False,
             description="Runs the Lursight Lang test-suite",
             formatter_class=_get_argparse_help_formatter(),
         )
-        self._parser.add_argument(
-            "-H", "--help", action="help", help="show this help message and exit"
-        )
 
-        self._parser.add_argument(
+        # define the `--help` args first
+        self._help_args_group = self._parser.add_argument_group("help")
+        inbuilt_args = self._parser.add_argument_group("runem inbuilt")
+
+        inbuilt_args.add_argument(
             "--call-graphs",
             dest="generate_call_graphs",
             action=argparse.BooleanOptionalAction,
@@ -159,7 +178,7 @@ class RunemArgsParse:
             required=False,
         )
 
-        self._parser.add_argument(
+        inbuilt_args.add_argument(
             "-f",
             "--modified-files",
             dest="check_modified_files",
@@ -169,7 +188,7 @@ class RunemArgsParse:
             required=False,
         )
 
-        self._parser.add_argument(
+        inbuilt_args.add_argument(
             "-h",
             "--git-head-files",
             dest="check_head_files",
@@ -178,7 +197,7 @@ class RunemArgsParse:
             default=False,
             required=False,
         )
-        self._parser.add_argument(
+        inbuilt_args.add_argument(
             "--always-files",
             dest="always_files",
             help=(
@@ -190,7 +209,7 @@ class RunemArgsParse:
             required=False,
         )
 
-        self._parser.add_argument(
+        inbuilt_args.add_argument(
             "--git-files-since-branch",
             dest="git_since_branch",
             help=(
@@ -202,7 +221,7 @@ class RunemArgsParse:
             type=str,  # Accepts a string input representing the branch name
         )
 
-        self._parser.add_argument(
+        inbuilt_args.add_argument(
             "--procs",
             "-j",
             # "-n",
@@ -217,7 +236,7 @@ class RunemArgsParse:
         )
 
         config_dir: pathlib.Path = _get_config_dir(self._cfg_filepath)
-        self._parser.add_argument(
+        inbuilt_args.add_argument(
             "--root",
             dest="root_path",
             default=config_dir,
@@ -228,7 +247,7 @@ class RunemArgsParse:
             required=False,
         )
 
-        self._parser.add_argument(
+        inbuilt_args.add_argument(
             "--root-show",
             dest="show_root_path_and_exit",
             help="show the root-path of runem and exit",
@@ -237,7 +256,7 @@ class RunemArgsParse:
             required=False,
         )
 
-        self._parser.add_argument(
+        inbuilt_args.add_argument(
             "--silent",
             "-s",
             dest="silent",
@@ -247,7 +266,7 @@ class RunemArgsParse:
             required=False,
         )
 
-        self._parser.add_argument(
+        inbuilt_args.add_argument(
             "--spinner",
             dest="show_spinner",
             action=argparse.BooleanOptionalAction,
@@ -259,7 +278,7 @@ class RunemArgsParse:
             required=False,
         )
 
-        self._parser.add_argument(
+        inbuilt_args.add_argument(
             "--verbose",
             dest="verbose",
             help="runs runem in in verbose mode, and streams jobs stdout/stderr to console",
@@ -268,7 +287,7 @@ class RunemArgsParse:
             required=False,
         )
 
-        self._parser.add_argument(
+        inbuilt_args.add_argument(
             "--version",
             "-v",
             dest="show_version_and_exit",
@@ -282,7 +301,16 @@ class RunemArgsParse:
         self,
         config_metadata: ConfigMetadata,
     ) -> None:
-        """Parse the config to generate args in the --help and cli."""
+        """Use the loaded config for project-specific args in `--help` and cli.
+
+        Args:
+            config_metadata: the loaded config for populating available jobs,
+                             tags, etc.
+        """
+        # First define the `--help` action to show the full help and exit
+        self._help_args_group.add_argument(
+            "-H", "--help", action="help", help="show this help message and exit"
+        )
         job_group = self._parser.add_argument_group("jobs")
         all_job_names: JobNames = set(name for name in config_metadata.all_job_names)
         jobs_arg = job_group.add_argument(
