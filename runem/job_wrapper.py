@@ -3,11 +3,11 @@ import pathlib
 from runem.execute.dynamic_functions.job_runner_module_func_path import (
     get_job_wrapper_py_module_dot_path,
 )
-from runem.job.job_function import JobFunction
-from runem.job_runner_simple_command import (
+from runem.execute.dynamic_functions.job_runner_simple_command import (
     _validate_simple_command,
     job_runner_simple_command,
 )
+from runem.job.job_function import JobFunction
 from runem.job_wrapper_python import get_job_wrapper_py_func
 from runem.types.runem_config import JobWrapper
 

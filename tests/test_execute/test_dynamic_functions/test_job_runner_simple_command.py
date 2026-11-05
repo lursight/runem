@@ -9,16 +9,18 @@ from unittest.mock import ANY, Mock, patch
 import pytest
 
 from runem.config.config_metadata import ConfigMetadata
+from runem.execute.dynamic_functions.job_runner_simple_command import (
+    job_runner_simple_command,
+)
 from runem.hook.hook_args import HookArgs
 from runem.job.job import Job
 from runem.job.job_args import JobArgs
-from runem.job_runner_simple_command import job_runner_simple_command
 from runem.types.runem_config import JobConfig
 from tests.utils.gen_dummy_config_metadata import gen_dummy_config_metadata
 
 
 @patch(
-    "runem.job_runner_simple_command.run_command",
+    "runem.execute.dynamic_functions.job_runner_simple_command.run_command",
     # return_value=None,
 )
 def test_job_runner_simple_command(mock_run_command: Mock) -> None:
@@ -57,7 +59,7 @@ def test_job_runner_simple_command(mock_run_command: Mock) -> None:
 
 
 @patch(
-    "runem.job_runner_simple_command.run_command",
+    "runem.execute.dynamic_functions.job_runner_simple_command.run_command",
     # return_value=None,
 )
 def test_job_runner_simple_command_null(mock_run_command: Mock) -> None:
@@ -81,7 +83,7 @@ def test_job_runner_simple_command_null(mock_run_command: Mock) -> None:
 
 
 @patch(
-    "runem.job_runner_simple_command.run_command",
+    "runem.execute.dynamic_functions.job_runner_simple_command.run_command",
     # return_value=None,
 )
 def test_job_runner_simple_command_with_file_list(mock_run_command: Mock) -> None:
@@ -138,7 +140,7 @@ def test_job_runner_simple_command_with_file_list(mock_run_command: Mock) -> Non
 
 
 @patch(
-    "runem.job_runner_simple_command.run_command",
+    "runem.execute.dynamic_functions.job_runner_simple_command.run_command",
     # return_value=None,
 )
 def test_job_runner_simple_command_without_file_list(mock_run_command: Mock) -> None:
@@ -184,7 +186,7 @@ def test_job_runner_simple_command_without_file_list(mock_run_command: Mock) -> 
 
 
 @patch(
-    "runem.job_runner_simple_command.run_command",
+    "runem.execute.dynamic_functions.job_runner_simple_command.run_command",
     # return_value=None,
 )
 def test_job_runner_simple_command_with_option(mock_run_command: Mock) -> None:
@@ -237,7 +239,7 @@ def test_job_runner_simple_command_with_option(mock_run_command: Mock) -> None:
 
 
 @patch(
-    "runem.job_runner_simple_command.run_command",
+    "runem.execute.dynamic_functions.job_runner_simple_command.run_command",
 )
 def test_job_runner_simple_command_with_runem_ctx(mock_run_command: Mock) -> None:
     """Tests that {runem_ctx} is replaced with a shell-safe JSON blob of run context."""
@@ -272,7 +274,7 @@ def test_job_runner_simple_command_with_runem_ctx(mock_run_command: Mock) -> Non
 
 
 @patch(
-    "runem.job_runner_simple_command.run_command",
+    "runem.execute.dynamic_functions.job_runner_simple_command.run_command",
 )
 def test_job_runner_simple_command_runem_ctx_with_hook_kwargs(
     mock_run_command: Mock,
@@ -312,7 +314,7 @@ def test_job_runner_simple_command_runem_ctx_with_hook_kwargs(
 
 
 @patch(
-    "runem.job_runner_simple_command.run_command",
+    "runem.execute.dynamic_functions.job_runner_simple_command.run_command",
 )
 def test_job_runner_simple_command_runem_ctx_with_invalid_hook_kwargs(
     mock_run_command: Mock,
@@ -349,7 +351,7 @@ def test_job_runner_simple_command_runem_ctx_with_invalid_hook_kwargs(
 
 
 @patch(
-    "runem.job_runner_simple_command.run_command",
+    "runem.execute.dynamic_functions.job_runner_simple_command.run_command",
 )
 def test_job_runner_simple_command_runem_ctx_whole_metadata(
     mock_run_command: Mock,
@@ -387,7 +389,7 @@ def test_job_runner_simple_command_runem_ctx_whole_metadata(
 
 
 @patch(
-    "runem.job_runner_simple_command.run_command",
+    "runem.execute.dynamic_functions.job_runner_simple_command.run_command",
 )
 def test_job_runner_simple_command_runem_ctx_metadata_item(
     mock_run_command: Mock,
