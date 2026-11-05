@@ -9,7 +9,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from runem.config import (
+from runem.config.config import (
     CfgCandidate,
     _find_local_configs,
     _load_and_parse_config_with_sources,
@@ -25,7 +25,7 @@ from runem.types.runem_config import Config, GlobalConfig
 
 
 @patch(
-    "runem.config._find_config_file",
+    "runem.config.config._find_config_file",
 )
 def test_load_project_config(
     find_config_file_mock: Mock,
@@ -64,7 +64,7 @@ def test_load_project_config(
 
 
 @patch(
-    "runem.config._find_config_file",
+    "runem.config.config._find_config_file",
 )
 def test_load_project_config_with_no_phases(
     find_config_file_mock: Mock,
@@ -187,7 +187,7 @@ def test_load_config_with_sources_preserves_public_config(
 
 
 @patch(
-    "runem.config._find_config_file",
+    "runem.config.config._find_config_file",
     return_value=CfgCandidate(file=pathlib.Path("dummy path"), start_dirs=tuple()),
 )
 @patch("pathlib.Path.exists", return_value=True)
@@ -207,7 +207,7 @@ def test_find_local_configs(
 
 
 @patch(
-    "runem.config._find_config_file",
+    "runem.config.config._find_config_file",
     return_value=CfgCandidate(file=None, start_dirs=tuple()),
 )
 @patch("pathlib.Path.exists", return_value=False)
@@ -223,11 +223,11 @@ def test_find_local_configs_finds_nothing(
 
 
 @patch(
-    "runem.config.load_and_parse_config",
+    "runem.config.config.load_and_parse_config",
     return_value="DUMMY CONFIG",
 )
 @patch(
-    "runem.config._find_config_file",
+    "runem.config.config._find_config_file",
     return_value=CfgCandidate(
         file=pathlib.Path("dummy path"),
         start_dirs=tuple(),

@@ -38,7 +38,7 @@ from rich.spinner import Spinner
 from rich.status import Status
 from rich.text import Text
 
-from runem.config import (
+from runem.config.config import (
     find_project_cfg,
     load_project_config,
     load_user_configs,
