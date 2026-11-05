@@ -2,7 +2,7 @@
 
 import pathlib
 
-from runem.config_sources import ConfigEntry, ConfigSource, LoadedConfig
+from runem.config.config_sources import ConfigEntry, ConfigSource, LoadedConfig
 from runem.types.runem_config import Config
 
 

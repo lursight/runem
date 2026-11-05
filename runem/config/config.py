@@ -5,7 +5,7 @@ from dataclasses import dataclass
 
 from packaging.version import Version
 
-from runem.config_sources import (
+from runem.config.config_sources import (
     ConfigEntry,
     LoadedConfig,
     load_config_with_sources,
