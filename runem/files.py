@@ -4,7 +4,7 @@ from collections import defaultdict
 from pathlib import Path
 from subprocess import check_output as subprocess_check_output
 
-from runem.config_metadata import ConfigMetadata
+from runem.config.config_metadata import ConfigMetadata
 from runem.types.filters import FilePathListLookup
 
 

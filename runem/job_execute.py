@@ -23,7 +23,7 @@ from runem.types.filters import FilePathListLookup
 from runem.types.runem_config import JobConfig, JobContextConfig, JobCwd
 
 if typing.TYPE_CHECKING:
-    from runem.config_metadata import ConfigMetadata
+    from runem.config.config_metadata import ConfigMetadata
 
 
 class BadDeveloperExecute(ValueError):

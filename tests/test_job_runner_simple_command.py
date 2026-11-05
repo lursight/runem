@@ -8,7 +8,7 @@ from unittest.mock import ANY, Mock, patch
 
 import pytest
 
-from runem.config_metadata import ConfigMetadata
+from runem.config.config_metadata import ConfigMetadata
 from runem.hook.hook_args import HookArgs
 from runem.job.job import Job
 from runem.job.job_args import JobArgs

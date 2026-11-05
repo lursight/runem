@@ -6,7 +6,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from runem.config_metadata import ConfigMetadata
+from runem.config.config_metadata import ConfigMetadata
 from runem.types.runem_config import JobConfig, PhaseGroupedJobs
 
 Options = Dict[str, bool]

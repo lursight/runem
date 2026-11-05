@@ -6,7 +6,7 @@ from datetime import timedelta
 
 from typing_extensions import Unpack
 
-from runem.config_metadata import ConfigMetadata
+from runem.config.config_metadata import ConfigMetadata
 from runem.hook.hook_name import HookName
 from runem.informative_dict import ReadOnlyInformativeDict
 from runem.job.job import Job

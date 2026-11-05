@@ -10,7 +10,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from runem.config_metadata import ConfigMetadata
+from runem.config.config_metadata import ConfigMetadata
 from runem.config_parse import (
     _ConfigMetadataCollector,
     _parse_global_config,

@@ -5,7 +5,7 @@ import pathlib
 import sys
 import typing
 
-from runem.config_metadata import ConfigMetadata
+from runem.config.config_metadata import ConfigMetadata
 from runem.log import error, log
 from runem.runem_version import get_runem_version
 from runem.types.common import JobNames

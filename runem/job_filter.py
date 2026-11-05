@@ -1,7 +1,7 @@
 import typing
 from collections import defaultdict
 
-from runem.config_metadata import ConfigMetadata
+from runem.config.config_metadata import ConfigMetadata
 from runem.job.job import Job
 from runem.log import log
 from runem.types.common import JobNames, JobPhases, JobTags, PhaseName

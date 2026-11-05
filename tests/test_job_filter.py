@@ -8,7 +8,7 @@ from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
-from runem.config_metadata import ConfigMetadata
+from runem.config.config_metadata import ConfigMetadata
 from runem.job_filter import _get_jobs_matching, _should_filter_out_by_tags, filter_jobs
 from runem.types.common import JobTags
 from runem.types.runem_config import JobConfig, PhaseGroupedJobs

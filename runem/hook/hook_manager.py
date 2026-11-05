@@ -10,7 +10,7 @@ from runem.types.filters import FilePathListLookup
 from runem.types.runem_config import HookConfig, Hooks, HooksStore, JobConfig
 
 if typing.TYPE_CHECKING:
-    from runem.config_metadata import ConfigMetadata
+    from runem.config.config_metadata import ConfigMetadata
 
 
 class HookManager:

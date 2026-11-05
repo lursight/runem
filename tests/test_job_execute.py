@@ -9,7 +9,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from runem.config_metadata import ConfigMetadata
+from runem.config.config_metadata import ConfigMetadata
 from runem.job_execute import BadDeveloperExecute, _chdir_into_ctx, job_execute
 from runem.timer import RecordSubJobTimeType
 from runem.types.filters import FilePathListLookup

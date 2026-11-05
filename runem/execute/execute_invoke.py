@@ -7,7 +7,7 @@ from typing_extensions import NotRequired
 from runem.hook.hook_args import HookArgs
 
 if typing.TYPE_CHECKING:
-    from runem.config_metadata import ConfigMetadata
+    from runem.config.config_metadata import ConfigMetadata
     from runem.types.options import Options
     from runem.types.runem_config import JobConfig
 

@@ -5,7 +5,7 @@ import sys
 import typing
 from collections.abc import Iterable
 
-from runem.config_metadata import ConfigMetadata
+from runem.config.config_metadata import ConfigMetadata
 from runem.hook.hook_manager import HookManager
 from runem.hook.hook_name import HookName
 from runem.job.job import Job

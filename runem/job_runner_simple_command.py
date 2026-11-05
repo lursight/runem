@@ -14,7 +14,7 @@ from runem.types.options import OptionsWritable
 from runem.types.runem_config import JobConfig
 
 if typing.TYPE_CHECKING:
-    from runem.config_metadata import ConfigMetadata
+    from runem.config.config_metadata import ConfigMetadata
 
 RUNEM_CTX_PLACEHOLDER = "{runem_ctx}"
 

@@ -43,7 +43,7 @@ from runem.config.config import (
     load_project_config,
     load_user_configs,
 )
-from runem.config_metadata import ConfigMetadata
+from runem.config.config_metadata import ConfigMetadata
 from runem.config_parse import load_config_metadata
 from runem.files import find_files
 from runem.job.job_return import JobReturn

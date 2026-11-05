@@ -16,7 +16,7 @@ from unittest.mock import MagicMock, Mock, patch
 # Assuming that the modified _progress_updater function is in a module named runem
 import pytest
 
-from runem.config_metadata import ConfigMetadata
+from runem.config.config_metadata import ConfigMetadata
 from runem.runem import (
     _main,
     _process_jobs,

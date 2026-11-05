@@ -8,7 +8,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from runem.config_metadata import ConfigMetadata
+from runem.config.config_metadata import ConfigMetadata
 from runem.hook.hook_manager import HookManager
 from runem.hook.hook_name import HookName
 from runem.hook.specs.on_exit import on_exit_hook
