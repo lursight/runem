@@ -11,7 +11,7 @@ import pytest
 
 from runem.config.config_metadata import ConfigMetadata
 from runem.execute.job_execute import BadDeveloperExecute, _chdir_into_ctx, job_execute
-from runem.timer import RecordSubJobTimeType
+from runem.report.metrics.timer import RecordSubJobTimeType
 from runem.types.filters import FilePathListLookup
 from runem.types.runem_config import JobConfig, PhaseGroupedJobs
 from tests.intentional_test_error import IntentionalTestError
