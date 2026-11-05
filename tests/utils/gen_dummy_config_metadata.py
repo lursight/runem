@@ -4,7 +4,7 @@ from collections import defaultdict
 from unittest.mock import MagicMock
 
 from runem.config.config_metadata import ConfigMetadata
-from runem.informative_dict import InformativeDict
+from runem.job.job_options.informative_dict import InformativeDict
 
 
 def gen_dummy_config_metadata() -> ConfigMetadata:

@@ -2,7 +2,10 @@ import typing
 
 import pytest
 
-from runem.informative_dict import InformativeDict, ReadOnlyInformativeDict
+from runem.job.job_options.informative_dict import (
+    InformativeDict,
+    ReadOnlyInformativeDict,
+)
 
 # Define type variables for key and value to be used in the custom dictionary
 K = typing.TypeVar("K")

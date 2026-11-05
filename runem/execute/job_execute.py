@@ -6,10 +6,10 @@ from datetime import timedelta
 from timeit import default_timer as timer
 
 from runem.hook.hook_args import HookArgs
-from runem.informative_dict import ReadOnlyInformativeDict
 from runem.job.job import Job
 from runem.job.job_args import JobArgs
 from runem.job.job_function import JobFunction
+from runem.job.job_options.informative_dict import ReadOnlyInformativeDict
 from runem.job.job_return import (
     JobReturn,
 )

@@ -7,7 +7,7 @@ from markdown_jobs import (
     _job_markdown_prettier,
 )
 
-from runem.informative_dict import InformativeDict
+from runem.job.job_options.informative_dict import InformativeDict
 
 
 def _job_kwargs(check_only: bool = False) -> typing.Dict[str, typing.Any]:

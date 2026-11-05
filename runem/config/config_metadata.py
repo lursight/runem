@@ -3,7 +3,7 @@ import pathlib
 import typing
 from collections import defaultdict
 
-from runem.informative_dict import InformativeDict
+from runem.job.job_options.informative_dict import InformativeDict
 
 if typing.TYPE_CHECKING:
     from runem.hook.hook_manager import HookManager

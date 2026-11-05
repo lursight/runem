@@ -8,9 +8,9 @@ from typing_extensions import Unpack
 
 from runem.config.config_metadata import ConfigMetadata
 from runem.hook.hook_name import HookName
-from runem.informative_dict import ReadOnlyInformativeDict
 from runem.job.job import Job
 from runem.job.job_args import JobArgs
+from runem.job.job_options.informative_dict import ReadOnlyInformativeDict
 from runem.job.job_return import JobReturn
 from runem.report.metrics.job_run_timing import JobTiming
 from runem.runem import (
