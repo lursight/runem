@@ -1,8 +1,8 @@
 import pathlib
 from unittest.mock import ANY, Mock, patch
 
+from runem.execute.job_wrapper import get_job_wrapper
 from runem.job.job_function import JobFunction
-from runem.job_wrapper import get_job_wrapper
 from runem.types.runem_config import JobConfig
 
 # use a string as a ad type to test call
@@ -10,7 +10,7 @@ DUMMY_FUNCTION: JobFunction = "intentionally bad type"  # type: ignore[assignmen
 
 
 @patch(
-    "runem.job_wrapper.get_job_wrapper_py_func",
+    "runem.execute.job_wrapper.get_job_wrapper_py_func",
     return_value=DUMMY_FUNCTION,
 )
 def test_get_job_wrapper_python_wrapper_job(mock_get_job_wrapper_py_func: Mock) -> None:
@@ -42,11 +42,11 @@ def test_get_job_wrapper_python_wrapper_job(mock_get_job_wrapper_py_func: Mock) 
 
 
 @patch(
-    "runem.job_wrapper.get_job_wrapper_py_func",
+    "runem.execute.job_wrapper.get_job_wrapper_py_func",
     return_value=None,
 )
 @patch(
-    "runem.job_wrapper.get_job_wrapper_py_module_dot_path",
+    "runem.execute.job_wrapper.get_job_wrapper_py_module_dot_path",
     return_value="dummy func",
 )
 def test_get_job_wrapper_module_path(

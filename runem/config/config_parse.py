@@ -6,10 +6,10 @@ import typing
 from collections.abc import Iterable
 
 from runem.config.config_metadata import ConfigMetadata
+from runem.execute.job_wrapper import get_job_wrapper
 from runem.hook.hook_manager import HookManager
 from runem.hook.hook_name import HookName
 from runem.job.job import Job
-from runem.job_wrapper import get_job_wrapper
 from runem.log import error, warn
 from runem.types.common import (
     JobName,

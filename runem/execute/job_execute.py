@@ -5,6 +5,7 @@ import uuid
 from datetime import timedelta
 from timeit import default_timer as timer
 
+from runem.execute.job_wrapper import get_job_wrapper
 from runem.hook.hook_args import HookArgs
 from runem.job.job import Job
 from runem.job.job_args import JobArgs
@@ -13,7 +14,6 @@ from runem.job.job_options.informative_dict import ReadOnlyInformativeDict
 from runem.job.job_return import (
     JobReturn,
 )
-from runem.job_wrapper import get_job_wrapper
 from runem.log import error, log, warn
 from runem.report.metrics.job_run_timing import JobTiming
 from runem.report.metrics.timing import TimingEntries, TimingEntry
