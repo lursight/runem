@@ -45,9 +45,9 @@ from runem.config.config import (
 )
 from runem.config.config_metadata import ConfigMetadata
 from runem.config.config_parse import load_config_metadata
+from runem.execute.job_execute import job_execute
 from runem.files import find_files
 from runem.job.job_return import JobReturn
-from runem.job_execute import job_execute
 from runem.job_filter import filter_jobs
 from runem.log import error, log, warn
 from runem.report.metrics.job_run_timing import JobTiming

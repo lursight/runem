@@ -10,7 +10,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from runem.config.config_metadata import ConfigMetadata
-from runem.job_execute import BadDeveloperExecute, _chdir_into_ctx, job_execute
+from runem.execute.job_execute import BadDeveloperExecute, _chdir_into_ctx, job_execute
 from runem.timer import RecordSubJobTimeType
 from runem.types.filters import FilePathListLookup
 from runem.types.runem_config import JobConfig, PhaseGroupedJobs
@@ -59,12 +59,12 @@ def _job_execute_and_capture_stdout(
 
 @pytest.fixture(name="mock_timer", autouse=True)
 def create_mock_print_sleep() -> typing.Generator[None, None, None]:
-    with patch("runem.job_execute.timer", return_value=0.0):  # as mock_timer
+    with patch("runem.execute.job_execute.timer", return_value=0.0):  # as mock_timer
         yield
 
 
 def test_chdir_into_ctx_returns_without_a_cwd(tmp_path: pathlib.Path) -> None:
-    with patch("runem.job_execute.os.chdir") as mock_chdir:
+    with patch("runem.execute.job_execute.os.chdir") as mock_chdir:
         _chdir_into_ctx(tmp_path, "example job", {})
 
     mock_chdir.assert_not_called()
@@ -82,7 +82,7 @@ def test_chdir_into_ctx_rejects_a_missing_directory(tmp_path: pathlib.Path) -> N
     missing_path = tmp_path / "missing"
     expected_error = f"job: job 'example job' ctx path not found! '{missing_path}'"
 
-    with patch("runem.job_execute.error") as mock_error:
+    with patch("runem.execute.job_execute.error") as mock_error:
         with pytest.raises(ValueError, match="ctx path not found") as error_info:
             _chdir_into_ctx(tmp_path, "example job", {"cwd": "missing"})
 
@@ -111,8 +111,8 @@ def test_chdir_into_ctx_logs_and_re_raises_chdir_errors(
     )
 
     with (
-        patch("runem.job_execute.os.chdir", side_effect=IntentionalTestError()),
-        patch("runem.job_execute.error") as mock_error,
+        patch("runem.execute.job_execute.os.chdir", side_effect=IntentionalTestError()),
+        patch("runem.execute.job_execute.error") as mock_error,
         pytest.raises(IntentionalTestError),
     ):
         _chdir_into_ctx(tmp_path, "example job", {"cwd": "context"})

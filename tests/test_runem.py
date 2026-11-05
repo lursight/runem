@@ -196,7 +196,7 @@ def test_runem_basic_with_config_no_options(
 )
 @patch(
     # patch the inner call that is NOT serialised by multiprocessing
-    "runem.job_execute.job_execute_inner",
+    "runem.execute.job_execute.job_execute_inner",
     return_value=MOCK_JOB_EXECUTE_INNER_RET,
 )
 def _run_full_config_runem(

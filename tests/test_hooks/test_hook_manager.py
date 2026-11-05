@@ -70,7 +70,7 @@ def hook_manager_fixture(
 
 @pytest.fixture(name="mock_timer", autouse=True)
 def create_mock_print_sleep() -> typing.Generator[None, None, None]:
-    with patch("runem.job_execute.timer", return_value=0.0):  # as mock_timer
+    with patch("runem.execute.job_execute.timer", return_value=0.0):  # as mock_timer
         yield
 
 
