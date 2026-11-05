@@ -38,7 +38,6 @@ from rich.spinner import Spinner
 from rich.status import Status
 from rich.text import Text
 
-from runem.blocking_print import RICH_CONSOLE
 from runem.command_line import RunemArgsParse
 from runem.config import (
     find_project_cfg,
@@ -64,6 +63,7 @@ from runem.types.errors import SystemExitBad
 from runem.types.filters import FilePathListLookup
 from runem.types.runem_config import Config, Jobs, PhaseGroupedJobs
 from runem.utils import printable_set_coloured
+from runem.ux.blocking_print import RICH_CONSOLE
 
 
 def _update_progress(

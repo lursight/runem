@@ -3,18 +3,18 @@ from unittest.mock import MagicMock, call, patch
 
 import pytest
 
-from runem import blocking_print
+from runem.ux import blocking_print
 
 
 @pytest.fixture(name="mock_print")
 def mock_print_fixture() -> typing.Generator[MagicMock, None, None]:
-    with patch("runem.blocking_print.RICH_CONSOLE.print") as mock_print:
+    with patch("runem.ux.blocking_print.RICH_CONSOLE.print") as mock_print:
         yield mock_print
 
 
 @pytest.fixture(name="mock_sleep")
 def mock_sleep_fixture() -> typing.Generator[MagicMock, None, None]:
-    with patch("runem.blocking_print.time.sleep") as mock_sleep:
+    with patch("runem.ux.blocking_print.time.sleep") as mock_sleep:
         yield mock_sleep
 
 

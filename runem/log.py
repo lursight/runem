@@ -1,6 +1,6 @@
 import typing
 
-from runem.blocking_print import blocking_print
+from runem.ux.blocking_print import blocking_print
 
 
 def log(
