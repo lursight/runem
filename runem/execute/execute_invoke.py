@@ -8,7 +8,7 @@ from runem.hook.hook_args import HookArgs
 
 if typing.TYPE_CHECKING:
     from runem.config.config_metadata import ConfigMetadata
-    from runem.types.options import Options
+    from runem.job.job_options.options import Options
     from runem.types.runem_config import JobConfig
 
 MetadataT = TypeVar("MetadataT", bound=HookArgs.HookData | None)

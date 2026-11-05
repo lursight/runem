@@ -7,6 +7,7 @@ from runem.job.job_options.informative_dict import InformativeDict
 
 if typing.TYPE_CHECKING:
     from runem.hook.hook_manager import HookManager
+    from runem.job.job_options.options import OptionsWritable
     from runem.types.common import (
         JobNames,
         JobPhases,
@@ -15,7 +16,6 @@ if typing.TYPE_CHECKING:
         PhaseName,
     )
     from runem.types.filters import TagFileFilters
-    from runem.types.options import OptionsWritable
     from runem.types.runem_config import OptionConfigs, PhaseGroupedJobs
 
 

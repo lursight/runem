@@ -8,9 +8,9 @@ from typing_extensions import Unpack
 from runem.hook.hook_args import HookArgs
 from runem.job.job_args import JobArgs
 from runem.job.job_function import job_function
+from runem.job.job_options.options import OptionsWritable
 from runem.run_command import run_command
 from runem.types.common import FilePathList
-from runem.types.options import OptionsWritable
 from runem.types.runem_config import JobConfig
 
 if typing.TYPE_CHECKING:
