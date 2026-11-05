@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from runem.command_line import RunemArgsParse
+from runem.ux.cli.command_line import RunemArgsParse
 
 
 def test_root_path_arg(tmp_path: Path) -> None:

@@ -548,7 +548,7 @@ def _conform_help_output(help_output: typing.List[str]) -> str:
 
 
 @patch(
-    "runem.command_line._get_config_dir",
+    "runem.ux.cli.command_line._get_config_dir",
     return_value=DIR_REPLACEMENT_DIR,
 )
 def test_runem_help(
