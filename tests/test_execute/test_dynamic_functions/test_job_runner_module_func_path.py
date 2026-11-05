@@ -9,17 +9,19 @@ from typing import Any
 import pytest
 from typing_extensions import Unpack
 
-from runem.job.job_args import JobArgs
-from runem.job.job_function import JobFunction, job_function
-from runem.job_runner_module_func_path import (
+from runem.execute.dynamic_functions.job_runner_module_func_path import (
     _load_python_function_from_dotted_path,
     get_job_wrapper_py_module_dot_path,
 )
+from runem.job.job_args import JobArgs
+from runem.job.job_function import JobFunction, job_function
 from runem.types.errors import FunctionNotFound
 from runem.types.runem_config import JobWrapper
 from tests.utils.dummy_data import DUMMY_JOB_K_ARGS
 
-DOT_PATH_THIS_FILE = "tests.test_job_runner_module_func_path"
+DOT_PATH_THIS_FILE = (
+    "tests.test_execute.test_dynamic_functions.test_job_runner_module_func_path"
+)
 
 
 @job_function
