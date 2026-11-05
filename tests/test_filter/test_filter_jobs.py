@@ -9,7 +9,11 @@ from unittest.mock import MagicMock, Mock, patch
 import pytest
 
 from runem.config.config_metadata import ConfigMetadata
-from runem.job_filter import _get_jobs_matching, _should_filter_out_by_tags, filter_jobs
+from runem.filter.filter_jobs import (
+    _get_jobs_matching,
+    _should_filter_out_by_tags,
+    filter_jobs,
+)
 from runem.types.common import JobTags
 from runem.types.runem_config import JobConfig, PhaseGroupedJobs
 
@@ -185,9 +189,10 @@ def test_should_filter_out_by_tags_without_tags_to_avoid(verbosity: bool) -> Non
         False,
     ],
 )
-@patch("runem.job_filter._should_filter_out_by_tags", return_value=False)
+@patch("runem.filter.filter_jobs._should_filter_out_by_tags", return_value=False)
 @patch(
-    "runem.job_filter.Job.get_job_name", return_value=("intentionally not in job names")
+    "runem.filter.filter_jobs.Job.get_job_name",
+    return_value=("intentionally not in job names"),
 )
 def test_get_jobs_matching_when_job_not_in_valid_job_names(
     mock_get_job_name: Mock,
