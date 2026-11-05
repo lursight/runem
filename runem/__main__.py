@@ -1,6 +1,9 @@
 """Entry point for runem."""
 
-from runem.cli import main  # pragma: no cover
+import sys
 
-if __name__ == "__main__":  # pragma: no cover
-    main()
+from runem.runem import timed_main
+
+
+def main() -> None:
+    timed_main(sys.argv)
