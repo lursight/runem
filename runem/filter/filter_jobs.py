@@ -6,7 +6,7 @@ from runem.job.job import Job
 from runem.log import log
 from runem.types.common import JobNames, JobPhases, JobTags, PhaseName
 from runem.types.runem_config import JobConfig, PhaseGroupedJobs
-from runem.utils import printable_set
+from runem.ux.printable_set import printable_set
 
 
 def _should_filter_out_by_tags(

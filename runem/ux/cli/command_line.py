@@ -10,7 +10,7 @@ from runem.log import error, log
 from runem.runem_version import get_runem_version
 from runem.types.common import JobNames
 from runem.types.runem_config import OptionConfig
-from runem.utils import printable_set
+from runem.ux.printable_set import printable_set
 
 
 def _static_values_completer(

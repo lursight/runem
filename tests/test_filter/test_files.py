@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, Mock, patch
 import pytest
 
 from runem.config.config_metadata import ConfigMetadata
-from runem.files import find_files
+from runem.filter.files import find_files
 from runem.types.filters import FilePathListLookup
 
 
@@ -78,7 +78,7 @@ def _prep_config(
     ],
 )
 @patch(
-    "runem.files.subprocess_check_output",
+    "runem.filter.files.subprocess_check_output",
 )
 def test_find_files_basic(
     mock_subprocess_check_output: Mock,
@@ -139,7 +139,7 @@ def test_find_files_basic(
     ],
 )
 @patch(
-    "runem.files.subprocess_check_output",
+    "runem.filter.files.subprocess_check_output",
 )
 def test_find_files_git_since_branch(
     mock_subprocess_check_output: Mock,

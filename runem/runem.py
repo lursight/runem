@@ -46,7 +46,7 @@ from runem.config.config import (
 from runem.config.config_metadata import ConfigMetadata
 from runem.config.config_parse import load_config_metadata
 from runem.execute.job_execute import job_execute
-from runem.files import find_files
+from runem.filter.files import find_files
 from runem.filter.filter_jobs import filter_jobs
 from runem.job.job_return import JobReturn
 from runem.log import error, log, warn
@@ -61,9 +61,9 @@ from runem.types.common import OrderedPhases, PhaseName
 from runem.types.errors import SystemExitBad
 from runem.types.filters import FilePathListLookup
 from runem.types.runem_config import Config, Jobs, PhaseGroupedJobs
-from runem.utils import printable_set_coloured
 from runem.ux.blocking_print import RICH_CONSOLE
 from runem.ux.cli.command_line import RunemArgsParse
+from runem.ux.printable_set import printable_set_coloured
 
 
 def _update_progress(
