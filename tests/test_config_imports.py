@@ -12,7 +12,7 @@ from runem.config.config import (
     _load_and_parse_config_with_sources,
     load_and_parse_config,
 )
-from runem.config_parse import load_config_metadata
+from runem.config.config_parse import load_config_metadata
 from runem.config_sources import MAX_CONFIG_IMPORT_DEPTH, ConfigImportError
 from runem.hook.hook_name import HookName
 from runem.types.runem_config import ConfigNodes

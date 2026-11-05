@@ -11,7 +11,7 @@ from unittest.mock import Mock, patch
 import pytest
 
 from runem.config.config_metadata import ConfigMetadata
-from runem.config_parse import (
+from runem.config.config_parse import (
     _ConfigMetadataCollector,
     _parse_global_config,
     _parse_hook_config,
@@ -597,7 +597,7 @@ def test_load_config_metadata_missing_phases_raises() -> None:
 
 
 @patch(
-    "runem.config_parse._parse_global_config",
+    "runem.config.config_parse._parse_global_config",
     return_value=None,
 )
 def test_load_config_metadata_warning_if_missing_phase_order(
@@ -640,7 +640,7 @@ def test_load_config_metadata_warning_if_missing_phase_order(
 
 
 @patch(
-    "runem.config_parse.get_job_wrapper",
+    "runem.config.config_parse.get_job_wrapper",
     return_value=None,
 )
 def test_parse_job_with_tags(mock_get_job_wrapper: Mock) -> None:
@@ -677,7 +677,7 @@ def test_parse_job_with_tags(mock_get_job_wrapper: Mock) -> None:
 
 
 @patch(
-    "runem.config_parse.get_job_wrapper",
+    "runem.config.config_parse.get_job_wrapper",
     return_value=None,
 )
 def test_parse_job_without_tags(mock_get_job_wrapper: Mock) -> None:
@@ -708,7 +708,7 @@ def test_parse_job_without_tags(mock_get_job_wrapper: Mock) -> None:
 
 
 @patch(
-    "runem.config_parse.get_job_wrapper",
+    "runem.config.config_parse.get_job_wrapper",
     side_effect=FunctionNotFound("a test message"),
 )
 def test_parse_job_with_bad_function(mock_get_job_wrapper: Mock) -> None:
@@ -750,7 +750,7 @@ def test_parse_job_with_bad_function(mock_get_job_wrapper: Mock) -> None:
     ],
 )
 @patch(
-    "runem.config_parse.get_job_wrapper",
+    "runem.config.config_parse.get_job_wrapper",
     return_value=None,
 )
 def test_parse_job_with_missing_phase(
