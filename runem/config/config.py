@@ -11,7 +11,7 @@ from runem.config.config_sources import (
     load_config_with_sources,
     validate_imported_config_conflicts,
 )
-from runem.config_validate import validate_runem_file
+from runem.config.config_validate import validate_runem_file
 from runem.log import error, log
 from runem.runem_version import get_runem_version
 from runem.types.runem_config import (

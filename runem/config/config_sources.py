@@ -8,7 +8,7 @@ from dataclasses import dataclass, field
 import yaml
 from typing_extensions import TypeGuard
 
-from runem.config_validate import validate_runem_file
+from runem.config.config_validate import validate_runem_file
 from runem.job.job import Job
 from runem.types.runem_config import (
     Config,

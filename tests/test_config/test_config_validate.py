@@ -30,7 +30,7 @@ import pytest
 # --------------------------------------------------------------------------- #
 # Test helpers
 # --------------------------------------------------------------------------- #
-import runem.config_validate as uut  # unit under test
+import runem.config.config_validate as uut  # unit under test
 
 
 class _DummyErr:  # pylint: disable=too-few-public-methods
