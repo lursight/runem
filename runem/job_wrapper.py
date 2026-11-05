@@ -7,8 +7,8 @@ from runem.execute.dynamic_functions.job_runner_simple_command import (
     _validate_simple_command,
     job_runner_simple_command,
 )
+from runem.execute.dynamic_functions.job_wrapper_python import get_job_wrapper_py_func
 from runem.job.job_function import JobFunction
-from runem.job_wrapper_python import get_job_wrapper_py_func
 from runem.types.runem_config import JobWrapper
 
 

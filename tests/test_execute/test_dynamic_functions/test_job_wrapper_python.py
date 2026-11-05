@@ -4,11 +4,11 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from runem.job.job_function import JobFunction
-from runem.job_wrapper_python import (
+from runem.execute.dynamic_functions.job_wrapper_python import (
     _load_python_function_from_module,
     get_job_wrapper_py_func,
 )
+from runem.job.job_function import JobFunction
 from runem.types.errors import FunctionNotFound
 from runem.types.runem_config import JobConfig
 
@@ -110,7 +110,7 @@ def test_get_job_function_handles_missing_module(tmp_path: pathlib.Path) -> None
 
 
 @patch(
-    "runem.job_wrapper_python.module_spec_from_file_location",
+    "runem.execute.dynamic_functions.job_wrapper_python.module_spec_from_file_location",
     return_value=None,
 )
 def test_load_python_function_from_module_handles_module_spec_loading(
@@ -139,7 +139,7 @@ def test_load_python_function_from_module_handles_module_spec_loading(
 
 
 @patch(
-    "runem.job_wrapper_python.module_from_spec",
+    "runem.execute.dynamic_functions.job_wrapper_python.module_from_spec",
     return_value=None,
 )
 def test_load_python_function_from_module_handles_module_from_spec_failing(
