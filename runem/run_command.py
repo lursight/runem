@@ -8,7 +8,7 @@ from subprocess import Popen
 from rich.markup import escape
 
 from runem.log import log
-from runem.timer import RecordSubJobTimeType, runem_timer
+from runem.report.metrics.timer import RecordSubJobTimeType, runem_timer
 
 TERMINAL_WIDTH = 86
 

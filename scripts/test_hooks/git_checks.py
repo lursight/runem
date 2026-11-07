@@ -6,8 +6,8 @@ from pathlib import Path
 from typing_extensions import Unpack
 
 from runem.job.job_args import JobArgs
+from runem.job.job_options.options import Options
 from runem.run_command import RunCommandUnhandledError
-from runem.types.options import Options
 
 # cspell:disable-next-line
 NO_COMMIT_PHRASES = ["NO COMMIT", "NOCOMMIT"]  # *enforcing* the rule

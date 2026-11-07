@@ -16,7 +16,7 @@ from unittest.mock import MagicMock, Mock, patch
 # Assuming that the modified _progress_updater function is in a module named runem
 import pytest
 
-from runem.config_metadata import ConfigMetadata
+from runem.config.config_metadata import ConfigMetadata
 from runem.runem import (
     _main,
     _process_jobs,
@@ -33,8 +33,6 @@ from runem.types.runem_config import (
     Jobs,
     PhaseGroupedJobs,
 )
-from tests.intentional_test_error import IntentionalTestError
-from tests.sanitise_reports_footer import sanitise_reports_footer
 from tests.utils.dummy_data import (
     DUMMY_FULL_CONFIG_TYPICAL,
     DUMMY_JOB_S_CONFIG_4_MODULE,
@@ -43,6 +41,8 @@ from tests.utils.dummy_data import (
     MOCK_JOB_EXECUTE_INNER_RET,
     MOCK_USER_CONFIGS_METADATA,
 )
+from tests.utils.intentional_test_error import IntentionalTestError
+from tests.utils.sanitise_reports_footer import sanitise_reports_footer
 
 DIR_REPLACEMENT_DIR: str = "[TEST_REPLACED_DIR]"
 
@@ -196,7 +196,7 @@ def test_runem_basic_with_config_no_options(
 )
 @patch(
     # patch the inner call that is NOT serialised by multiprocessing
-    "runem.job_execute.job_execute_inner",
+    "runem.execute.job_execute.job_execute_inner",
     return_value=MOCK_JOB_EXECUTE_INNER_RET,
 )
 def _run_full_config_runem(
@@ -548,7 +548,7 @@ def _conform_help_output(help_output: typing.List[str]) -> str:
 
 
 @patch(
-    "runem.command_line._get_config_dir",
+    "runem.ux.cli.command_line._get_config_dir",
     return_value=DIR_REPLACEMENT_DIR,
 )
 def test_runem_help(

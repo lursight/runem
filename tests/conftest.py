@@ -5,7 +5,7 @@ import typing
 
 import pytest
 
-from runem.blocking_print import _reset_console, _reset_console_for_tests
+from runem.ux.blocking_print import _reset_console, _reset_console_for_tests
 
 FixtureRequest = typing.Any
 

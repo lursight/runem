@@ -2,7 +2,7 @@ import typing
 from typing import TypedDict
 
 if typing.TYPE_CHECKING:
-    from runem.config_metadata import ConfigMetadataJsonable
+    from runem.config.config_metadata import ConfigMetadataJsonable
     from runem.types.runem_config import JobConfig
 
 

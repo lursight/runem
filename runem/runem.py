@@ -38,19 +38,17 @@ from rich.spinner import Spinner
 from rich.status import Status
 from rich.text import Text
 
-from runem.blocking_print import RICH_CONSOLE
-from runem.command_line import RunemArgsParse
-from runem.config import (
+from runem.config.config import (
     find_project_cfg,
     load_project_config,
     load_user_configs,
 )
-from runem.config_metadata import ConfigMetadata
-from runem.config_parse import load_config_metadata
-from runem.files import find_files
+from runem.config.config_metadata import ConfigMetadata
+from runem.config.config_parse import load_config_metadata
+from runem.execute.job_execute import job_execute
+from runem.filter.files import find_files
+from runem.filter.filter_jobs import filter_jobs
 from runem.job.job_return import JobReturn
-from runem.job_execute import job_execute
-from runem.job_filter import filter_jobs
 from runem.log import error, log, warn
 from runem.report.metrics.job_run_timing import JobTiming
 from runem.report.report_on_run import report_on_run
@@ -63,7 +61,9 @@ from runem.types.common import OrderedPhases, PhaseName
 from runem.types.errors import SystemExitBad
 from runem.types.filters import FilePathListLookup
 from runem.types.runem_config import Config, Jobs, PhaseGroupedJobs
-from runem.utils import printable_set_coloured
+from runem.ux.blocking_print import RICH_CONSOLE
+from runem.ux.cli.command_line import RunemArgsParse
+from runem.ux.printable_set import printable_set_coloured
 
 
 def _update_progress(
