@@ -24,8 +24,8 @@ from runem.types.runem_config import (
     JobSerialisedConfig,
     UserConfigMetadata,
 )
-from tests.intentional_test_error import IntentionalTestError
 from tests.utils.gen_dummy_config_metadata import gen_dummy_config_metadata
+from tests.utils.intentional_test_error import IntentionalTestError
 
 
 def do_nothing_record_sub_job_time(

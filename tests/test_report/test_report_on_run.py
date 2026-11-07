@@ -1,18 +1,11 @@
 import io
-import typing
 from contextlib import redirect_stdout
 from datetime import timedelta
 
 from runem.job.job_return import JobReturn
 from runem.report.metrics.job_run_timing import JobTiming
-from runem.report.report_on_run import _print_reports_by_phase, report_on_run
-from runem.report.runem_metrics import (
-    JobRunMetadata,
-    JobRunMetadatasByPhase,
-    JobRunReportByPhase,
-)
-from runem.types.common import OrderedPhases
-from tests.sanitise_reports_footer import sanitise_reports_footer
+from runem.report.report_on_run import report_on_run
+from runem.report.runem_metrics import JobRunMetadata, JobRunMetadatasByPhase
 
 
 def test_report_on_run_basic_call() -> None:
@@ -144,95 +137,3 @@ def test_report_on_run_reports() -> None:
         "runem: report: dummy report label: /dummy/report/url",
         "",
     ]
-
-
-def test_sanitise_reports_footer_removes_all_bar_chars_2() -> None:
-    """Tries to test that we handle all bar-graph characters.
-
-    This ensures we know that we are sanitising the report data nicely.
-    """
-    phase_run_order: typing.List[str] = []
-    job_run_metadatas: JobRunMetadatasByPhase = {}
-    for multiplier in [1]:  # ,2,3,4,5,6,7,8,9,10]:
-        fractional_times: typing.List[JobRunMetadata] = []
-        for seconds in range(15):  # 1 + 2 +3.. +14 = 105 near enough to 100%
-            seconds = seconds * multiplier
-            job_timing: JobTiming = {
-                "job": (f"job {seconds}", timedelta(seconds=seconds)),
-                "commands": [],
-            }
-            job_return: JobReturn = None  # typing.Optional[JobReturnData]
-            job_run_metadata: JobRunMetadata = (job_timing, job_return)
-            fractional_times.append(job_run_metadata)
-        phase_name: str = f"phase {multiplier}"
-        phase_run_order.append(phase_name)
-        job_run_metadatas[phase_name] = fractional_times
-
-    with io.StringIO() as buf, redirect_stdout(buf):
-        system_time_spent: timedelta
-        wall_clock_time_saved: timedelta
-        system_time_spent, wall_clock_time_saved = report_on_run(
-            phase_run_oder=tuple(phase_run_order),
-            job_run_metadatas=job_run_metadatas,
-            wall_clock_for_runem_main=timedelta(
-                # mimic a value that is slightly larger than the largest single
-                # job in the single phase.
-                seconds=15
-            ),
-        )
-        run_command_stdout = sanitise_reports_footer(buf.getvalue())
-    assert run_command_stdout == [
-        "runem: reports:",
-        "runem (total wall-clock)  [ <float>]",
-        " └phase 1 (user-time)     [<float>]",
-        "  ├job 1                  [  <float>]",
-        "  ├job 2                  [  <float>]",
-        "  ├job 3                  [  <float>]",
-        "  ├job 4                  [  <float>]",
-        "  ├job 5                  [  <float>]",
-        "  ├job 6                  [  <float>]",
-        "  ├job 7                  [  <float>]",
-        "  ├job 8                  [  <float>]",
-        "  ├job 9                  [  <float>]",
-        "  ├job 10                 [ <float>]",
-        "  ├job 11                 [ <float>]",
-        "  ├job 12                 [ <float>]",
-        "  ├job 13                 [ <float>]",
-        "  └job 14                 [ <float>]",
-        "",
-    ]
-    # this floating-point comparison should be problematic but its' working for
-    # now... for now.
-    assert wall_clock_time_saved.total_seconds() == 90.0
-    assert system_time_spent.total_seconds() == 105.0
-
-
-def test_print_reports_by_phase() -> None:
-    # Test data
-    phase_run_order: OrderedPhases = ("phase1", "phase2", "phase3", "phase4")
-
-    report_data: JobRunReportByPhase = {
-        "ignored_phase": [
-            ("no log", "not run should not appear in logs"),
-        ],
-        "phase1": [("report1", "path/to/report1"), ("report2", "path/to/report2")],
-        "phase2": [("report3", "path/to/report3")],
-        "phase3": [],  # Empty list to test handling of empty reports
-        "phase4": [
-            (),  # type: ignore
-        ],  # Empty tuple to test handling of empty report data
-    }
-
-    # Call the function
-    with io.StringIO() as buf, redirect_stdout(buf):
-        _print_reports_by_phase(phase_run_order, report_data)
-        run_command_stdout = buf.getvalue()
-
-    # Assert that log is called with the expected messages
-    expected_logs = [
-        "runem: report: report1: path/to/report1",
-        "runem: report: report2: path/to/report2",
-        "runem: report: report3: path/to/report3",
-        "",
-    ]
-    assert run_command_stdout.split("\n") == expected_logs

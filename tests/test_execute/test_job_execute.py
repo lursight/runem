@@ -14,7 +14,7 @@ from runem.execute.job_execute import BadDeveloperExecute, _chdir_into_ctx, job_
 from runem.report.metrics.timer import RecordSubJobTimeType
 from runem.types.filters import FilePathListLookup
 from runem.types.runem_config import JobConfig, PhaseGroupedJobs
-from tests.intentional_test_error import IntentionalTestError
+from tests.utils.intentional_test_error import IntentionalTestError
 
 
 def empty_function(**kwargs: typing.Any) -> None:

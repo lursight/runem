@@ -33,8 +33,6 @@ from runem.types.runem_config import (
     Jobs,
     PhaseGroupedJobs,
 )
-from tests.intentional_test_error import IntentionalTestError
-from tests.sanitise_reports_footer import sanitise_reports_footer
 from tests.utils.dummy_data import (
     DUMMY_FULL_CONFIG_TYPICAL,
     DUMMY_JOB_S_CONFIG_4_MODULE,
@@ -43,6 +41,8 @@ from tests.utils.dummy_data import (
     MOCK_JOB_EXECUTE_INNER_RET,
     MOCK_USER_CONFIGS_METADATA,
 )
+from tests.utils.intentional_test_error import IntentionalTestError
+from tests.utils.sanitise_reports_footer import sanitise_reports_footer
 
 DIR_REPLACEMENT_DIR: str = "[TEST_REPLACED_DIR]"
 
