@@ -9,7 +9,7 @@ from typing import Any, List
 
 import pytest
 
-import runem.yaml_validation as uut  # unit under test
+import runem.config.store.yaml_validation as uut  # unit under test
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Helpers

@@ -9,6 +9,7 @@ import yaml
 from typing_extensions import TypeGuard
 
 from runem.config.config_validate import validate_runem_file
+from runem.config.store.yaml_utils import load_yaml_object
 from runem.job.job import Job
 from runem.types.runem_config import (
     Config,
@@ -20,7 +21,6 @@ from runem.types.runem_config import (
     JobSerialisedConfig,
     JobWrapper,
 )
-from runem.yaml_utils import load_yaml_object
 
 MAX_CONFIG_IMPORT_DEPTH = 50
 ConfigImportStack = typing.Tuple[pathlib.Path, ...]
