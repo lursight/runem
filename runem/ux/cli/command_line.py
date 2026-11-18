@@ -136,6 +136,11 @@ class RunemArgsParse:
             argv,
             allow_unknown=False,  # catch bad cli switches
         )
+        # Keep explicit-option presence on the dynamic Namespace because argparse's
+        # defaults expand --tags and --jobs to every configured value. Those expanded
+        # values cannot tell logging whether the user supplied either option.
+        args.tags_given_on_cli = _option_was_provided(argv, "--tags")
+        args.jobs_given_on_cli = _option_was_provided(argv, "--jobs")
 
         if not _validate_filters(config_metadata, args):
             sys.exit(1)
@@ -471,6 +476,13 @@ def _enable_shell_completion(parser: argparse.ArgumentParser) -> None:
     except ImportError:
         return
     argcomplete_module.autocomplete(parser)
+
+
+def _option_was_provided(argv: typing.List[str], option: str) -> bool:
+    """Detect explicit CLI input when argparse defaults expand configured values."""
+    return any(
+        argument == option or argument.startswith(f"{option}=") for argument in argv[1:]
+    )
 
 
 def _get_config_dir(cfg_filepath: pathlib.Path) -> pathlib.Path:

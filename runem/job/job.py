@@ -86,6 +86,17 @@ class Job:
         return sorted(file_list)
 
     @staticmethod
+    def has_files(
+        file_lists: "FilePathListLookup",
+        job_tags: typing.Optional["JobTags"],
+    ) -> bool:
+        """Check whether a job has any files without building its full file list."""
+        tags_for_files: typing.Iterable[str] = (
+            file_lists.keys() if job_tags is None else job_tags
+        )
+        return any(file_lists.get(tag) for tag in tags_for_files)
+
+    @staticmethod
     def get_job_name(job: typing.Mapping[str, object]) -> str:
         """Returns a name to use for a given job config.
 
