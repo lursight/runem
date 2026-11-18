@@ -83,7 +83,8 @@ def job_execute_inner(
     file_list: FilePathList = Job.get_job_files(file_lists, job_tags)
 
     if not file_list:
-        # no files to work on
+        # Main runs preflight and remove these jobs before worker dispatch. Keep this
+        # guard for direct executor and hook calls that do not pass through preflight.
         if not config_metadata.args.silent:
             warn(f"skipping job '{label}', no files for job")
         return {

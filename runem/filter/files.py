@@ -8,10 +8,16 @@ from runem.config.config_metadata import ConfigMetadata
 from runem.types.filters import FilePathListLookup
 
 
-def find_files(config_metadata: ConfigMetadata) -> FilePathListLookup:
-    """Ronseal function, finds files.
+def find_files(
+    config_metadata: ConfigMetadata,
+    file_filter_tags: typing.Optional[typing.Set[str]] = None,
+) -> FilePathListLookup:
+    """Find candidate files and bucket them under the requested file-filter tags.
 
     For brevity we use git-ls-files, which, for now, limits us to working in git projects.
+
+    `None` keeps the public all-filter behaviour. An empty set means no file filters are
+    needed for the selected jobs, while a non-empty set avoids running unrelated regexes.
 
     Previous incarnations used various methods:
         - in bash we used find with hard-coded exclude filters
@@ -107,6 +113,7 @@ def find_files(config_metadata: ConfigMetadata) -> FilePathListLookup:
         file_paths,
         config_metadata,
         in_out_file_lists=file_lists,
+        file_filter_tags=file_filter_tags,
     )
 
     # now ensure the file lists are sorted so we get deterministic behaviour in tests
@@ -119,9 +126,12 @@ def _bucket_file_by_tag(  # noqa: C901 # pylint: disable=too-many-branches
     file_paths: typing.List[str],
     config_metadata: ConfigMetadata,
     in_out_file_lists: FilePathListLookup,
+    file_filter_tags: typing.Optional[typing.Set[str]] = None,
 ) -> None:
-    """Groups files by the file.filters iin the config."""
+    """Group files by the configured file filters."""
     for file_path in file_paths:
         for tag, file_filter in config_metadata.file_filters.items():
+            if file_filter_tags is not None and tag not in file_filter_tags:
+                continue
             if re.search(file_filter["regex"], file_path):
                 in_out_file_lists[tag].append(file_path)

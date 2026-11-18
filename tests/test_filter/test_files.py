@@ -171,3 +171,30 @@ def test_find_files_git_since_branch(
         assert results == {
             "dummy tag": [file_strings[0]]  # we filter in only the *1* files.
         }
+
+
+@patch("runem.filter.files.subprocess_check_output")
+def test_find_files_skips_unrequested_filters(
+    mock_subprocess_check_output: Mock,
+    tmp_path: pathlib.Path,
+) -> None:
+    """Only selected regexes run when jobs do not need every file bucket."""
+    selected_file = tmp_path / "selected1.txt"
+    selected_file.touch()
+    mock_subprocess_check_output.return_value = str.encode(str(selected_file))
+
+    config_metadata = _prep_config(
+        tmp_path,
+        check_modified_files=False,
+        check_head_files=False,
+        always_files=None,
+        git_since_branch=None,
+    )
+    config_metadata.file_filters["unrequested tag"] = {
+        "tag": "unrequested tag",
+        "regex": ".*",
+    }
+
+    results = find_files(config_metadata, file_filter_tags={"dummy tag"})
+
+    assert results == {"dummy tag": [str(selected_file)]}

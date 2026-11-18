@@ -18,6 +18,7 @@ import pytest
 
 from runem.config.config_metadata import ConfigMetadata
 from runem.runem import (
+    _log_file_selection_modes,
     _main,
     _process_jobs,
     _process_jobs_by_phase,
@@ -199,7 +200,7 @@ def test_runem_basic_with_config_no_options(
     "runem.execute.job_execute.job_execute_inner",
     return_value=MOCK_JOB_EXECUTE_INNER_RET,
 )
-def _run_full_config_runem(
+def _run_full_config_runem(  # noqa: C901
     job_execute_inner_mock: Mock,
     find_files_mock: Mock,
     load_project_config_mock: Mock,
@@ -210,6 +211,7 @@ def _run_full_config_runem(
     add_silent_switch: bool = False,
     inject_job_minimal_command: bool = True,
     inject_job_module_config: bool = False,
+    with_file_list: bool = True,
 ) -> typing.Tuple[typing.List[str], typing.Optional[BaseException]]:
     """Runs an e2e instance with the provided config.
 
@@ -226,6 +228,11 @@ def _run_full_config_runem(
     # By default use a complete config with all typical, non-warning or
     # erroring permutations of data/config.
     full_config: Config = copy.deepcopy(DUMMY_FULL_CONFIG_TYPICAL)
+    global_config = typing.cast(GlobalSerialisedConfig, full_config[0])
+    # DUMMY_FULL_CONFIG_TYPICAL guarantees that its first node is the global config.
+    global_config["config"]["files"] = [
+        {"filter": {"tag": "dummy tag 1", "regex": ".*"}}
+    ]
 
     if inject_job_minimal_command:
         full_config.append(
@@ -237,7 +244,10 @@ def _run_full_config_runem(
         )
 
     minimal_file_lists = defaultdict(list)
-    minimal_file_lists["mock phase"].append(pathlib.Path("/test") / "dummy" / "path")
+    if with_file_list:
+        minimal_file_lists["dummy tag 1"].append(
+            pathlib.Path("/test") / "dummy" / "path"
+        )
     load_project_config_mock.return_value = full_config
     find_files_mock.return_value = minimal_file_lists
     error_raised: typing.Optional[BaseException] = None
@@ -273,6 +283,34 @@ def _run_full_config_runem(
         # truncate the stdout up to where the reports are logged
         runem_stdout_lines = runem_stdout_lines[:got_to_reports]
     return runem_stdout_lines, error_raised
+
+
+@pytest.mark.parametrize(
+    ("check_modified_files", "check_head_files", "git_since_branch", "expected"),
+    [
+        (False, False, None, "all tracked files"),
+        (True, False, None, "-f"),
+        (False, True, None, "-h"),
+        (True, True, "origin/main", "-f, -h, --git-files-since-branch=origin/main"),
+    ],
+)
+def test_log_file_selection_modes(
+    check_modified_files: bool,
+    check_head_files: bool,
+    git_since_branch: typing.Optional[str],
+    expected: str,
+) -> None:
+    """Show every active file source, including the unrestricted default."""
+    args = Namespace(
+        check_modified_files=check_modified_files,
+        check_head_files=check_head_files,
+        git_since_branch=git_since_branch,
+    )
+    with io.StringIO() as buf, redirect_stdout(buf):
+        _log_file_selection_modes(args)
+        output: str = buf.getvalue().strip()
+
+    assert output == f"runem: file selection modes: {expected}"
 
 
 @pytest.mark.parametrize(
@@ -349,15 +387,16 @@ def test_runem_with_full_config(verbosity: bool, silent: bool) -> None:
                 "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
                 "'dummy phase 1'"
             ),
-            "runem: found 1 batches, 1 'mock phase' files, ",
+            "runem: file selection modes: all tracked files",
             (
-                "runem: filtering for tags 'dummy tag 1', 'dummy tag 2', "
+                "runem: filtering-in jobs with tags: 'dummy tag 1', 'dummy tag 2', "
                 "'tag only on job 1', 'tag only on job 2'"
             ),
             "runem: will run 2 jobs for phase 'dummy phase 1'",
             "runem:  'dummy job label 1', 'echo \"hello world!\"'",
             "runem: will run 2 jobs for phase 'dummy phase 2'",
             "runem:  'dummy job label 2', 'hello world'",
+            "runem: found 1 batches, 1 'dummy tag 1' files, ",
             "runem: Running Phase dummy phase 1",
             (
                 "runem: Running 'dummy phase 1' with 2 workers (of [NUM CORES] max) "
@@ -392,9 +431,9 @@ def test_runem_with_full_config_verbose() -> None:
             "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
             "'dummy phase 1'"
         ),
-        "runem: found 1 batches, 1 'mock phase' files, ",
+        "runem: file selection modes: all tracked files",
         (
-            "runem: filtering for tags 'dummy tag 1', 'dummy tag 2', "
+            "runem: filtering-in jobs with tags: 'dummy tag 1', 'dummy tag 2', "
             "'tag only on job 1', 'tag only on job 2', 'tag only on job 4'"
         ),
         "runem: will run 2 jobs for phase 'dummy phase 1'",
@@ -404,6 +443,7 @@ def test_runem_with_full_config_verbose() -> None:
             "runem:  'dummy job label 2', 'dummy job label 4 (module fn "
             "lookup)', 'hello world'"
         ),
+        "runem: found 1 batches, 1 'dummy tag 1' files, ",
         "runem: Running Phase dummy phase 1",
         (
             "runem: Running 'dummy phase 1' with 2 workers (of [NUM CORES] max) "
@@ -415,6 +455,26 @@ def test_runem_with_full_config_verbose() -> None:
             "processing 3 jobs"
         ),
     ]
+
+
+def test_runem_pre_flights_jobs_without_files() -> None:
+    """Jobs without matching files are reported and never dispatched to workers."""
+    runem_stdout: typing.List[str]
+    error_raised: typing.Optional[BaseException]
+    (
+        runem_stdout,
+        error_raised,
+    ) = _run_full_config_runem(  # pylint: disable=no-value-for-parameter
+        runem_cli_switches=["--verbose"],
+        with_file_list=False,
+    )
+
+    assert error_raised is None
+    assert any(
+        line.startswith("runem: WARNING: skipping jobs with no files:")
+        for line in runem_stdout
+    )
+    assert not any(line.startswith("runem: Running Phase ") for line in runem_stdout)
 
 
 def test_runem_with_single_phase() -> None:
@@ -437,14 +497,15 @@ def test_runem_with_single_phase() -> None:
             "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
             "'dummy phase 1'"
         ),
-        "runem: found 1 batches, 1 'mock phase' files, ",
+        "runem: file selection modes: all tracked files",
         (
-            "runem: filtering for tags 'dummy tag 1', 'dummy tag 2', "
+            "runem: filtering-in jobs with tags: 'dummy tag 1', 'dummy tag 2', "
             "'tag only on job 1', 'tag only on job 2'"
         ),
         "runem: will run 2 jobs for phase 'dummy phase 1'",
         "runem:  'dummy job label 1', 'echo \"hello world!\"'",
         "runem: skipping phase 'dummy phase 2'",
+        "runem: found 1 batches, 1 'dummy tag 1' files, ",
         "runem: Running Phase dummy phase 1",
         (
             "runem: Running 'dummy phase 1' with 2 workers (of [NUM CORES] max) "
@@ -474,14 +535,15 @@ def test_runem_with_single_phase_verbose() -> None:
             "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
             "'dummy phase 1'"
         ),
-        "runem: found 1 batches, 1 'mock phase' files, ",
+        "runem: file selection modes: all tracked files",
         (
-            "runem: filtering for tags 'dummy tag 1', 'dummy tag 2', "
+            "runem: filtering-in jobs with tags: 'dummy tag 1', 'dummy tag 2', "
             "'tag only on job 1', 'tag only on job 2'"
         ),
         "runem: will run 2 jobs for phase 'dummy phase 1'",
         "runem:  'dummy job label 1', 'echo \"hello world!\"'",
         "runem: skipping phase 'dummy phase 2'",
+        "runem: found 1 batches, 1 'dummy tag 1' files, ",
         "runem: Running Phase dummy phase 1",
         (
             "runem: Running 'dummy phase 1' with 2 workers (of [NUM CORES] max) "
@@ -778,19 +840,18 @@ def test_runem_bad_validate_tag_exclude() -> None:
             "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
             "'dummy phase 1'"
         ),
-        "runem: found 1 batches, 1 'mock phase' files, ",
+        "runem: file selection modes: all tracked files",
         (
-            "runem: filtering for tags 'dummy tag 1', excluding jobs with tags 'tag "
-            "only on job 2'"
+            "runem: filtering-in jobs with tags: 'dummy tag 1' "
+            "(from --tags), filtering-out jobs with tags: 'tag "
+            "only on job 2' (from --not-tags)"
         ),
         "runem: will run 2 jobs for phase 'dummy phase 1'",
         "runem:  'dummy job label 1', 'echo \"hello world!\"'",
-        (
-            "runem: not running job 'dummy job label 2' because it contains the "
-            "following tags: 'tag only on job 2'"
-        ),
         "runem: will run 1 jobs for phase 'dummy phase 2'",
         "runem:  'hello world'",
+        "runem: --not-tags 'tag only on job 2': disabled jobs: 'dummy job label 2'",
+        "runem: found 1 batches, 1 'dummy tag 1' files, ",
         "runem: Running Phase dummy phase 1",
         (
             "runem: Running 'dummy phase 1' with 2 workers (of [NUM CORES] max) "
@@ -872,9 +933,9 @@ def test_runem_job_filters_work(verbosity: bool) -> None:
                 "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
                 "'dummy phase 1'"
             ),
-            "runem: found 1 batches, 1 'mock phase' files, ",
+            "runem: file selection modes: all tracked files",
             (
-                "runem: filtering for tags 'dummy tag 1', 'dummy tag 2', "
+                "runem: filtering-in jobs with tags: 'dummy tag 1', 'dummy tag 2', "
                 "'tag only on job 1', 'tag only on job 2'"
             ),
             (
@@ -896,6 +957,9 @@ def test_runem_job_filters_work(verbosity: bool) -> None:
                 "'dummy tag 2', 'tag only on job 1', "
                 "'tag only on job 2'"
             ),
+            "runem: file filters implied by selected --jobs: with filters "
+            "['dummy tag 1'], without filters ",
+            "runem: found 1 batches, 1 'dummy tag 1' files, ",
             "runem: Running Phase dummy phase 1",
             (
                 "runem: Running 'dummy phase 1' with 1 workers (of [NUM CORES] max) "
@@ -909,9 +973,9 @@ def test_runem_job_filters_work(verbosity: bool) -> None:
                 "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
                 "'dummy phase 1'"
             ),
-            "runem: found 1 batches, 1 'mock phase' files, ",
+            "runem: file selection modes: all tracked files",
             (
-                "runem: filtering for tags 'dummy tag 1', 'dummy tag 2', "
+                "runem: filtering-in jobs with tags: 'dummy tag 1', 'dummy tag 2', "
                 "'tag only on job 1', 'tag only on job 2'"
             ),
             (
@@ -933,6 +997,9 @@ def test_runem_job_filters_work(verbosity: bool) -> None:
                 "'dummy tag 2', 'tag only on job 1', "
                 "'tag only on job 2'"
             ),
+            "runem: file filters implied by selected --jobs: with filters "
+            "['dummy tag 1'], without filters ",
+            "runem: found 1 batches, 1 'dummy tag 1' files, ",
             "runem: Running Phase dummy phase 1",
             (
                 "runem: Running 'dummy phase 1' with 1 workers (of [NUM CORES] max) "
@@ -974,8 +1041,8 @@ def test_runem_tag_filters_work(verbosity: bool) -> None:
                 "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
                 "'dummy phase 1'"
             ),
-            "runem: found 1 batches, 1 'mock phase' files, ",
-            "runem: filtering for tags 'tag only on job 1'",
+            "runem: file selection modes: all tracked files",
+            "runem: filtering-in jobs with tags: 'tag only on job 1' (from --tags)",
             "runem: will run 2 jobs for phase 'dummy phase 1'",
             "runem:  'dummy job label 1', 'echo \"hello world!\"'",
             (
@@ -987,6 +1054,7 @@ def test_runem_tag_filters_work(verbosity: bool) -> None:
                 "of the following tags: 'tag only on job 1'"
             ),
             "runem: No jobs for phase 'dummy phase 2' tags 'tag only on job 1'",
+            "runem: found 1 batches, 1 'dummy tag 1' files, ",
             "runem: Running Phase dummy phase 1",
             (
                 "runem: Running 'dummy phase 1' with 2 workers (of [NUM CORES] max) "
@@ -1000,8 +1068,8 @@ def test_runem_tag_filters_work(verbosity: bool) -> None:
                 "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
                 "'dummy phase 1'"
             ),
-            "runem: found 1 batches, 1 'mock phase' files, ",
-            "runem: filtering for tags 'tag only on job 1'",
+            "runem: file selection modes: all tracked files",
+            "runem: filtering-in jobs with tags: 'tag only on job 1' (from --tags)",
             "runem: will run 2 jobs for phase 'dummy phase 1'",
             "runem:  'dummy job label 1', 'echo \"hello world!\"'",
             (
@@ -1013,6 +1081,7 @@ def test_runem_tag_filters_work(verbosity: bool) -> None:
                 "following tags: 'tag only on job 1'"
             ),
             "runem: No jobs for phase 'dummy phase 2' tags 'tag only on job 1'",
+            "runem: found 1 batches, 1 'dummy tag 1' files, ",
             "runem: Running Phase dummy phase 1",
             (
                 "runem: Running 'dummy phase 1' with 2 workers (of [NUM CORES] max) "
@@ -1066,19 +1135,19 @@ def test_runem_tag_out_filters_work(verbosity: bool, one_liner: bool) -> None:
                     "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
                     "'dummy phase 1'"
                 ),
-                "runem: found 1 batches, 1 'mock phase' files, ",
+                "runem: file selection modes: all tracked files",
                 (
-                    "runem: filtering for tags 'dummy tag 1', 'dummy tag 2', "
-                    "'tag only on job 2', excluding jobs with tags 'tag only on job 1'"
-                ),
-                (
-                    "runem: not running job 'dummy job label 1' because it contains "
-                    "the following tags: 'tag only on job 1'"
+                    "runem: filtering-in jobs with tags: 'dummy tag 1', 'dummy tag 2', "
+                    "'tag only on job 2', filtering-out jobs with tags: 'tag only on job 1' "
+                    "(from --not-tags)"
                 ),
                 "runem: will run 1 jobs for phase 'dummy phase 1'",
                 "runem:  'echo \"hello world!\"'",
                 "runem: will run 2 jobs for phase 'dummy phase 2'",
                 "runem:  'dummy job label 2', 'hello world'",
+                "runem: --not-tags 'tag only on job 1': disabled jobs: "
+                "'dummy job label 1'",
+                "runem: found 1 batches, 1 'dummy tag 1' files, ",
                 "runem: Running Phase dummy phase 1",
                 (
                     "runem: Running 'dummy phase 1' with 1 workers (of [NUM CORES] max) "
@@ -1098,19 +1167,19 @@ def test_runem_tag_out_filters_work(verbosity: bool, one_liner: bool) -> None:
                     "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
                     "'dummy phase 1'"
                 ),
-                "runem: found 1 batches, 1 'mock phase' files, ",
+                "runem: file selection modes: all tracked files",
                 (
-                    "runem: filtering for tags 'dummy tag 1', 'dummy tag 2', "
-                    "'tag only on job 2', excluding jobs with tags 'tag only on job 1'"
-                ),
-                (
-                    "runem: not running job 'dummy job label 1' because it contains "
-                    "the following tags: 'tag only on job 1'"
+                    "runem: filtering-in jobs with tags: 'dummy tag 1', 'dummy tag 2', "
+                    "'tag only on job 2', filtering-out jobs with tags: 'tag only on job 1' "
+                    "(from --not-tags)"
                 ),
                 "runem: will run 1 jobs for phase 'dummy phase 1'",
                 "runem:  'echo \"hello world!\"'",
                 "runem: will run 2 jobs for phase 'dummy phase 2'",
                 "runem:  'dummy job label 2', 'hello world'",
+                "runem: --not-tags 'tag only on job 1': disabled jobs: "
+                "'dummy job label 1'",
+                "runem: found 1 batches, 1 'dummy tag 1' files, ",
                 "runem: Running Phase dummy phase 1",
                 (
                     "runem: Running 'dummy phase 1' with 1 workers (of [NUM CORES] max) "
@@ -1127,14 +1196,11 @@ def test_runem_tag_out_filters_work(verbosity: bool, one_liner: bool) -> None:
             # no-one-liner + verbosity
             assert runem_stdout == [
                 "runem: loaded config from [CONFIG PATH]",
-                "runem: found 1 batches, 1 'mock phase' files, ",
+                "runem: file selection modes: all tracked files",
                 (
-                    "runem: filtering for tags 'dummy tag 1', 'dummy tag 2', "
-                    "'tag only on job 2', excluding jobs with tags 'tag only on job 1'"
-                ),
-                (
-                    "runem: not running job 'dummy job label 1' because it contains "
-                    "the following tags: 'tag only on job 1'"
+                    "runem: filtering-in jobs with tags: 'dummy tag 1', 'dummy tag 2', "
+                    "'tag only on job 2', filtering-out jobs with tags: 'tag only on job 1' "
+                    "(from --not-tags)"
                 ),
                 (
                     "runem: No jobs for phase 'dummy phase 1' tags 'dummy tag 1', "
@@ -1142,6 +1208,9 @@ def test_runem_tag_out_filters_work(verbosity: bool, one_liner: bool) -> None:
                 ),
                 "runem: will run 2 jobs for phase 'dummy phase 2'",
                 "runem:  'dummy job label 2', 'hello world'",
+                "runem: --not-tags 'tag only on job 1': disabled jobs: "
+                "'dummy job label 1'",
+                "runem: found 1 batches, 1 'dummy tag 1' files, ",
                 "runem: Running Phase dummy phase 2",
                 (
                     "runem: Running 'dummy phase 2' with 2 workers (of [NUM CORES] max) "
@@ -1152,14 +1221,11 @@ def test_runem_tag_out_filters_work(verbosity: bool, one_liner: bool) -> None:
             # no-one-liner + no-verbosity
             assert runem_stdout == [
                 "runem: loaded config from [CONFIG PATH]",
-                "runem: found 1 batches, 1 'mock phase' files, ",
+                "runem: file selection modes: all tracked files",
                 (
-                    "runem: filtering for tags 'dummy tag 1', 'dummy tag 2', "
-                    "'tag only on job 2', excluding jobs with tags 'tag only on job 1'"
-                ),
-                (
-                    "runem: not running job 'dummy job label 1' because it contains "
-                    "the following tags: 'tag only on job 1'"
+                    "runem: filtering-in jobs with tags: 'dummy tag 1', 'dummy tag 2', "
+                    "'tag only on job 2', filtering-out jobs with tags: 'tag only on job 1' "
+                    "(from --not-tags)"
                 ),
                 (
                     "runem: No jobs for phase 'dummy phase 1' tags 'dummy tag 1', "
@@ -1167,6 +1233,9 @@ def test_runem_tag_out_filters_work(verbosity: bool, one_liner: bool) -> None:
                 ),
                 "runem: will run 2 jobs for phase 'dummy phase 2'",
                 "runem:  'dummy job label 2', 'hello world'",
+                "runem: --not-tags 'tag only on job 1': disabled jobs: "
+                "'dummy job label 1'",
+                "runem: found 1 batches, 1 'dummy tag 1' files, ",
                 "runem: Running Phase dummy phase 2",
                 (
                     "runem: Running 'dummy phase 2' with 2 workers (of [NUM CORES] max) "
@@ -1212,10 +1281,10 @@ def test_runem_tag_out_filters_work_all_tags(verbosity: bool) -> None:
     if verbosity:
         assert runem_stdout == [
             "runem: loaded config from [CONFIG PATH]",
-            "runem: found 1 batches, 1 'mock phase' files, ",
+            "runem: file selection modes: all tracked files",
             (
-                "runem: excluding jobs with tags 'dummy tag 1', 'dummy tag 2', "
-                "'tag only on job 1', 'tag only on job 2'"
+                "runem: filtering-out jobs with tags: 'dummy tag 1', 'dummy tag 2', "
+                "'tag only on job 1', 'tag only on job 2' (from --not-tags)"
             ),
             (
                 "runem: not running job 'dummy job label 1' because it doesn't have any of "
@@ -1231,6 +1300,7 @@ def test_runem_tag_out_filters_work_all_tags(verbosity: bool) -> None:
                 "following tags: "
             ),
             "runem: No jobs for phase 'dummy phase 2' tags ",
+            "runem: found 0 batches, ",
         ]
     else:
         assert (
@@ -1238,7 +1308,7 @@ def test_runem_tag_out_filters_work_all_tags(verbosity: bool) -> None:
             == [
                 # "runem: found 1 batches, 1 'mock phase' files, ",
                 # (
-                #     "runem: excluding jobs with tags 'dummy tag 1', 'dummy tag 2', "
+                #     "runem: filtering-out jobs with tags: 'dummy tag 1', 'dummy tag 2', "
                 #     "'tag only on job 1', 'tag only on job 2'"
                 # ),
                 # "runem: No jobs for phase 'dummy phase 1' tags ",
@@ -1280,14 +1350,16 @@ def test_runem_phase_filters_work(verbosity: bool) -> None:
                 "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
                 "'dummy phase 1'"
             ),
-            "runem: found 1 batches, 1 'mock phase' files, ",
+            "runem: file selection modes: all tracked files",
             (
-                "runem: filtering for tags 'dummy tag 1', 'dummy tag 2', 'tag only on job 1', "
+                "runem: filtering-in jobs with tags: 'dummy tag 1', 'dummy tag 2', "
+                "'tag only on job 1', "
                 "'tag only on job 2'"
             ),
             "runem: will run 2 jobs for phase 'dummy phase 1'",
             "runem:  'dummy job label 1', 'echo \"hello world!\"'",
             "runem: skipping phase 'dummy phase 2'",
+            "runem: found 1 batches, 1 'dummy tag 1' files, ",
             "runem: Running Phase dummy phase 1",
             (
                 "runem: Running 'dummy phase 1' with 2 workers (of [NUM CORES] max) "
@@ -1301,14 +1373,15 @@ def test_runem_phase_filters_work(verbosity: bool) -> None:
                 "runem: WARNING: no phase found for 'echo \"hello world!\"', using "
                 "'dummy phase 1'"
             ),
-            "runem: found 1 batches, 1 'mock phase' files, ",
+            "runem: file selection modes: all tracked files",
             (
-                "runem: filtering for tags 'dummy tag 1', 'dummy tag 2', "
+                "runem: filtering-in jobs with tags: 'dummy tag 1', 'dummy tag 2', "
                 "'tag only on job 1', 'tag only on job 2'"
             ),
             "runem: will run 2 jobs for phase 'dummy phase 1'",
             "runem:  'dummy job label 1', 'echo \"hello world!\"'",
             "runem: skipping phase 'dummy phase 2'",
+            "runem: found 1 batches, 1 'dummy tag 1' files, ",
             "runem: Running Phase dummy phase 1",
             (
                 "runem: Running 'dummy phase 1' with 2 workers (of [NUM CORES] max) "
@@ -1710,18 +1783,23 @@ def test_process_jobs_early_exits_with_exceptions(
 def test_main_handles_no_files(
     mock_find_files: MagicMock, mock_load_config_for_run: MagicMock
 ) -> None:
-    class MockCfg:
-        def __init__(self) -> None:
-            self.cfg_filepath = pathlib.Path(__file__)
-
-    mock_load_config_for_run.return_value = MockCfg()
+    args = Namespace(
+        verbose=False,
+        silent=False,
+        check_modified_files=False,
+        check_head_files=False,
+        git_since_branch=None,
+        show_spinner=False,
+        tags_given_on_cli=False,
+        jobs_given_on_cli=False,
+    )
+    config_metadata = ConfigMetadata(pathlib.Path(__file__), args)
+    mock_load_config_for_run.return_value = config_metadata
     with io.StringIO() as buf, redirect_stdout(buf):
         _main([])
         runem_stdout = buf.getvalue().split("\n")
 
-    mock_find_files.assert_called_once_with(mock_load_config_for_run.return_value)
+    # No selected jobs means file discovery cannot affect this run.
+    mock_find_files.assert_not_called()
     mock_load_config_for_run.assert_called_once_with([])
-    assert runem_stdout == [
-        "runem: WARNING: no files found",
-        "",
-    ]
+    assert runem_stdout == [""]

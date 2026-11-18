@@ -48,6 +48,7 @@ from runem.config.config_parse import load_config_metadata
 from runem.execute.job_execute import job_execute
 from runem.filter.files import find_files
 from runem.filter.filter_jobs import filter_jobs
+from runem.job.job import Job
 from runem.job.job_return import JobReturn
 from runem.log import error, log, warn
 from runem.report.metrics.job_run_timing import JobTiming
@@ -57,13 +58,13 @@ from runem.report.runem_metrics import (
     JobRunMetadatasByPhase,
 )
 from runem.run_command import RunemJobError
-from runem.types.common import OrderedPhases, PhaseName
+from runem.types.common import JobTags, OrderedPhases, PhaseName
 from runem.types.errors import SystemExitBad
 from runem.types.filters import FilePathListLookup
 from runem.types.runem_config import Config, Jobs, PhaseGroupedJobs
 from runem.ux.blocking_print import RICH_CONSOLE
 from runem.ux.cli.command_line import RunemArgsParse
-from runem.ux.printable_set import printable_set_coloured
+from runem.ux.printable_set import printable_set, printable_set_coloured
 
 
 def _update_progress(
@@ -177,16 +178,18 @@ def _process_jobs(
         try:
             with multiprocessing.Pool(processes=num_concurrent_procs) as pool:
                 # use starmap so we can pass down the job-configs and the args and the files
-                in_out_job_run_metadatas[phase] = pool.starmap(
-                    job_execute,  # no kwargs passed for jobs here
-                    zip(
-                        jobs,
-                        repeat(running_jobs),
-                        repeat(completed_jobs),
-                        repeat(config_metadata),
-                        repeat(file_lists),
-                        repeat(None),  # <- metadata
-                    ),
+                in_out_job_run_metadatas[phase].extend(
+                    pool.starmap(
+                        job_execute,  # no kwargs passed for jobs here
+                        zip(
+                            jobs,
+                            repeat(running_jobs),
+                            repeat(completed_jobs),
+                            repeat(config_metadata),
+                            repeat(file_lists),
+                            repeat(None),  # <- metadata
+                        ),
+                    )
                 )
         except RunemJobError as err:  # pylint: disable=broad-exception-caught
             subprocess_error = err
@@ -296,6 +299,116 @@ def _load_config_for_run(argv: typing.List[str]) -> ConfigMetadata:
     return config_metadata
 
 
+def _format_filter_tags(
+    tags: JobTags,
+    file_filter_tags: JobTags,
+) -> str:
+    """Separate requested tags that have file filters from those that do not."""
+    with_filters: typing.Set[str] = tags.intersection(file_filter_tags)
+    without_filters: typing.Set[str] = tags.difference(file_filter_tags)
+    return (
+        f"with filters [{printable_set(with_filters) or 'none'}], "
+        f"without filters [{printable_set(without_filters) or 'none'}]"
+    )
+
+
+def _get_file_filter_tags_for_jobs(
+    filtered_jobs: PhaseGroupedJobs,
+    configured_file_filter_tags: JobTags,
+) -> JobTags:
+    """Return file-filter tags needed by jobs that survived CLI filtering."""
+    implied_tags: JobTags = set()
+    for phase_jobs in filtered_jobs.values():
+        for job in phase_jobs:
+            job_tags: typing.Optional[JobTags] = Job.get_job_tags(job)
+            if job_tags is None:
+                # Untagged jobs consume every file batch, so their presence makes
+                # every configured file filter relevant to this run.
+                return configured_file_filter_tags
+            implied_tags.update(job_tags.intersection(configured_file_filter_tags))
+    return implied_tags
+
+
+def _log_filter_context(
+    config_metadata: ConfigMetadata,
+    filtered_jobs: PhaseGroupedJobs,
+) -> None:
+    """Explain the file and tag filters that contribute to this run."""
+    args: argparse.Namespace = config_metadata.args
+    file_filter_tags: JobTags = set(config_metadata.file_filters)
+
+    if args.jobs_given_on_cli:
+        required_file_filter_tags: JobTags = _get_file_filter_tags_for_jobs(
+            filtered_jobs,
+            file_filter_tags,
+        )
+        log(
+            "file filters implied by selected --jobs: "
+            f"{_format_filter_tags(required_file_filter_tags, file_filter_tags)}"
+        )
+
+
+def _log_file_selection_modes(args: argparse.Namespace) -> None:
+    """Log which file-selection switches will constrain discovery."""
+    active_file_modes: typing.List[str] = []
+    if args.check_modified_files:
+        active_file_modes.append("-f")
+    if args.check_head_files:
+        active_file_modes.append("-h")
+    if args.git_since_branch is not None:
+        active_file_modes.append(f"--git-files-since-branch={args.git_since_branch}")
+    if not active_file_modes:
+        active_file_modes.append("all tracked files")
+    log(f"file selection modes: {', '.join(active_file_modes)}")
+
+
+def _partition_jobs_by_file_availability(
+    filtered_jobs: PhaseGroupedJobs,
+    file_lists: FilePathListLookup,
+) -> typing.Tuple[PhaseGroupedJobs, PhaseGroupedJobs]:
+    """Remove jobs with no matching files before creating execution workers."""
+    jobs_with_files: PhaseGroupedJobs = defaultdict(list)
+    jobs_without_files: PhaseGroupedJobs = defaultdict(list)
+    for phase, phase_jobs in filtered_jobs.items():
+        for job in phase_jobs:
+            job_tags = Job.get_job_tags(job)
+            if Job.has_files(file_lists, job_tags):
+                jobs_with_files[phase].append(job)
+            else:
+                jobs_without_files[phase].append(job)
+    return jobs_with_files, jobs_without_files
+
+
+def _log_jobs_without_files(
+    jobs_without_files: PhaseGroupedJobs,
+    silent: bool,
+) -> None:
+    """Report all jobs that preflight removed from execution in one warning."""
+    if silent:
+        return
+    job_names: typing.Set[str] = set()
+    for phase_jobs in jobs_without_files.values():
+        for job in phase_jobs:
+            job_names.add(Job.get_job_name(job))
+    if job_names:
+        warn(f"skipping jobs with no files: {printable_set(job_names)}")
+
+
+def _record_jobs_without_files(
+    jobs_without_files: PhaseGroupedJobs,
+    job_run_metadatas: JobRunMetadatasByPhase,
+) -> None:
+    """Keep zero-duration skip records without dispatching jobs to workers."""
+    for phase, phase_jobs in jobs_without_files.items():
+        for job in phase_jobs:
+            label = Job.get_job_name(job)
+            no_files_timing: JobTiming = {
+                "job": (f"{label}: no files!", timedelta(0)),
+                "commands": [],
+            }
+            job_run_metadatas[phase].append((no_files_timing, None))
+
+
 def _main(
     argv: typing.List[str],
 ) -> MainReturnType:
@@ -306,21 +419,45 @@ def _main(
     # first anchor the cwd to the config-file, so that git ls-files works
     os.chdir(config_metadata.cfg_filepath.parent)
 
-    file_lists: FilePathListLookup = find_files(config_metadata)
-    if not file_lists:
-        warn("no files found")
-        return (config_metadata, {}, None)
+    if config_metadata.args.verbose:
+        _log_file_selection_modes(config_metadata.args)
+
+    filtered_jobs_by_phase: PhaseGroupedJobs = filter_jobs(
+        config_metadata=config_metadata,
+    )
+    if config_metadata.args.verbose:
+        _log_filter_context(config_metadata, filtered_jobs_by_phase)
+
+    configured_file_filter_tags: JobTags = set(config_metadata.file_filters)
+    required_file_filter_tags: JobTags = _get_file_filter_tags_for_jobs(
+        filtered_jobs_by_phase,
+        configured_file_filter_tags,
+    )
+    has_jobs_to_check: bool = any(filtered_jobs_by_phase.values())
+    if has_jobs_to_check and required_file_filter_tags:
+        file_lists: FilePathListLookup = find_files(
+            config_metadata,
+            file_filter_tags=required_file_filter_tags,
+        )
+    else:
+        # With no selected jobs or matching file filters, discovery cannot help a job.
+        file_lists = defaultdict(list)
 
     if config_metadata.args.verbose:
         log(f"found {len(file_lists)} batches, ", end="")
         for tag in sorted(file_lists.keys()):
             file_list = file_lists[tag]
             log(f"{len(file_list)} '{tag}' files, ", prefix=False, end="")
-        log(prefix=False)  # new line
+        log(prefix=False)
 
-    filtered_jobs_by_phase: PhaseGroupedJobs = filter_jobs(
-        config_metadata=config_metadata,
+    (
+        filtered_jobs_by_phase,
+        jobs_without_files,
+    ) = _partition_jobs_by_file_availability(
+        filtered_jobs_by_phase,
+        file_lists,
     )
+    _log_jobs_without_files(jobs_without_files, config_metadata.args.silent)
     end = timer()
 
     job_run_metadatas: JobRunMetadatasByPhase = defaultdict(list)
@@ -329,6 +466,7 @@ def _main(
         "commands": [],
     }
     job_run_metadatas["_app"].append((pre_build_time, None))
+    _record_jobs_without_files(jobs_without_files, job_run_metadatas)
 
     start = timer()
 

@@ -1,3 +1,4 @@
+import argparse
 import typing
 from collections import defaultdict
 
@@ -14,6 +15,7 @@ def _should_filter_out_by_tags(
     tags: JobTags,
     tags_to_avoid: JobTags,
     verbose: bool,
+    excluded_jobs_by_tag: typing.Optional[typing.Dict[str, JobNames]] = None,
 ) -> bool:
     job_tags: typing.Optional[JobTags] = Job.get_job_tags(job)
     opted_into_tag_filtering: bool = job_tags is not None
@@ -37,7 +39,11 @@ def _should_filter_out_by_tags(
 
     has_tags_to_avoid = job_tags.intersection(tags_to_avoid)
     if has_tags_to_avoid:
-        if verbose:
+        if excluded_jobs_by_tag is not None:
+            job_name: str = Job.get_job_name(job)
+            for excluded_tag in has_tags_to_avoid:
+                excluded_jobs_by_tag.setdefault(excluded_tag, set()).add(job_name)
+        elif verbose:
             log(
                 (
                     f"not running job '{Job.get_job_name(job)}' because it contains the "
@@ -58,6 +64,7 @@ def _get_jobs_matching(
     jobs: PhaseGroupedJobs,
     filtered_jobs: PhaseGroupedJobs,
     verbose: bool,
+    excluded_jobs_by_tag: typing.Optional[typing.Dict[str, JobNames]] = None,
 ) -> None:
     """Via filtered_jobs, filters 'jobs' that match the given phase and and tags.
 
@@ -67,10 +74,19 @@ def _get_jobs_matching(
 
     job: JobConfig
     for job in phase_jobs:
-        if _should_filter_out_by_tags(job, tags, tags_to_avoid, verbose):
+        job_name: str = Job.get_job_name(job)
+        jobs_to_report_as_disabled = excluded_jobs_by_tag
+        if excluded_jobs_by_tag is not None and job_name not in job_names:
+            jobs_to_report_as_disabled = {}
+        if _should_filter_out_by_tags(
+            job,
+            tags,
+            tags_to_avoid,
+            verbose,
+            jobs_to_report_as_disabled,
+        ):
             continue
 
-        job_name: str = Job.get_job_name(job)
         if job_name not in job_names:
             # test test_get_jobs_matching_when_job_not_in_valid_job_names should
             # cover the follow in Ci but does not for some reason I don't have
@@ -87,6 +103,17 @@ def _get_jobs_matching(
         filtered_jobs[phase].append(job)
 
 
+def _log_jobs_disabled_by_tag(
+    excluded_jobs_by_tag: typing.Dict[str, JobNames],
+) -> None:
+    """Print one summary per excluded tag when verbose filtering collected jobs."""
+    for tag in sorted(excluded_jobs_by_tag):
+        log(
+            f"--not-tags '{tag}': disabled jobs: "
+            f"{printable_set(excluded_jobs_by_tag[tag])}"
+        )
+
+
 def filter_jobs(  # noqa: C901
     config_metadata: ConfigMetadata,
 ) -> PhaseGroupedJobs:
@@ -97,10 +124,13 @@ def filter_jobs(  # noqa: C901
     tags_to_avoid: JobTags = config_metadata.tags_to_avoid
     jobs: PhaseGroupedJobs = config_metadata.jobs
     verbose: bool = config_metadata.args.verbose
+    args: argparse.Namespace = config_metadata.args
+    excluded_jobs_by_tag: typing.Dict[str, JobNames] = defaultdict(set)
     if verbose:
         if tags_to_run:
             log(
-                f"filtering for tags {printable_set(tags_to_run)}",
+                f"filtering-in jobs with tags: {printable_set(tags_to_run)}"
+                f"{' (from --tags)' if args.tags_given_on_cli else ''}",
                 prefix=True,
                 end="",
             )
@@ -110,7 +140,8 @@ def filter_jobs(  # noqa: C901
             else:
                 log(prefix=True, end="")
             log(
-                f"excluding jobs with tags {printable_set(tags_to_avoid)}",
+                f"filtering-out jobs with tags: {printable_set(tags_to_avoid)}"
+                f"{' (from --not-tags)' if args.tags_excluded else ''}",
                 prefix=False,
                 end="",
             )
@@ -133,6 +164,7 @@ def filter_jobs(  # noqa: C901
             jobs=jobs,
             filtered_jobs=filtered_jobs,
             verbose=verbose,
+            excluded_jobs_by_tag=(excluded_jobs_by_tag if verbose else None),
         )
         if len(filtered_jobs[phase]) == 0:
             # test test_get_jobs_matching_when_job_not_in_valid_job_names should
@@ -143,10 +175,12 @@ def filter_jobs(  # noqa: C901
             continue
 
         if verbose:
-            log((f"will run {len(filtered_jobs[phase])} jobs for phase '{phase}'"))
+            log(f"will run {len(filtered_jobs[phase])} jobs for phase '{phase}'")
             job_names: JobNames = {
                 Job.get_job_name(job) for job in filtered_jobs[phase]
             }
             log(f"\t{printable_set(job_names)}")
+
+    _log_jobs_disabled_by_tag(excluded_jobs_by_tag)
 
     return filtered_jobs
