@@ -4,6 +4,173 @@ Changelog
 
 (unreleased)
 ------------
+- Merge pull request #148 from lursight/fix/poor-file-filter-info.
+  [Frank Harrison]
+
+  fix/poor-file-filter-info
+- Fix(filter-logs): better explain filter and tag impact on execution
+  graph. [Frank Harrison]
+
+  There are two key pieces here:
+  1. better logging for filters and tags
+  2. earlier filtering/logging to remove jobs from the graph
+
+  This will eventually help execution-graph baking (or compiling?) and
+  overall performance of runem's internals simply by removing work and
+  reducing data as early as possible.
+
+  Details (codex wrote the following for me):
+
+  Report active file-selection modes before job filters, identify
+  command-line tag filters in the filter summary, and retain the
+  established will-run wording. Preflight selected jobs against only their
+  needed file filters so jobs with no files can be reported together
+  before worker creation.
+
+  Keep explicit CLI-presence metadata on argparse.Namespace because
+  dynamic config options are added after parsing and expanded defaults
+  cannot show whether a user supplied an option.
+- Merge pull request #147 from lursight/chore/reorg. [Frank Harrison]
+
+  chore/reorg
+- Chore(reorg): merge test_cli/ -> test_ux/test_cli/ [Frank Harrison]
+- Merge pull request #146 from lursight/chore/file-reorg. [Frank
+  Harrison]
+
+  chore/file-reorg
+- Chore(reorg): splilt test_report.py -> test_report/<x>.py. [Frank
+  Harrison]
+- Chore(reorg): move yml utils -> config/store/ [Frank Harrison]
+- Chore(reorg): move files.py -> filter/ [Frank Harrison]
+- Chore(reorg): move timer.py -> report/metrics/ [Frank Harrison]
+- Chore(reorg): move job_wrapper -> execute/ [Frank Harrison]
+- Chore(reorg): move job_wrapper_python.py -> execute/dynamic_functions/
+  [Frank Harrison]
+- Chore(reorg): move job_runner_simple_command.py ->
+  execut/dynamic_functions/ [Frank Harrison]
+- Chore(reorg): move types/options.py -> job/job_options/ [Frank
+  Harrison]
+- Chore(reorg): move informative_dict -> job/job_options/ [Frank
+  Harrison]
+- Chore(reorg): move job_filter.py -> filter/filter_jobs.py. [Frank
+  Harrison]
+- Chore(reorg): move existing job_X tests to tests/test_job/ and hooks
+  to tests/test_hook/ [Frank Harrison]
+- Chore(reorg): move job_runner_module_func_path.py ->
+  execute/dynamic_functions/ [Frank Harrison]
+- Chore(reorg): delete 0xDEADCODE. [Frank Harrison]
+- Chore(reorg): move job_execute.py -> execute/ [Frank Harrison]
+- Chore(reorg): delete 0xDEADCODE. [Frank Harrison]
+- Chore(reorg): move test_config_import -> test_config/ [Frank Harrison]
+- Chore(reorg): move config_validate -> config/ (and the schema.yml)
+  [Frank Harrison]
+- Chore(reorg): move config_sources -> config/ [Frank Harrison]
+- Chore(reorg): move config_parse.py -> config/ [Frank Harrison]
+- Chore(reorg): move -> config_metadata -> config/ [Frank Harrison]
+- Chore(reorg): move config.py -> config/config.py. [Frank Harrison]
+- Chore(reorg): move command_line -> ux/cli. [Frank Harrison]
+- Chore(reorg): delete 0xDEADCODE. [Frank Harrison]
+- Chore(reorg): rename test-dir to match test specs. [Frank Harrison]
+- Chore(reorg): move blocking_print util -> `ux/` [Frank Harrison]
+- Merge pull request #145 from lursight/feat/hook/validate-job. [Frank
+  Harrison]
+
+  feat/hook/validate-job
+- Feat(help): more compact --help output. [Frank Harrison]
+
+  Removes duplicate job and tag names. Only shows options list once.
+- Feat(cfg-hooks): fix --help regression after adding argparse phases.
+  [Frank Harrison]
+
+  We explicitly specify a help group and an inbuilt runem args group.
+
+  The help-group isn't great as it separates help from inbuilts, but keeps
+  help first. And as `help` is a 1st order UX for runem it is important to
+  keep first.
+
+  The inbuilt group is nicer as it clearly differentiates runem-controls
+  from config-generated-controls, which makes the whole fundemental idea
+  of runem slightly better.
+- Chore(dev-ops): fix logs in `push_and_pr` script. [Frank Harrison]
+- Feat(cfg-hooks): makes the meta-data json compatible. [Frank Harrison]
+- Feat(cfg-hooks): add {metadata] simple-command replacement string.
+  [Frank Harrison]
+- Feat(cfg-hooks): refactor of simple command-string parsing. [Frank
+  Harrison]
+- Chore(--root-dir): add a xfail for --root-dir which isn't currently
+  wired in. [Frank Harrison]
+- Feat(cfg-hooks): dogfood hooks in .runem.tml. [Frank Harrison]
+- Feat(cfg-hooks): merge root_dir and root_path flags. [Frank Harrison]
+- Feat(cfg-hooks): major refactor and tidy up of job-exectution types.
+  [Frank Harrison]
+- Feat(cfg-hooks): new hook-types and invocations. [Frank Harrison]
+- Feat(cfg-hooks): always pass root_dir to hooks. [Frank Harrison]
+- Refactor(cfg-parsing): partial config-loading refactor to support new
+  hooks. [Frank Harrison]
+
+  Here we:
+  - wrap the job-collection in a collector type to add hook calls
+  - instantiates the hook-manager earlier so we can change cfg load order
+
+  This will allow us to early-load hooks, then invoke them as we parse the cfg.
+- Chore(private-funcs): clarify api-scope of functions. [Frank Harrison]
+- Merge pull request #144 from lursight/chore/push-and-pr. [Frank
+  Harrison]
+
+  chore/push-and-pr
+- Chore(push-and-pr): continue even if PR-creation failed. [Frank
+  Harrison]
+- Chore(push-and-pr): try to explicitly rebase the branch after PR
+  created. [Frank Harrison]
+- Chore(push-and-pr): add --no-verify option. [Frank Harrison]
+- Merge pull request #143 from lursight/chore/push-and-pr. [Frank
+  Harrison]
+
+  chore/push-and-pr
+- Chore(push-and-pr): default to auto-merge PRs. [Frank Harrison]
+- Chore(push-and-pr): auto-rebase on push. [Frank Harrison]
+- Chore(push-and-pr): remove `--squash` when auto-merging. [Frank
+  Harrison]
+- Chore(push-and-pr): log info when `--auto-merge` not used. [Frank
+  Harrison]
+- Merge pull request #142 from lursight/chore/git-checks. [Frank
+  Harrison]
+
+  chore/git-checks
+- Chore(push-and-pr): add --force to push script. [Frank Harrison]
+- Chore(NO COMMIT-enforcement): block pushes when NO COMMIT is in the
+  message/code. [Frank Harrison]
+- Chore(runem): sort top-level .runem.yml imports. [Frank Harrison]
+- Merge pull request #141 from lursight/feat/better-hooks. [Frank
+  Harrison]
+- Feat(hook-ctx): pass `root_dir` & `run_success` into `on-exit` hooks.
+  [Frank Harrison]
+
+  - Extend HookSpecificKwargs with root_dir and run_success
+  - Pass context from runem.py into invoke_hooks
+  - Example hook uses root_dir/root_path from kwargs
+  - Document hook context in docs/hooks.md
+- Chore(deps): updates `packaging` dep annotation (PEP 440) [Frank
+  Harrison]
+- Merge pull request #140 from lursight/feat/mcp/remove-mcp. [Frank
+  Harrison]
+
+  feat(remove-mcp): removes the initial, bad implementation of MCP that
+- Feat(remove-mcp): removes the initial, bad implementation of MCP that.
+  [Frank Harrison]
+
+  This showed issues in runem's core that need to be addressed.
+- Merge pull request #139 from lursight/feat/warn-on-bad-cwd. [Frank
+  Harrison]
+
+  feat/warn-on-bad-cwd
+- Feat(cwd-error): adds clearer error message on bad job.ctx.cwd. [Frank
+  Harrison]
+
+
+0.14.0 (2026-08-08)
+-------------------
+- Release: version 0.14.0 🚀 [Frank Harrison]
 - Merge pull request #138 from lursight/fix/job.addr.file. [Frank
   Harrison]
 
