@@ -87,10 +87,10 @@ def job_execute_inner(
         # guard for direct executor and hook calls that do not pass through preflight.
         if not config_metadata.args.silent:
             warn(f"skipping job '{label}', no files for job")
-        return {
-            "job": (f"{label}: no files!", timedelta(0)),
-            "commands": [],
-        }, None
+        return JobTiming(
+            job=TimingEntry(label=f"{label}: no files!", dur=timedelta(0)),
+            commands=[],
+        ), None
 
     sub_command_timings: TimingEntries = []
 
@@ -99,7 +99,7 @@ def job_execute_inner(
 
         For example inside of run_command() calls
         """
-        sub_command_timings.append((label, timing))
+        sub_command_timings.append(TimingEntry(label=label, dur=timing))
 
     job_ctx: JobContextConfig | None = job_config.get("ctx", None)
     if job_ctx and "cwd" in job_ctx and job_ctx["cwd"]:
@@ -144,8 +144,9 @@ def job_execute_inner(
     time_taken: timedelta = timedelta(seconds=end - start)
     if config_metadata.args.verbose:
         log(f"job: DONE: '{label}': {time_taken}")
-    this_job_timing_data: TimingEntry = (label, time_taken)
-    return ({"job": this_job_timing_data, "commands": sub_command_timings}, reports)
+    this_job_timing_data = TimingEntry(label=label, dur=time_taken)
+    job_timing = JobTiming(job=this_job_timing_data, commands=sub_command_timings)
+    return (job_timing, reports)
 
 
 def job_execute(
