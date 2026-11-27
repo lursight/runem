@@ -432,14 +432,21 @@ confidence=HIGH,
 # --enable=similarities". If you want to run only the classes checker, but have
 # no Warning level messages displayed, use "--disable=all --enable=classes
 # --disable=W".
-# disable=raw-checker-failed,
-#         missing-timeout,
-#         bad-inline-option,
-#         locally-disabled,
-#         file-ignored,
-#         suppressed-message,
-#         useless-suppression,
-#         deprecated-pragma,
+# - Disabled `too-many-statements` as it was too noisy when working quickly,
+#   sigh.
+# - `use-list-literal` suggests using `=[]` which syntactically looks like the
+#   dangerous default-list gotcha (see `dangerous-default-value`), thus it is
+#   better to be consistent so that code can be read faster.
+# - `too-many-positional-arguments` doesn't make sense for this type of project,
+#   as we are effectively creating a domman-specific-language [DSL] in runem.yml.
+# - `use-implicit-booleaness-not-*`
+#   As `import this` says: "Explicit is better than implicit", and these
+#   category of checks lead to slightly-less easy-to-read code, so we disable
+#   them:
+#     - `use-implicit-booleaness-not-comparison` / C1803
+#     - `use-implicit-booleaness-not-comparison-to-string` / C1804
+#     - `use-implicit-booleaness-not-comparison-to-zero` / C1805
+#     - `use-implicit-booleaness-not-len` / C1802
 disable=consider-using-f-string,
         chained-comparison,
         fixme,
@@ -455,8 +462,14 @@ disable=consider-using-f-string,
         too-many-instance-attributes,
         too-many-positional-arguments,
         too-many-public-methods,
+        too-many-statements,
         unnecessary-pass,
         unused-argument,
+        use-list-literal,
+        use-implicit-booleaness-not-comparison,
+        use-implicit-booleaness-not-comparison-to-string,
+        use-implicit-booleaness-not-comparison-to-zero,
+        use-implicit-booleaness-not-len,
         useless-object-inheritance,
         useless-return
 
