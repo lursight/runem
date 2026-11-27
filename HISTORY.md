@@ -4,6 +4,28 @@ Changelog
 
 (unreleased)
 ------------
+- Merge pull request #149 from lursight/chore/readability/timing-types.
+  [Frank Harrison]
+
+  chore/readability/timing-types
+- Chore(pre-push): fix pre-push dir being cleaned. [Frank Harrison]
+- Chore(pylint): disable bad pylint configs. [Frank Harrison]
+
+  NOTE: that these have been disabled by default in more recent pylint
+  configs.
+- Chore(pylint): sort disabled pylint settings. [Frank Harrison]
+- Chore(readability): use stronger types for timers. [Frank Harrison]
+
+  Represent job and command timings with immutable dataclasses so timing
+  values have explicit fields and remain consistently typed across
+  execution and reporting.
+
+  This also just makes it slightly easier to read the code.
+
+
+0.15.0 (2026-11-19)
+-------------------
+- Release: version 0.15.0 🚀 [Frank Harrison]
 - Merge pull request #148 from lursight/fix/poor-file-filter-info.
   [Frank Harrison]
 
