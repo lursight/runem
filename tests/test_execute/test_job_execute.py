@@ -10,10 +10,19 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from runem.config.config_metadata import ConfigMetadata
-from runem.execute.job_execute import BadDeveloperExecute, _chdir_into_ctx, job_execute
+from runem.execute.job_execute import (
+    BadDeveloperExecute,
+    _chdir_into_ctx,
+    job_execute,
+    job_execute_inner,
+)
+from runem.job.job_return import JobReturn
+from runem.report.metrics.job_run_timing import JobTiming
 from runem.report.metrics.timer import RecordSubJobTimeType
+from runem.report.metrics.timing import TimingEntry
 from runem.types.filters import FilePathListLookup
 from runem.types.runem_config import JobConfig, PhaseGroupedJobs
+from tests.utils.gen_dummy_config_metadata import gen_dummy_config_metadata
 from tests.utils.intentional_test_error import IntentionalTestError
 
 
@@ -341,6 +350,55 @@ def test_job_execute_empty_files(silent: bool) -> None:
             # "runem: job: running: 'reformat py'\n"
             # "runem: job: DONE: 'reformat py': 0:00:00\n"
         )
+
+
+def test_job_execute_inner_returns_typed_job_and_command_timings() -> None:
+    config_metadata = gen_dummy_config_metadata()
+    config_metadata.cfg_filepath = pathlib.Path(__file__).parent / ".runem.yml"
+    config_metadata.args.silent = True
+    job_config: JobConfig = {
+        "addr": {"file": __file__, "function": "time_recording_function"},
+        "label": "records timings",
+        "when": {"phase": "edit", "tags": {"dummy tag"}},
+    }
+    file_lists: FilePathListLookup = defaultdict(list)
+    file_lists["dummy tag"] = [__file__]
+
+    job_timing: JobTiming
+    reports: JobReturn
+    job_timing, reports = job_execute_inner(
+        job_config, config_metadata, file_lists, metadata=None
+    )
+
+    assert isinstance(job_timing, JobTiming)
+    assert job_timing.job == TimingEntry(label="records timings", dur=timedelta(0))
+    assert job_timing.commands == [
+        TimingEntry(label="test entry", dur=timedelta(seconds=100)),
+        TimingEntry(label="test entry 2", dur=timedelta(seconds=200)),
+    ]
+    assert reports is None
+
+
+def test_job_execute_inner_returns_typed_timing_when_no_files() -> None:
+    config_metadata = gen_dummy_config_metadata()
+    config_metadata.cfg_filepath = pathlib.Path(__file__).parent / ".runem.yml"
+    config_metadata.args.silent = True
+    job_config: JobConfig = {
+        "addr": {"file": __file__, "function": "empty_function"},
+        "label": "no files",
+        "when": {"phase": "edit", "tags": {"dummy tag"}},
+    }
+
+    job_timing: JobTiming
+    reports: JobReturn
+    job_timing, reports = job_execute_inner(
+        job_config, config_metadata, defaultdict(list), metadata=None
+    )
+
+    assert isinstance(job_timing, JobTiming)
+    assert job_timing.job == TimingEntry(label="no files: no files!", dur=timedelta(0))
+    assert job_timing.commands == []
+    assert reports is None
 
 
 def test_job_execute_with_ctx_cwd() -> None:

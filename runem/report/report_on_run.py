@@ -126,9 +126,8 @@ def _plot_times(
     for idx, job_metadata in enumerate(reversed(runem_app_timing)):
         last_group: bool = idx == 0  # reverse sorted
         utf8_group = "├" if not last_group else "└"
-        job_label, job_time_total = job_metadata["job"]
-        labels.insert(0, f"{utf8_group}runem.{job_label}")
-        times.insert(0, job_time_total.total_seconds())
+        labels.insert(0, f"{utf8_group}runem.{job_metadata.job.label}")
+        times.insert(0, job_metadata.job.dur.total_seconds())
     labels.insert(0, "runem (total wall-clock)")
     times.insert(0, wall_clock_for_runem_main.total_seconds())
     if termplotlib:
@@ -170,7 +169,7 @@ def _gen_jobs_report(
     non_zero_timing_data: typing.List[JobTiming] = [
         job_timing
         for job_timing in job_timings
-        if job_timing["job"][1].total_seconds() != 0
+        if job_timing.job.dur.total_seconds() != 0
     ]
 
     job_time_sum: timedelta = timedelta()  # init to 0
@@ -178,26 +177,25 @@ def _gen_jobs_report(
         not_last: bool = idx < len(non_zero_timing_data) - 1
         utf8_job = "├" if not_last else "└"
         utf8_sub_jobs = "│" if not_last else " "
-        job_label, job_time_total = job_timing["job"]
-        job_bar_label: str = f"{job_label}"
+        job_bar_label: str = f"{job_timing.job.label}"
         labels.append(f"{utf8_phase_group}{utf8_job}{job_bar_label}")
-        times.append(job_time_total.total_seconds())
-        job_time_sum += job_time_total
-        sub_command_times: TimingEntries = job_timing["commands"]
+        times.append(job_timing.job.dur.total_seconds())
+        job_time_sum += job_timing.job.dur
+        sub_command_times: TimingEntries = job_timing.commands
 
         if len(sub_command_times) <= 1:
             # we only have one or fewer sub-commands, just show the job-time
             continue
 
         # also print the sub-components of the job as we have more than one
-        for idx, (sub_job_label, sub_job_time) in enumerate(sub_command_times):
+        for idx, time_entry in enumerate(sub_command_times):
             sub_utf8 = "├"
             if idx == len(sub_command_times) - 1:
                 sub_utf8 = "└"
             labels.append(
-                f"{utf8_phase_group}{utf8_sub_jobs}{sub_utf8}{sub_job_label} (+)"
+                f"{utf8_phase_group}{utf8_sub_jobs}{sub_utf8}{time_entry.label} (+)"
             )
-            times.append(sub_job_time.total_seconds())
+            times.append(time_entry.dur.total_seconds())
     return job_time_sum
 
 

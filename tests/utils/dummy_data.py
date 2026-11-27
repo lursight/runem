@@ -13,6 +13,7 @@ from runem.job.job_args import JobArgs
 from runem.job.job_options.informative_dict import ReadOnlyInformativeDict
 from runem.job.job_return import JobReturn
 from runem.report.metrics.job_run_timing import JobTiming
+from runem.report.metrics.timing import TimingEntry
 from runem.runem import (
     MainReturnType,
 )
@@ -61,7 +62,7 @@ DUMMY_JOB_CONFIG_ADDR: JobConfig = {
 }
 
 MOCK_JOB_EXECUTE_INNER_RET: typing.Tuple[JobTiming, JobReturn] = (
-    {"job": ("mocked job run", timedelta(0)), "commands": []},
+    JobTiming(job=TimingEntry(label="mocked job run", dur=timedelta(0)), commands=[]),
     None,
 )
 

@@ -1,9 +1,10 @@
-import typing
+from dataclasses import dataclass
 
 from runem.report.metrics.timing import TimingEntries, TimingEntry
 
 
-class JobTiming(typing.TypedDict, total=True):
+@dataclass(frozen=True)
+class JobTiming:
     """A hierarchy of timing info. Job->JobCommands.
 
     The overall time for a job is in 'job', the child calls to run_command are in

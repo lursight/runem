@@ -5,6 +5,7 @@ from datetime import timedelta
 
 from runem.job.job_return import JobReturn
 from runem.report.metrics.job_run_timing import JobTiming
+from runem.report.metrics.timing import TimingEntry
 from runem.report.report_on_run import report_on_run
 from runem.report.runem_metrics import JobRunMetadata, JobRunMetadatasByPhase
 from tests.utils.sanitise_reports_footer import sanitise_reports_footer
@@ -21,10 +22,10 @@ def test_sanitise_reports_footer_removes_all_bar_chars_2() -> None:
         fractional_times: typing.List[JobRunMetadata] = []
         for seconds in range(15):  # 1 + 2 +3.. +14 = 105 near enough to 100%
             seconds = seconds * multiplier
-            job_timing: JobTiming = {
-                "job": (f"job {seconds}", timedelta(seconds=seconds)),
-                "commands": [],
-            }
+            job_timing = JobTiming(
+                job=TimingEntry(label=f"job {seconds}", dur=timedelta(seconds=seconds)),
+                commands=[],
+            )
             job_return: JobReturn = None  # typing.Optional[JobReturnData]
             job_run_metadata: JobRunMetadata = (job_timing, job_return)
             fractional_times.append(job_run_metadata)
