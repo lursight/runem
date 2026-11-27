@@ -2,7 +2,6 @@
 
 import pathlib
 import typing
-from datetime import timedelta
 
 from typing_extensions import Unpack
 
@@ -13,7 +12,9 @@ from runem.job.job_args import JobArgs
 from runem.job.job_options.informative_dict import ReadOnlyInformativeDict
 from runem.job.job_return import JobReturn
 from runem.report.metrics.job_run_timing import JobTiming
-from runem.report.metrics.timing import TimingEntry
+from runem.report.metrics.time_entry import TimeEntry
+from runem.report.metrics.time_entry_recorder import RecordTimeEntryFn
+from runem.report.metrics.timing_info import TimeInfo
 from runem.runem import (
     MainReturnType,
 )
@@ -29,12 +30,15 @@ from tests.utils.gen_dummy_config_metadata import gen_dummy_config_metadata
 from tests.utils.intentional_test_error import IntentionalTestError
 
 
-def do_nothing_record_sub_job_time(
-    label: str,
-    timing: timedelta,
+def _do_nothing_record_sub_job_time_fn(
+    _label: str,
+    _info: TimeInfo,
 ) -> None:  # pragma: no cover
     """A `record_sub_job_time` function that does nothing for testing."""
     pass
+
+
+_do_nothing_record_sub_job_time: RecordTimeEntryFn = _do_nothing_record_sub_job_time_fn
 
 
 def dummy_job_print_dummy_job(
@@ -62,7 +66,13 @@ DUMMY_JOB_CONFIG_ADDR: JobConfig = {
 }
 
 MOCK_JOB_EXECUTE_INNER_RET: typing.Tuple[JobTiming, JobReturn] = (
-    JobTiming(job=TimingEntry(label="mocked job run", dur=timedelta(0)), commands=[]),
+    JobTiming(
+        job=TimeEntry(
+            label="mocked job run",
+            info=TimeInfo(start=0, end=0),
+        ),
+        commands=[],
+    ),
     None,
 )
 
@@ -236,7 +246,7 @@ DUMMY_JOB_K_ARGS: JobArgs = {
     "label": Job.get_job_name(DUMMY_JOB_CONFIG_ADDR),
     "options": ReadOnlyInformativeDict(DUMMY_CONFIG_METADATA.options),
     "procs": DUMMY_CONFIG_METADATA.args.procs,
-    "record_sub_job_time": do_nothing_record_sub_job_time,
+    "record_sub_job_time": _do_nothing_record_sub_job_time,
     "root_path": TESTS_ROOT_PATH,
     "verbose": False,
 }

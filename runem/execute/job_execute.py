@@ -2,8 +2,6 @@ import os
 import pathlib
 import typing
 import uuid
-from datetime import timedelta
-from timeit import default_timer as timer
 
 from runem.execute.job_wrapper import get_job_wrapper
 from runem.hook.hook_args import HookArgs
@@ -16,7 +14,10 @@ from runem.job.job_return import (
 )
 from runem.log import error, log, warn
 from runem.report.metrics.job_run_timing import JobTiming
-from runem.report.metrics.timing import TimingEntries, TimingEntry
+from runem.report.metrics.time_entry import TimeEntry
+from runem.report.metrics.time_entry_recorder import RecordTimeEntryFn
+from runem.report.metrics.timed_job_context import JobTimingContext, timed_job_context
+from runem.report.metrics.timing_info import TimeInfo
 from runem.run_command import RunemJobError
 from runem.types.common import FilePathList, JobTags
 from runem.types.filters import FilePathListLookup
@@ -88,18 +89,12 @@ def job_execute_inner(
         if not config_metadata.args.silent:
             warn(f"skipping job '{label}', no files for job")
         return JobTiming(
-            job=TimingEntry(label=f"{label}: no files!", dur=timedelta(0)),
+            job=TimeEntry(
+                label=f"{label}: no files!",
+                info=TimeInfo(start=0, end=0),
+            ),
             commands=[],
         ), None
-
-    sub_command_timings: TimingEntries = []
-
-    def _record_sub_job_time(label: str, timing: timedelta) -> None:
-        """Record timing information for sub-commands/tasks, atomically.
-
-        For example inside of run_command() calls
-        """
-        sub_command_timings.append(TimingEntry(label=label, dur=timing))
 
     job_ctx: JobContextConfig | None = job_config.get("ctx", None)
     if job_ctx and "cwd" in job_ctx and job_ctx["cwd"]:
@@ -107,45 +102,46 @@ def job_execute_inner(
     else:
         os.chdir(root_path)
 
-    start = timer()
+    job_time_ctx: JobTimingContext
+    with timed_job_context(label) as job_time_ctx:
+        if config_metadata.args.verbose:
+            log(f"job: running: '{label}'")
+        record_sub_job_time: RecordTimeEntryFn = job_time_ctx.record_sub_job_time_cb
+        reports: JobReturn
+        try:
+            # Define the common args for all jobs and hooks.
+            job_k_args: JobArgs = {
+                "config_metadata": config_metadata,
+                "file_list": file_list,
+                "job": job_config,
+                "label": label,
+                "options": ReadOnlyInformativeDict(config_metadata.options),
+                "procs": config_metadata.args.procs,
+                "record_sub_job_time": record_sub_job_time,
+                "root_path": root_path,
+                "verbose": config_metadata.args.verbose,
+                "metadata": None,  # <- conform with JobArgs type, for now.
+            }
+
+            # We ignore the type-error for now, as this dispatch function requires
+            # typing encoded into the call-side or possibly a generic `function`
+            # type and branching.
+            job_k_args["metadata"] = metadata  # type: ignore
+
+            assert isinstance(function, JobFunction)
+            reports = function(**job_k_args)
+        except BaseException:  # pylint: disable=broad-exception-caught
+            # log that we hit an error on this job and re-raise
+            log(prefix=False)
+            error(f"job: job '{label}' failed to complete!")
+            # re-raise
+            raise
+
+    job_timing: JobTiming = (
+        job_time_ctx.future.result()
+    )  # JobTiming(job=this_job_timing_data, commands=sub_command_timings)
     if config_metadata.args.verbose:
-        log(f"job: running: '{label}'")
-    reports: JobReturn
-    try:
-        # Define the common args for all jobs and hooks.
-        job_k_args: JobArgs = {
-            "config_metadata": config_metadata,
-            "file_list": file_list,
-            "job": job_config,
-            "label": label,
-            "options": ReadOnlyInformativeDict(config_metadata.options),
-            "procs": config_metadata.args.procs,
-            "record_sub_job_time": _record_sub_job_time,
-            "root_path": root_path,
-            "verbose": config_metadata.args.verbose,
-            "metadata": None,  # <- conform with JobArgs type, for now.
-        }
-
-        # We ignore the type-error for now, as this dispatch function requires
-        # typing encoded into the call-side or possibly a generic `function`
-        # type and branching.
-        job_k_args["metadata"] = metadata  # type: ignore
-
-        assert isinstance(function, JobFunction)
-        reports = function(**job_k_args)
-    except BaseException:  # pylint: disable=broad-exception-caught
-        # log that we hit an error on this job and re-raise
-        log(prefix=False)
-        error(f"job: job '{label}' failed to complete!")
-        # re-raise
-        raise
-
-    end = timer()
-    time_taken: timedelta = timedelta(seconds=end - start)
-    if config_metadata.args.verbose:
-        log(f"job: DONE: '{label}': {time_taken}")
-    this_job_timing_data = TimingEntry(label=label, dur=time_taken)
-    job_timing = JobTiming(job=this_job_timing_data, commands=sub_command_timings)
+        log(f"job: DONE: '{label}': {job_timing.job.info.dur}")
     return (job_timing, reports)
 
 

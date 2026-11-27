@@ -2,12 +2,12 @@ import io
 import pathlib
 from collections import deque
 from contextlib import redirect_stdout
-from datetime import timedelta
 from typing import Tuple
 from unittest.mock import Mock, patch
 
 import pytest
 
+from runem.report.metrics.timing_info import TimeInfo
 from runem.run_command import (
     RunCommandBadExitCode,
     RunCommandUnhandledError,
@@ -79,7 +79,7 @@ def test_run_command_basic_call(mock_popen: Mock) -> None:
     """
     record_times_called: bool = False
 
-    def dummy_record_sub_job_time(label: str, timing: timedelta) -> None:
+    def dummy_record_sub_job_time(_label: str, _info: TimeInfo) -> None:
         nonlocal record_times_called
         record_times_called = True
 

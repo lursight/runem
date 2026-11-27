@@ -52,7 +52,8 @@ from runem.job.job import Job
 from runem.job.job_return import JobReturn
 from runem.log import error, log, warn
 from runem.report.metrics.job_run_timing import JobTiming
-from runem.report.metrics.timing import TimingEntry
+from runem.report.metrics.time_entry import TimeEntry
+from runem.report.metrics.timing_info import TimeInfo
 from runem.report.report_on_run import report_on_run
 from runem.report.runem_metrics import (
     JobRunMetadata,
@@ -404,7 +405,10 @@ def _record_jobs_without_files(
         for job in phase_jobs:
             label = Job.get_job_name(job)
             no_files_timing = JobTiming(
-                job=TimingEntry(label=f"{label}: no files!", dur=timedelta(0)),
+                job=TimeEntry(
+                    label=f"{label}: no files!",
+                    info=TimeInfo(start=0, end=0),
+                ),
                 commands=[],
             )
             job_run_metadatas[phase].append((no_files_timing, None))
@@ -463,7 +467,10 @@ def _main(
 
     job_run_metadatas: JobRunMetadatasByPhase = defaultdict(list)
     pre_build_time = JobTiming(
-        job=TimingEntry(label="pre-build", dur=timedelta(seconds=end - start)),
+        job=TimeEntry(
+            label="pre-build",
+            info=TimeInfo(start=start, end=end),
+        ),
         commands=[],
     )
     job_run_metadatas["_app"].append((pre_build_time, None))
@@ -482,7 +489,10 @@ def _main(
     end = timer()
 
     phase_run_timing = JobTiming(
-        job=TimingEntry(label="run-phases", dur=timedelta(seconds=end - start)),
+        job=TimeEntry(
+            label="run-phases",
+            info=TimeInfo(start=start, end=end),
+        ),
         commands=[],
     )
     phase_run_report: JobReturn = None

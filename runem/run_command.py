@@ -8,7 +8,8 @@ from subprocess import Popen
 from rich.markup import escape
 
 from runem.log import log
-from runem.report.metrics.timer import RecordSubJobTimeType, runem_timer
+from runem.report.metrics.time_entry_recorder import RecordTimeEntryFn
+from runem.report.metrics.timed_context_callback import timed_context_callback
 
 TERMINAL_WIDTH = 86
 
@@ -191,12 +192,12 @@ def run_command(  # noqa: C901
     ignore_fails: bool = False,
     valid_exit_ids: typing.Optional[typing.Tuple[int, ...]] = None,
     cwd: typing.Optional[pathlib.Path] = None,
-    record_sub_job_time: typing.Optional[RecordSubJobTimeType] = None,
+    record_sub_job_time: typing.Optional[RecordTimeEntryFn] = None,
     decorate_logs: bool = True,
     **kwargs: typing.Any,
 ) -> str:
     """Runs the given command, returning stdout or throwing on any error."""
-    with runem_timer(label, record_sub_job_time):
+    with timed_context_callback(label, record_sub_job_time):
         cmd_string = " ".join(cmd)
 
         run_env: typing.Dict[str, str] = _prepare_environment(

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from runem.report.metrics.timing import TimingEntries, TimingEntry
+from runem.report.metrics.time_entry import TimedEntries, TimeEntry
 
 
 @dataclass(frozen=True)
@@ -11,5 +11,5 @@ class JobTiming:
     'commands'
     """
 
-    job: TimingEntry  # the overall time for a job
-    commands: TimingEntries  # timing for each call to `run_command`
+    job: TimeEntry  # the overall time for a job
+    commands: TimedEntries  # timing for each call to `run_command`

@@ -4,31 +4,38 @@ from datetime import timedelta
 
 from runem.job.job_return import JobReturn
 from runem.report.metrics.job_run_timing import JobTiming
-from runem.report.metrics.timing import TimingEntry
+from runem.report.metrics.time_entry import TimeEntry
+from runem.report.metrics.timing_info import TimeInfo
 from runem.report.report_on_run import report_on_run
 from runem.report.runem_metrics import JobRunMetadata, JobRunMetadatasByPhase
 
 
+def _time_entry(label: str, duration: timedelta) -> TimeEntry:
+    return TimeEntry(
+        label=label,
+        info=TimeInfo(start=0, end=duration.total_seconds()),
+    )
+
+
 def test_report_on_run_basic_call() -> None:
     job_timing_1 = JobTiming(
-        job=TimingEntry(label="job 1", dur=timedelta(seconds=0)), commands=[]
+        job=_time_entry("job 1", timedelta(seconds=0)), commands=[]
     )
     job_timing_2 = JobTiming(
-        job=TimingEntry(
-            label="job label 2",
-            dur=timedelta(seconds=1000, milliseconds=1, microseconds=1),
+        job=_time_entry(
+            "job label 2", timedelta(seconds=1000, milliseconds=1, microseconds=1)
         ),
         commands=[
-            TimingEntry(label="sub1", dur=timedelta(seconds=500)),
-            TimingEntry(label="sub2", dur=timedelta(seconds=500)),
+            _time_entry("sub1", timedelta(seconds=500)),
+            _time_entry("sub2", timedelta(seconds=500)),
         ],
     )
     job_timing_3 = JobTiming(
-        job=TimingEntry(label="another job 3", dur=timedelta(seconds=2)),
+        job=_time_entry("another job 3", timedelta(seconds=2)),
         commands=[],
     )
     job_timing_4 = JobTiming(
-        job=TimingEntry(label="another job 4", dur=timedelta(seconds=250)),
+        job=_time_entry("another job 4", timedelta(seconds=250)),
         commands=[],
     )
     job_return: JobReturn = None  # typing.Optional[JobReturnData]
@@ -85,17 +92,16 @@ def test_report_on_run_reports() -> None:
     }
     job_return_2: JobReturn = None  # typing.Optional[JobReturnData]
     job_timing_1 = JobTiming(
-        job=TimingEntry(label="job label 1", dur=timedelta(seconds=0)), commands=[]
+        job=_time_entry("job label 1", timedelta(seconds=0)), commands=[]
     )
     job_timing_2 = JobTiming(
-        job=TimingEntry(
-            label="job label 2",
-            dur=timedelta(seconds=1000, milliseconds=1, microseconds=1),
+        job=_time_entry(
+            "job label 2", timedelta(seconds=1000, milliseconds=1, microseconds=1)
         ),
         commands=[],
     )
     job_timing_3 = JobTiming(
-        job=TimingEntry(label="another job 3", dur=timedelta(seconds=2)),
+        job=_time_entry("another job 3", timedelta(seconds=2)),
         commands=[],
     )
     job_run_metadata_1: JobRunMetadata = (job_timing_1, job_return_1)

@@ -18,30 +18,38 @@ from runem.execute.job_execute import (
 )
 from runem.job.job_return import JobReturn
 from runem.report.metrics.job_run_timing import JobTiming
-from runem.report.metrics.timer import RecordSubJobTimeType
-from runem.report.metrics.timing import TimingEntry
+from runem.report.metrics.time_entry import TimeEntry
+from runem.report.metrics.time_entry_recorder import RecordTimeEntryFn
+from runem.report.metrics.timing_info import TimeInfo
 from runem.types.filters import FilePathListLookup
 from runem.types.runem_config import JobConfig, PhaseGroupedJobs
 from tests.utils.gen_dummy_config_metadata import gen_dummy_config_metadata
 from tests.utils.intentional_test_error import IntentionalTestError
+from tests.utils.zero_timed_job_context import zero_timed_job_context
 
 
-def empty_function(**kwargs: typing.Any) -> None:
+def _dummy_job_empty_function(**kwargs: typing.Any) -> None:
     """Does nothing, called by runner."""
 
 
-def intentionally_raising_function(**kwargs: typing.Any) -> None:
+def _dummy_job_intentionally_raising_function(**kwargs: typing.Any) -> None:
     """Raises an error called by runner."""
     raise IntentionalTestError()
 
 
-def time_recording_function(
-    record_sub_job_time: typing.Optional[RecordSubJobTimeType], **kwargs: typing.Any
+def _dummy_job_time_recording_function(
+    record_sub_job_time: typing.Optional[RecordTimeEntryFn], **kwargs: typing.Any
 ) -> None:
     """Does nothing, called by runner."""
     assert record_sub_job_time is not None
-    record_sub_job_time("test entry", timedelta(seconds=100))
-    record_sub_job_time("test entry 2", timedelta(seconds=200))
+    record_sub_job_time(
+        "test entry",
+        TimeInfo(start=0, end=100),
+    )
+    record_sub_job_time(
+        "test entry 2",
+        TimeInfo(start=100, end=300),
+    )
 
 
 def _job_execute_and_capture_stdout(
@@ -66,9 +74,9 @@ def _job_execute_and_capture_stdout(
     return stdout, ret_err
 
 
-@pytest.fixture(name="mock_timer", autouse=True)
-def create_mock_print_sleep() -> typing.Generator[None, None, None]:
-    with patch("runem.execute.job_execute.timer", return_value=0.0):  # as mock_timer
+@pytest.fixture(name="zero_job_timing", autouse=True)
+def zero_job_timing_fixture() -> typing.Generator[None, None, None]:
+    with patch("runem.execute.job_execute.timed_job_context", zero_timed_job_context):
         yield
 
 
@@ -133,7 +141,7 @@ def test_job_execute_basic_call() -> None:
     job_config: JobConfig = {
         "addr": {
             "file": __file__,
-            "function": "empty_function",
+            "function": "_dummy_job_empty_function",
         },
         "label": "reformat py",
         "when": {
@@ -207,7 +215,7 @@ def test_job_execute_basic_call_verbose() -> None:
     job_config: JobConfig = {
         "addr": {
             "file": __file__,
-            "function": "empty_function",
+            "function": "_dummy_job_empty_function",
         },
         "label": "reformat py",
         "when": {
@@ -283,7 +291,7 @@ def test_job_execute_empty_files(silent: bool) -> None:
     job_config: JobConfig = {
         "addr": {
             "file": __file__,
-            "function": "empty_function",
+            "function": "_dummy_job_empty_function",
         },
         "label": "reformat py",
         "when": {
@@ -357,7 +365,7 @@ def test_job_execute_inner_returns_typed_job_and_command_timings() -> None:
     config_metadata.cfg_filepath = pathlib.Path(__file__).parent / ".runem.yml"
     config_metadata.args.silent = True
     job_config: JobConfig = {
-        "addr": {"file": __file__, "function": "time_recording_function"},
+        "addr": {"file": __file__, "function": "_dummy_job_time_recording_function"},
         "label": "records timings",
         "when": {"phase": "edit", "tags": {"dummy tag"}},
     }
@@ -371,10 +379,17 @@ def test_job_execute_inner_returns_typed_job_and_command_timings() -> None:
     )
 
     assert isinstance(job_timing, JobTiming)
-    assert job_timing.job == TimingEntry(label="records timings", dur=timedelta(0))
+    assert job_timing.job.label == "records timings"
+    assert job_timing.job.info.dur == timedelta(0)
     assert job_timing.commands == [
-        TimingEntry(label="test entry", dur=timedelta(seconds=100)),
-        TimingEntry(label="test entry 2", dur=timedelta(seconds=200)),
+        TimeEntry(
+            label="test entry",
+            info=TimeInfo(start=0, end=100),
+        ),
+        TimeEntry(
+            label="test entry 2",
+            info=TimeInfo(start=100, end=300),
+        ),
     ]
     assert reports is None
 
@@ -384,7 +399,7 @@ def test_job_execute_inner_returns_typed_timing_when_no_files() -> None:
     config_metadata.cfg_filepath = pathlib.Path(__file__).parent / ".runem.yml"
     config_metadata.args.silent = True
     job_config: JobConfig = {
-        "addr": {"file": __file__, "function": "empty_function"},
+        "addr": {"file": __file__, "function": "_dummy_job_empty_function"},
         "label": "no files",
         "when": {"phase": "edit", "tags": {"dummy tag"}},
     }
@@ -396,7 +411,10 @@ def test_job_execute_inner_returns_typed_timing_when_no_files() -> None:
     )
 
     assert isinstance(job_timing, JobTiming)
-    assert job_timing.job == TimingEntry(label="no files: no files!", dur=timedelta(0))
+    assert job_timing.job == TimeEntry(
+        label="no files: no files!",
+        info=TimeInfo(start=0, end=0),
+    )
     assert job_timing.commands == []
     assert reports is None
 
@@ -405,7 +423,7 @@ def test_job_execute_with_ctx_cwd() -> None:
     job_config: JobConfig = {
         "addr": {
             "file": __file__,
-            "function": "empty_function",
+            "function": "_dummy_job_empty_function",
         },
         "label": "reformat py",
         "when": {
@@ -487,7 +505,7 @@ def test_job_execute_with_raising_func() -> None:
     job_config: JobConfig = {
         "addr": {
             "file": __file__,
-            "function": "intentionally_raising_function",
+            "function": "_dummy_job_intentionally_raising_function",
         },
         "label": "intentionally throwing",
         "when": {
@@ -564,7 +582,7 @@ def test_job_execute_time_recording_function() -> None:
     job_config: JobConfig = {
         "addr": {
             "file": __file__,
-            "function": "time_recording_function",
+            "function": "_dummy_job_time_recording_function",
         },
         "label": "reformat py",
         "when": {
