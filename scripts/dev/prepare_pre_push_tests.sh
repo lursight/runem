@@ -83,11 +83,9 @@ printf "%s                   : %s\\n" "$LOG_PBLANK" "$(du -sh $RUNEM_CHECKOUT/.p
 mkdir -p "$PRE_PUSH_TEST_DIR"
 
 cd "$PRE_PUSH_TEST_DIR"
-if [ ! -d ".git" ]; then
-  # checkout is fresh
-  RUN_LABELED_CMD "initialise git" git init
-  RUN_LABELED_CMD "add remote" git remote add origin "$ORIGINAL_CHECKOUT"
-fi
+RUN_LABELED_CMD "initialise git" git init
+RUN_LABELED_CMD "removing prev remote" git remote remove origin || true
+RUN_LABELED_CMD "add remote" git remote add origin "$ORIGINAL_CHECKOUT"
 
 # Clean files that are untracked but NOT in .gitignore
 # NOTE: This partially supports NO_CLEAN=1 by ensuring a minimal clean up is
