@@ -3,7 +3,8 @@ from contextlib import redirect_stdout
 from datetime import timedelta
 
 from runem.report.metrics.job_run_timing import JobTiming
-from runem.report.metrics.timing import TimingEntry
+from runem.report.metrics.time_entry import TimeEntry
+from runem.report.metrics.timing_info import TimeInfo
 from runem.report.runem_metrics import JobRunTimesByPhase
 from runem.report.visualisations.run_bars import plot_run_bars
 
@@ -11,7 +12,10 @@ from runem.report.visualisations.run_bars import plot_run_bars
 def test_plot_run_bars_prints_bars_and_returns_work_metrics() -> None:
     phase_timings = [
         JobTiming(
-            job=TimingEntry(label="job", dur=timedelta(seconds=3)),
+            job=TimeEntry(
+                label="job",
+                info=TimeInfo(start=0, end=3),
+            ),
             commands=[],
         )
     ]

@@ -13,6 +13,7 @@ from runem.hook.hook_manager import HookManager
 from runem.hook.hook_name import HookName
 from runem.hook.specs.on_exit import on_exit_hook
 from runem.types.runem_config import HookConfig, Hooks, PhaseGroupedJobs
+from tests.utils.zero_timed_job_context import zero_timed_job_context
 
 # pylint: disable=protected-access
 
@@ -68,9 +69,9 @@ def hook_manager_fixture(
     yield hook_manager
 
 
-@pytest.fixture(name="mock_timer", autouse=True)
-def create_mock_print_sleep() -> typing.Generator[None, None, None]:
-    with patch("runem.execute.job_execute.timer", return_value=0.0):  # as mock_timer
+@pytest.fixture(name="zero_job_timing", autouse=True)
+def zero_job_timing_fixture() -> typing.Generator[None, None, None]:
+    with patch("runem.execute.job_execute.timed_job_context", zero_timed_job_context):
         yield
 
 

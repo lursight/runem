@@ -1,8 +1,8 @@
 import typing
-from datetime import timedelta
 
 from typing_extensions import NotRequired
 
+from runem.report.metrics.time_entry_recorder import RecordTimeEntryFn
 from runem.types.common import FilePathList
 
 
@@ -14,6 +14,4 @@ class JobInvokeArgs(typing.TypedDict, total=True):
     """
 
     file_list: FilePathList
-    record_sub_job_time: NotRequired[
-        typing.Optional[typing.Callable[[str, timedelta], None]]
-    ]
+    record_sub_job_time: NotRequired[typing.Optional[RecordTimeEntryFn]]

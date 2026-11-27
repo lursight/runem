@@ -6,7 +6,7 @@ from datetime import timedelta
 
 from runem.log import log
 from runem.report.metrics.job_run_timing import JobTiming
-from runem.report.metrics.timing import TimingEntries
+from runem.report.metrics.time_entry import TimedEntries
 from runem.report.runem_metrics import JobRunTimesByPhase
 from runem.types.common import OrderedPhases, PhaseName
 
@@ -74,7 +74,7 @@ def plot_run_bars(
     for index, job_timing in enumerate(reversed(app_timings)):
         group_branch = "├" if index > 0 else "└"
         labels.insert(0, f"{group_branch}runem.{job_timing.job.label}")
-        times.insert(0, job_timing.job.dur.total_seconds())
+        times.insert(0, job_timing.job.info.dur.total_seconds())
     labels.insert(0, "runem (total wall-clock)")
     times.insert(0, wall_clock_for_runem_main.total_seconds())
 
@@ -101,7 +101,7 @@ def _gen_jobs_report(
 ) -> timedelta:
     """Append one phase's jobs and commands; return the jobs' total duration."""
     non_zero_timings = [
-        timing for timing in job_timings if timing.job.dur.total_seconds() != 0
+        timing for timing in job_timings if timing.job.info.dur.total_seconds() != 0
     ]
     job_time_sum = timedelta()
     for index, job_timing in enumerate(non_zero_timings):
@@ -109,10 +109,11 @@ def _gen_jobs_report(
         job_branch = "├" if job_is_not_last else "└"
         command_prefix = "│" if job_is_not_last else " "
         labels.append(f"{phase_prefix}{job_branch}{job_timing.job.label}")
-        times.append(job_timing.job.dur.total_seconds())
-        job_time_sum += job_timing.job.dur
+        job_duration = job_timing.job.info.dur
+        times.append(job_duration.total_seconds())
+        job_time_sum += job_duration
 
-        command_timings: TimingEntries = job_timing.commands
+        command_timings: TimedEntries = job_timing.commands
         if len(command_timings) <= 1:
             continue
         for command_index, command_timing in enumerate(command_timings):
@@ -121,5 +122,5 @@ def _gen_jobs_report(
                 f"{phase_prefix}{command_prefix}{command_branch}"
                 f"{command_timing.label} (+)"
             )
-            times.append(command_timing.dur.total_seconds())
+            times.append(command_timing.info.dur.total_seconds())
     return job_time_sum
